@@ -1,0 +1,13 @@
+This repository uses multiple licenses.
+
+- Original software source code is licensed under the Apache License 2.0.
+- Original proposal text, documentation, and schemas are licensed under the
+  Creative Commons Attribution 4.0 International license.
+- Third-party material is not relicensed by this repository.
+
+The complete license texts are in:
+
+- LICENSES/Apache-2.0.txt
+- LICENSES/CC-BY-4.0.txt
+
+See NOTICE and THIRD_PARTY_MATERIALS.md for scope and exclusions.

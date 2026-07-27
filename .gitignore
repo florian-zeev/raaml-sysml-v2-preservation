@@ -1,0 +1,18 @@
+# Third-party and locally supplied source material
+/sources/cache/*
+!/sources/cache/.gitkeep
+
+# Generated local outputs
+/generated/*
+!/generated/.gitkeep
+/reports/*
+!/reports/.gitkeep
+
+# Build and editor output
+.DS_Store
+.idea/
+.vscode/
+*.log
+build/
+dist/
+target/
