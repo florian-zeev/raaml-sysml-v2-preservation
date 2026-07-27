@@ -1,0 +1,13 @@
+.git
+.github
+sources/cache/*
+!sources/cache/.gitkeep
+tooling/cache
+tooling/java/build
+reports/*
+!reports/.gitkeep
+generated/*
+!generated/.gitkeep
+**/__pycache__
+*.pyc
+.DS_Store

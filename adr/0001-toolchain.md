@@ -28,11 +28,22 @@ The Milestone 0 tested platforms are macOS on Apple silicon and the
 commit, fetches only locked inputs, and runs the same repository commands as a
 local checkout.
 
-A container image and digest are not selected yet. The clean Linux workflow
-can prove the tool bootstrap, but it does not satisfy the container requirement
-in the reviewed implementation plan. Milestone 0 therefore remains open until
-a container is pinned and exercised, or a separately reviewed plan change
-moves that requirement to a later gate.
+The Milestone 0 container uses the official
+`python:3.14.4-slim-bookworm` OCI index pinned at:
+
+```text
+sha256:fc74d22ffd0d5ac395a4b7bdda75a4539758862c49ebf3005647084631e63789
+```
+
+It targets `linux/amd64`, contains only original project material plus the
+pinned Python base, and excludes source/tool caches and generated output. The
+verified standards inputs and tool archives are mounted read-only. CI exercises
+the resulting container with networking disabled and records its
+content-addressed image ID against the Git commit.
+
+The image is not pushed to a registry during private incubation. A published
+container digest and registry retention policy remain release work, not
+Milestone 0 validation prerequisites.
 
 ## Why
 
@@ -71,4 +82,7 @@ moves that requirement to a later gate.
 ./raaml sources verify
 ./raaml tooling bootstrap
 ./raaml tooling build-adapters
+
+docker build --pull --no-cache --platform linux/amd64 \
+  --tag raaml-preservation:milestone-0 .
 ```

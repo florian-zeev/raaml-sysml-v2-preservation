@@ -20,10 +20,9 @@ The Milestone 0 foundation is implemented and passes locally. The repository
 verifies the 17 official RAAML definition files and the complete standards
 baseline, loads `CoreRAAML.xmi` and `CoreRAAMLLib.xmi` through a pinned UML
 environment, parses representative OCL through an AST, and validates paired
-positive/negative SysML v2 fixtures. The clean Linux workflow must pass and the
-container required by the reviewed implementation plan must be selected,
-pinned, and exercised before Milestone 0 is closed. This is toolchain evidence,
-not transformation evidence.
+positive/negative SysML v2 fixtures. The clean Linux workflow passed for commit
+`5077425`. The digest-pinned container must also pass in that workflow before
+Milestone 0 is closed. This is toolchain evidence, not transformation evidence.
 
 ## Milestone 0 quick start
 

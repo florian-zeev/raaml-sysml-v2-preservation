@@ -40,3 +40,41 @@ jobs:
 
       - name: Run paired Milestone 0 fixtures
         run: ./raaml tests milestone-0
+
+      - name: Build digest-pinned container
+        run: |
+          docker build \
+            --pull \
+            --no-cache \
+            --platform linux/amd64 \
+            --build-arg VCS_REF="$GITHUB_SHA" \
+            --tag raaml-preservation:milestone-0 \
+            .
+          image_id="$(docker image inspect \
+            --format '{{.Id}}' \
+            raaml-preservation:milestone-0)"
+          echo "Container image ID: $image_id"
+          {
+            echo "### Milestone 0 container"
+            echo
+            echo "- Git commit: \`$GITHUB_SHA\`"
+            echo "- Image ID: \`$image_id\`"
+            echo "- Target platform: \`linux/amd64\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Exercise container offline
+        run: |
+          chmod -R a+rX sources/cache
+          docker run \
+            --rm \
+            --network none \
+            --platform linux/amd64 \
+            --volume "$PWD/sources/cache:/workspace/sources/cache:ro" \
+            raaml-preservation:milestone-0 \
+            sh -ec '
+              ./raaml sources verify
+              ./raaml tooling bootstrap
+              ./raaml schemas validate
+              ./raaml tests unit
+              ./raaml tests milestone-0
+            '
