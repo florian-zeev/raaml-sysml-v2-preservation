@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xmi:XMI
+    xmlns:xmi="http://www.omg.org/spec/XMI/20131001"
+    xmlns:uml="http://www.omg.org/spec/UML/20161101">
+  <uml:Profile
+      xmi:type="uml:Profile"
+      xmi:id="SmokeProfile"
+      name="SmokeProfile"
+      URI="urn:raaml:preservation:smoke"/>
+</xmi:XMI>

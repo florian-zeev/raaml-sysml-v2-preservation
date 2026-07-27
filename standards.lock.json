@@ -1,5 +1,687 @@
 {
   "schemaVersion": "0.1.0",
-  "status": "incomplete",
-  "artifacts": []
+  "status": "complete",
+  "retrievedAt": "2026-07-27",
+  "artifacts": [
+    {
+      "id": "raaml-1.1-core-profile",
+      "collection": "raaml-1.1-definitions",
+      "standard": "RAAML",
+      "standardVersion": "1.1",
+      "kind": "xmi",
+      "normativeStatus": "normative-machine-readable",
+      "omgFileId": "ptc/24-03-04",
+      "authoritativeUrl": "https://www.omg.org/spec/RAAML/20240219/CoreRAAML.xmi",
+      "filename": "CoreRAAML.xmi",
+      "byteSize": 12953,
+      "sha256": "f75cecb19b576882e327685b137c1ba1cdbc937a51813b7ffc4e17609d63e5bc",
+      "redistribution": {
+        "status": "unreviewed",
+        "committed": false
+      }
+    },
+    {
+      "id": "raaml-1.1-core-library",
+      "collection": "raaml-1.1-definitions",
+      "standard": "RAAML",
+      "standardVersion": "1.1",
+      "kind": "xmi",
+      "normativeStatus": "normative-machine-readable",
+      "omgFileId": "ptc/24-03-05",
+      "authoritativeUrl": "https://www.omg.org/spec/RAAML/20240219/CoreRAAMLLib.xmi",
+      "filename": "CoreRAAMLLib.xmi",
+      "byteSize": 4359,
+      "sha256": "17723d0adf6dc1c03b132207d28431cf8525f3b9e6e1d8f53a7e959d52ee2416",
+      "redistribution": {
+        "status": "unreviewed",
+        "committed": false
+      }
+    },
+    {
+      "id": "raaml-1.1-general-profile",
+      "collection": "raaml-1.1-definitions",
+      "standard": "RAAML",
+      "standardVersion": "1.1",
+      "kind": "xmi",
+      "normativeStatus": "normative-machine-readable",
+      "omgFileId": "ptc/24-03-06",
+      "authoritativeUrl": "https://www.omg.org/spec/RAAML/20240219/GeneralRAAML.xmi",
+      "filename": "GeneralRAAML.xmi",
+      "byteSize": 31357,
+      "sha256": "e592846334bbd64dfe93f86c5a3ffb3e6ff33aa1db0c7793e87bed535ca9c1b5",
+      "redistribution": {
+        "status": "unreviewed",
+        "committed": false
+      }
+    },
+    {
+      "id": "raaml-1.1-general-library",
+      "collection": "raaml-1.1-definitions",
+      "standard": "RAAML",
+      "standardVersion": "1.1",
+      "kind": "xmi",
+      "normativeStatus": "normative-machine-readable",
+      "omgFileId": "ptc/24-03-07",
+      "authoritativeUrl": "https://www.omg.org/spec/RAAML/20240219/GeneralRAAMLLib.xmi",
+      "filename": "GeneralRAAMLLib.xmi",
+      "byteSize": 38757,
+      "sha256": "ea07853e8b20dc75a2a1f7b1538fc4dfbc4492dc07984444ccbefe6bcd9be9ca",
+      "redistribution": {
+        "status": "unreviewed",
+        "committed": false
+      }
+    },
+    {
+      "id": "raaml-1.1-gsn-profile",
+      "collection": "raaml-1.1-definitions",
+      "standard": "RAAML",
+      "standardVersion": "1.1",
+      "kind": "xmi",
+      "normativeStatus": "normative-machine-readable",
+      "omgFileId": "ptc/24-03-08",
+      "authoritativeUrl": "https://www.omg.org/spec/RAAML/20240219/GSN.xmi",
+      "filename": "GSN.xmi",
+      "byteSize": 64064,
+      "sha256": "f082cc1adc269205a66057d595072406e421946f61f629697cdc28647a1927b6",
+      "redistribution": {
+        "status": "unreviewed",
+        "committed": false
+      }
+    },
+    {
+      "id": "raaml-1.1-fmea-profile",
+      "collection": "raaml-1.1-definitions",
+      "standard": "RAAML",
+      "standardVersion": "1.1",
+      "kind": "xmi",
+      "normativeStatus": "normative-machine-readable",
+      "omgFileId": "ptc/24-03-09",
+      "authoritativeUrl": "https://www.omg.org/spec/RAAML/20240219/FMEA.xmi",
+      "filename": "FMEA.xmi",
+      "byteSize": 3345,
+      "sha256": "258ae962e5119ab819c556311660fe39760177b356748b657d5ee11352f40147",
+      "redistribution": {
+        "status": "unreviewed",
+        "committed": false
+      }
+    },
+    {
+      "id": "raaml-1.1-fmea-library",
+      "collection": "raaml-1.1-definitions",
+      "standard": "RAAML",
+      "standardVersion": "1.1",
+      "kind": "xmi",
+      "normativeStatus": "normative-machine-readable",
+      "omgFileId": "ptc/24-03-10",
+      "authoritativeUrl": "https://www.omg.org/spec/RAAML/20240219/FMEALib.xmi",
+      "filename": "FMEALib.xmi",
+      "byteSize": 28497,
+      "sha256": "a39436d869a670972a817eb743fbf7a25d2d5906e38ffcadf636ae2cb061107c",
+      "redistribution": {
+        "status": "unreviewed",
+        "committed": false
+      }
+    },
+    {
+      "id": "raaml-1.1-fta-profile",
+      "collection": "raaml-1.1-definitions",
+      "standard": "RAAML",
+      "standardVersion": "1.1",
+      "kind": "xmi",
+      "normativeStatus": "normative-machine-readable",
+      "omgFileId": "ptc/24-03-11",
+      "authoritativeUrl": "https://www.omg.org/spec/RAAML/20240219/FTA.xmi",
+      "filename": "FTA.xmi",
+      "byteSize": 65905,
+      "sha256": "b3cb8f059d50ba1cd6aa86a1cc65da762ce44668aecffaaa8034b0aeefc24dd7",
+      "redistribution": {
+        "status": "unreviewed",
+        "committed": false
+      }
+    },
+    {
+      "id": "raaml-1.1-fta-library",
+      "collection": "raaml-1.1-definitions",
+      "standard": "RAAML",
+      "standardVersion": "1.1",
+      "kind": "xmi",
+      "normativeStatus": "normative-machine-readable",
+      "omgFileId": "ptc/24-03-12",
+      "authoritativeUrl": "https://www.omg.org/spec/RAAML/20240219/FTALib.xmi",
+      "filename": "FTALib.xmi",
+      "byteSize": 61032,
+      "sha256": "68ac104607b947d59c72ada5422c1bf841dd2b2cbec0873035027675e3f5373b",
+      "redistribution": {
+        "status": "unreviewed",
+        "committed": false
+      }
+    },
+    {
+      "id": "raaml-1.1-iso26262-profile",
+      "collection": "raaml-1.1-definitions",
+      "standard": "RAAML",
+      "standardVersion": "1.1",
+      "kind": "xmi",
+      "normativeStatus": "normative-machine-readable",
+      "omgFileId": "ptc/24-03-13",
+      "authoritativeUrl": "https://www.omg.org/spec/RAAML/20240219/ISO26262.xmi",
+      "filename": "ISO26262.xmi",
+      "byteSize": 41663,
+      "sha256": "aaf9cea16943228c42fe20baed5a3fdadca866786a709e6161005617e8ec2d2d",
+      "redistribution": {
+        "status": "unreviewed",
+        "committed": false
+      }
+    },
+    {
+      "id": "raaml-1.1-iso26262-library",
+      "collection": "raaml-1.1-definitions",
+      "standard": "RAAML",
+      "standardVersion": "1.1",
+      "kind": "xmi",
+      "normativeStatus": "normative-machine-readable",
+      "omgFileId": "ptc/24-03-14",
+      "authoritativeUrl": "https://www.omg.org/spec/RAAML/20240219/ISO26262Lib.xmi",
+      "filename": "ISO26262Lib.xmi",
+      "byteSize": 44513,
+      "sha256": "74bc8068b3d7225d7367403873f4a4c36b211af2ca72d68916befe200b71b657",
+      "redistribution": {
+        "status": "unreviewed",
+        "committed": false
+      }
+    },
+    {
+      "id": "raaml-1.1-stpa-profile",
+      "collection": "raaml-1.1-definitions",
+      "standard": "RAAML",
+      "standardVersion": "1.1",
+      "kind": "xmi",
+      "normativeStatus": "normative-machine-readable",
+      "omgFileId": "ptc/24-03-15",
+      "authoritativeUrl": "https://www.omg.org/spec/RAAML/20240219/STPA.xmi",
+      "filename": "STPA.xmi",
+      "byteSize": 25110,
+      "sha256": "c18042268d32ac7b7cc50a32167c2afaf9858ea7453ec29a203aa06ac7762574",
+      "redistribution": {
+        "status": "unreviewed",
+        "committed": false
+      }
+    },
+    {
+      "id": "raaml-1.1-stpa-library",
+      "collection": "raaml-1.1-definitions",
+      "standard": "RAAML",
+      "standardVersion": "1.1",
+      "kind": "xmi",
+      "normativeStatus": "normative-machine-readable",
+      "omgFileId": "ptc/24-03-16",
+      "authoritativeUrl": "https://www.omg.org/spec/RAAML/20240219/STPALib.xmi",
+      "filename": "STPALib.xmi",
+      "byteSize": 31082,
+      "sha256": "e7f5d21fb219555922ccda2c63fa59bb02e8728c5661ad87d105524ef3a69c9c",
+      "redistribution": {
+        "status": "unreviewed",
+        "committed": false
+      }
+    },
+    {
+      "id": "raaml-1.1-security-profile",
+      "collection": "raaml-1.1-definitions",
+      "standard": "RAAML",
+      "standardVersion": "1.1",
+      "kind": "xmi",
+      "normativeStatus": "normative-machine-readable",
+      "omgFileId": "ptc/24-03-17",
+      "authoritativeUrl": "https://www.omg.org/spec/RAAML/20240219/GeneralRAAMLSecurity.xmi",
+      "filename": "GeneralRAAMLSecurity.xmi",
+      "byteSize": 12064,
+      "sha256": "ac667bf84088203f26fe2518f7f07a37197b71399d0b84039f4a631326843b47",
+      "redistribution": {
+        "status": "unreviewed",
+        "committed": false
+      }
+    },
+    {
+      "id": "raaml-1.1-security-library",
+      "collection": "raaml-1.1-definitions",
+      "standard": "RAAML",
+      "standardVersion": "1.1",
+      "kind": "xmi",
+      "normativeStatus": "normative-machine-readable",
+      "omgFileId": "ptc/24-03-18",
+      "authoritativeUrl": "https://www.omg.org/spec/RAAML/20240219/GeneralRAAMLSecurityLib.xmi",
+      "filename": "GeneralRAAMLSecurityLib.xmi",
+      "byteSize": 3434,
+      "sha256": "9b5044765a3c42f97b4a800d843f529d541f244bea901221dfea1782bb49a42b",
+      "redistribution": {
+        "status": "unreviewed",
+        "committed": false
+      }
+    },
+    {
+      "id": "raaml-1.1-rbd-profile",
+      "collection": "raaml-1.1-definitions",
+      "standard": "RAAML",
+      "standardVersion": "1.1",
+      "kind": "xmi",
+      "normativeStatus": "normative-machine-readable",
+      "omgFileId": "ptc/24-03-19",
+      "authoritativeUrl": "https://www.omg.org/spec/RAAML/20240219/RBD.xmi",
+      "filename": "RBD.xmi",
+      "byteSize": 10962,
+      "sha256": "5786841d3bb4337115a83670c7642c49c67ad0920ccf65c1bb8c844fd044698f",
+      "redistribution": {
+        "status": "unreviewed",
+        "committed": false
+      }
+    },
+    {
+      "id": "raaml-1.1-rbd-library",
+      "collection": "raaml-1.1-definitions",
+      "standard": "RAAML",
+      "standardVersion": "1.1",
+      "kind": "xmi",
+      "normativeStatus": "normative-machine-readable",
+      "omgFileId": "ptc/24-03-20",
+      "authoritativeUrl": "https://www.omg.org/spec/RAAML/20240219/RBDLib.xmi",
+      "filename": "RBDLib.xmi",
+      "byteSize": 163485,
+      "sha256": "9b253633440427f35b03c774e7dd0d0ed7725f64dda297d1369e0d3b3ea7145c",
+      "redistribution": {
+        "status": "unreviewed",
+        "committed": false
+      }
+    },
+    {
+      "id": "uml-2.5.1-metamodel",
+      "collection": "v1-reference-models",
+      "standard": "UML",
+      "standardVersion": "2.5.1",
+      "kind": "xmi",
+      "normativeStatus": "normative-machine-readable",
+      "omgFileId": "ptc/18-01-01",
+      "authoritativeUrl": "https://www.omg.org/spec/UML/20161101/UML.xmi",
+      "filename": "UML.xmi",
+      "byteSize": 1901856,
+      "sha256": "e8166c91f51b8a0c015a90101b83d2249d03252e9f9a500a6511654347804f21",
+      "redistribution": {
+        "status": "unreviewed",
+        "committed": false
+      }
+    },
+    {
+      "id": "uml-2.5-historical-metamodel",
+      "collection": "v1-reference-models",
+      "standard": "UML",
+      "standardVersion": "2.5",
+      "kind": "xmi",
+      "normativeStatus": "referenced-by-normative-raaml-input",
+      "omgFileId": "ptc/13-08-17",
+      "authoritativeUrl": "https://www.omg.org/spec/UML/20131001/UML.xmi",
+      "filename": "UML-20131001.xmi",
+      "byteSize": 1432544,
+      "sha256": "f01fe6c97eefed64a3f0fddd19474734f8443fcec1d95e406bb7d4b141ca1dce",
+      "redistribution": {
+        "status": "unreviewed",
+        "committed": false
+      }
+    },
+    {
+      "id": "uml-2.5.1-primitive-types",
+      "collection": "v1-reference-models",
+      "standard": "UML",
+      "standardVersion": "2.5.1",
+      "kind": "xmi",
+      "normativeStatus": "normative-machine-readable",
+      "omgFileId": "ptc/18-01-02",
+      "authoritativeUrl": "https://www.omg.org/spec/UML/20161101/PrimitiveTypes.xmi",
+      "filename": "PrimitiveTypes.xmi",
+      "byteSize": 2880,
+      "sha256": "62d12217fcd26037fc917709e2a896600af574efd6412c110e2a711395a69849",
+      "redistribution": {
+        "status": "unreviewed",
+        "committed": false
+      }
+    },
+    {
+      "id": "uml-2.5.1-standard-profile",
+      "collection": "v1-reference-models",
+      "standard": "UML",
+      "standardVersion": "2.5.1",
+      "kind": "xmi",
+      "normativeStatus": "normative-machine-readable",
+      "omgFileId": "ptc/18-01-03",
+      "authoritativeUrl": "https://www.omg.org/spec/UML/20161101/StandardProfile.xmi",
+      "filename": "StandardProfile.xmi",
+      "byteSize": 29801,
+      "sha256": "b505ebdee791f857da838b5be3394ebd9a857fd044a89625cb71f56badb867bc",
+      "redistribution": {
+        "status": "unreviewed",
+        "committed": false
+      }
+    },
+    {
+      "id": "sysml-1.6-profile",
+      "collection": "v1-reference-models",
+      "standard": "SysML",
+      "standardVersion": "1.6",
+      "kind": "xmi",
+      "normativeStatus": "normative-machine-readable",
+      "omgFileId": "ptc/18-10-04",
+      "authoritativeUrl": "https://www.omg.org/spec/SysML/20181001/SysML.xmi",
+      "filename": "SysML.xmi",
+      "byteSize": 437071,
+      "sha256": "3b981f5afdbcb52fdfeb1b51e11005f5ab5c8b9dd9dfe970d8afccb6586a6717",
+      "redistribution": {
+        "status": "unreviewed",
+        "committed": false
+      }
+    },
+    {
+      "id": "sysml-v2-pilot-2026-04-distribution",
+      "collection": "milestone-0-toolchain",
+      "standard": "SysML v2 Pilot Implementation",
+      "standardVersion": "0.59.0 (release 2026-04)",
+      "kind": "zip",
+      "normativeStatus": "tool-specific-validator",
+      "omgFileId": "not-applicable",
+      "authoritativeUrl": "https://github.com/Systems-Modeling/SysML-v2-Pilot-Implementation/releases/download/2026-04/jupyter-sysml-kernel-0.59.0.zip",
+      "filename": "jupyter-sysml-kernel-0.59.0.zip",
+      "byteSize": 123399583,
+      "sha256": "1ef7e89abebbc008c5c2707f8b2f34630b3ab971de7b38f6d0240da6f461a828",
+      "redistribution": {
+        "status": "unreviewed",
+        "committed": false
+      }
+    },
+    {
+      "id": "temurin-jdk-21.0.11-macos-aarch64",
+      "collection": "milestone-0-toolchain",
+      "standard": "Eclipse Temurin",
+      "standardVersion": "21.0.11+10",
+      "kind": "tar.gz",
+      "normativeStatus": "tool-specific-runtime",
+      "omgFileId": "not-applicable",
+      "authoritativeUrl": "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.11%2B10/OpenJDK21U-jdk_aarch64_mac_hotspot_21.0.11_10.tar.gz",
+      "filename": "OpenJDK21U-jdk_aarch64_mac_hotspot_21.0.11_10.tar.gz",
+      "byteSize": 200030394,
+      "sha256": "6ebcf221c9b41507b14c098e93c6ead6440b8d9bd154f8ec666c4c73abbdb201",
+      "redistribution": {
+        "status": "unreviewed",
+        "committed": false
+      }
+    },
+    {
+      "id": "temurin-jdk-21.0.11-linux-x64",
+      "collection": "milestone-0-toolchain",
+      "standard": "Eclipse Temurin",
+      "standardVersion": "21.0.11+10",
+      "kind": "tar.gz",
+      "normativeStatus": "tool-specific-runtime",
+      "omgFileId": "not-applicable",
+      "authoritativeUrl": "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.11%2B10/OpenJDK21U-jdk_x64_linux_hotspot_21.0.11_10.tar.gz",
+      "filename": "OpenJDK21U-jdk_x64_linux_hotspot_21.0.11_10.tar.gz",
+      "byteSize": 207513939,
+      "sha256": "4b2220e232a97997b436ca6ab15cbf70171ecff52958a46159dfa5a8c44ca4de",
+      "redistribution": {
+        "status": "unreviewed",
+        "committed": false
+      }
+    },
+    {
+      "id": "raaml-1.1-specification",
+      "collection": "standards-baseline",
+      "standard": "RAAML",
+      "standardVersion": "1.1",
+      "kind": "pdf",
+      "normativeStatus": "normative-document",
+      "omgFileId": "formal/24-12-01",
+      "authoritativeUrl": "https://www.omg.org/spec/RAAML/1.1/PDF",
+      "filename": "RAAML-1.1.pdf",
+      "byteSize": 3751858,
+      "sha256": "02c13a529eaa9f28e3bbf12028bfd8d7462eca9839a037aba5be1ac9a5f7ba00",
+      "redistribution": {
+        "status": "unreviewed",
+        "committed": false
+      }
+    },
+    {
+      "id": "sysml-2.0-language-specification",
+      "collection": "standards-baseline",
+      "standard": "SysML",
+      "standardVersion": "2.0",
+      "kind": "pdf",
+      "normativeStatus": "normative-document",
+      "omgFileId": "formal/26-03-02",
+      "authoritativeUrl": "https://www.omg.org/spec/SysML/2.0/Language/PDF",
+      "filename": "SysML-2.0-Language.pdf",
+      "byteSize": 3804140,
+      "sha256": "46e6c0476a6f1f34f367d57e039d56659bff75e41d2e4b3d37ca4cadea84a83a",
+      "redistribution": {
+        "status": "unreviewed",
+        "committed": false
+      }
+    },
+    {
+      "id": "sysml-2.0-transformation-specification",
+      "collection": "standards-baseline",
+      "standard": "SysML",
+      "standardVersion": "2.0",
+      "kind": "pdf",
+      "normativeStatus": "normative-document",
+      "omgFileId": "formal/26-03-03",
+      "authoritativeUrl": "https://www.omg.org/spec/SysML/2.0/Transformation/PDF",
+      "filename": "SysML-2.0-Transformation.pdf",
+      "byteSize": 1137764,
+      "sha256": "64366027dfef1ab630f741884695a68471939fcf68c3c7d874790d2c86ea518c",
+      "redistribution": {
+        "status": "unreviewed",
+        "committed": false
+      }
+    },
+    {
+      "id": "sysml-2.0-abstract-syntax",
+      "collection": "standards-baseline",
+      "standard": "SysML",
+      "standardVersion": "2.0",
+      "kind": "xmi",
+      "normativeStatus": "normative-machine-readable",
+      "omgFileId": "ptc/25-02-15",
+      "authoritativeUrl": "https://www.omg.org/spec/SysML/20250201/SysML.xmi",
+      "filename": "SysML-2.0.xmi",
+      "byteSize": 1135635,
+      "sha256": "caa65d54f56798bf7582d173f7567e1eea37a49c45984f8bd7df145011cf8c6f",
+      "redistribution": {
+        "status": "unreviewed",
+        "committed": false
+      }
+    },
+    {
+      "id": "sysml-2.0-v1-to-v2-transformation-model",
+      "collection": "standards-baseline",
+      "standard": "SysML",
+      "standardVersion": "2.0",
+      "kind": "xmi",
+      "normativeStatus": "normative-machine-readable",
+      "omgFileId": "ptc/25-04-10",
+      "authoritativeUrl": "https://www.omg.org/spec/SysML/20250201/SysMLv1Tov2.xmi",
+      "filename": "SysMLv1Tov2.xmi",
+      "byteSize": 4634217,
+      "sha256": "093359439fb62cb3a9b1e89fd850ac4ac0b4bbe135b4b54f7861492722cc8459",
+      "redistribution": {
+        "status": "unreviewed",
+        "committed": false
+      }
+    },
+    {
+      "id": "kerml-1.0-specification",
+      "collection": "standards-baseline",
+      "standard": "KerML",
+      "standardVersion": "1.0",
+      "kind": "pdf",
+      "normativeStatus": "normative-document",
+      "omgFileId": "formal/26-03-01",
+      "authoritativeUrl": "https://www.omg.org/spec/KerML/1.0/PDF",
+      "filename": "KerML-1.0.pdf",
+      "byteSize": 1821407,
+      "sha256": "3bcc96f989bfa9d05cd28e026df3351b795fe8d494187b87bff3db7d96373697",
+      "redistribution": {
+        "status": "unreviewed",
+        "committed": false
+      }
+    },
+    {
+      "id": "kerml-1.0-abstract-syntax",
+      "collection": "standards-baseline",
+      "standard": "KerML",
+      "standardVersion": "1.0",
+      "kind": "xmi",
+      "normativeStatus": "normative-machine-readable",
+      "omgFileId": "ptc/25-04-04",
+      "authoritativeUrl": "https://www.omg.org/spec/KerML/20250201/KerML.xmi",
+      "filename": "KerML-1.0.xmi",
+      "byteSize": 962254,
+      "sha256": "45b18775afe2b2fcdc70e24f37c6d2f344defcc3f38a02075a193354e2d7b466",
+      "redistribution": {
+        "status": "unreviewed",
+        "committed": false
+      }
+    },
+    {
+      "id": "uml-2.5.1-specification",
+      "collection": "standards-baseline",
+      "standard": "UML",
+      "standardVersion": "2.5.1",
+      "kind": "pdf",
+      "normativeStatus": "normative-document",
+      "omgFileId": "formal/17-12-05",
+      "authoritativeUrl": "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "filename": "UML-2.5.1.pdf",
+      "byteSize": 18069510,
+      "sha256": "416b57e1933780eb48bd60fe513e031da220c28a521bdd334a366bebc78a463e",
+      "redistribution": {
+        "status": "unreviewed",
+        "committed": false
+      }
+    },
+    {
+      "id": "sysml-1.6-specification",
+      "collection": "standards-baseline",
+      "standard": "SysML",
+      "standardVersion": "1.6",
+      "kind": "pdf",
+      "normativeStatus": "normative-document",
+      "omgFileId": "formal/19-11-01",
+      "authoritativeUrl": "https://www.omg.org/spec/SysML/1.6/PDF",
+      "filename": "SysML-1.6.pdf",
+      "byteSize": 16600092,
+      "sha256": "b42cca045093046877768fb8915793e77a2640346be04fec067f81bbc9d3868f",
+      "redistribution": {
+        "status": "unreviewed",
+        "committed": false
+      }
+    },
+    {
+      "id": "ocl-2.4-specification",
+      "collection": "standards-baseline",
+      "standard": "OCL",
+      "standardVersion": "2.4",
+      "kind": "pdf",
+      "normativeStatus": "normative-document",
+      "omgFileId": "formal/14-02-03",
+      "authoritativeUrl": "https://www.omg.org/spec/OCL/2.4/PDF",
+      "filename": "OCL-2.4.pdf",
+      "byteSize": 1880074,
+      "sha256": "b97e46a946418ba3c8db6f33def013e4d8a56ac500cb1bed055fed660977a7ef",
+      "redistribution": {
+        "status": "unreviewed",
+        "committed": false
+      }
+    },
+    {
+      "id": "ocl-2.4-metamodel",
+      "collection": "standards-baseline",
+      "standard": "OCL",
+      "standardVersion": "2.4",
+      "kind": "cmof",
+      "normativeStatus": "normative-machine-readable",
+      "omgFileId": "ptc/09-05-03",
+      "authoritativeUrl": "https://www.omg.org/spec/OCL/20090501/OCL.cmof",
+      "filename": "OCL.cmof",
+      "byteSize": 11555,
+      "sha256": "1884037bf40481d9e99b989b471b11fc286f9446116ea930196c5ff7f1a02cbf",
+      "redistribution": {
+        "status": "unreviewed",
+        "committed": false
+      }
+    },
+    {
+      "id": "ocl-2.4-essential-metamodel",
+      "collection": "standards-baseline",
+      "standard": "OCL",
+      "standardVersion": "2.4",
+      "kind": "emof",
+      "normativeStatus": "normative-machine-readable",
+      "omgFileId": "ptc/09-05-03",
+      "authoritativeUrl": "https://www.omg.org/spec/OCL/20090501/EssentialOCL.emof",
+      "filename": "EssentialOCL.emof",
+      "byteSize": 10206,
+      "sha256": "8db8063a34c3ea9f07df388b9e758a5b55df3eee13e4592fb8d292dee510d551",
+      "redistribution": {
+        "status": "unreviewed",
+        "committed": false
+      }
+    },
+    {
+      "id": "xmi-2.5.1-specification",
+      "collection": "standards-baseline",
+      "standard": "XMI",
+      "standardVersion": "2.5.1",
+      "kind": "pdf",
+      "normativeStatus": "normative-document",
+      "omgFileId": "formal/15-06-07",
+      "authoritativeUrl": "https://www.omg.org/spec/XMI/2.5.1/PDF",
+      "filename": "XMI-2.5.1.pdf",
+      "byteSize": 461759,
+      "sha256": "2bf97c670f128affc9ed5dc202ef748101afd0eee8ee662e8763da6092c80c1b",
+      "redistribution": {
+        "status": "unreviewed",
+        "committed": false
+      }
+    },
+    {
+      "id": "xmi-2.5.1-model",
+      "collection": "standards-baseline",
+      "standard": "XMI",
+      "standardVersion": "2.5.1",
+      "kind": "xmi",
+      "normativeStatus": "normative-machine-readable",
+      "omgFileId": "ptc/14-08-14",
+      "authoritativeUrl": "https://www.omg.org/spec/XMI/20131001/XMI-model.xmi",
+      "filename": "XMI-model.xmi",
+      "byteSize": 13551,
+      "sha256": "b7f3773333dd52b82380044cfd315101866788c5c7a0500fef3cadba815fde0e",
+      "redistribution": {
+        "status": "unreviewed",
+        "committed": false
+      }
+    },
+    {
+      "id": "xmi-2.5.1-schema",
+      "collection": "standards-baseline",
+      "standard": "XMI",
+      "standardVersion": "2.5.1",
+      "kind": "xsd",
+      "normativeStatus": "normative-machine-readable",
+      "omgFileId": "ptc/14-08-14",
+      "authoritativeUrl": "https://www.omg.org/spec/XMI/20131001/XMI.xsd",
+      "filename": "XMI.xsd",
+      "byteSize": 4658,
+      "sha256": "7b228718d35a15a8e2fb99f078d36eee4b23b7a2cd405e7ac81b9d27bf2fab5d",
+      "redistribution": {
+        "status": "unreviewed",
+        "committed": false
+      }
+    }
+  ]
 }

@@ -16,3 +16,8 @@
 build/
 dist/
 target/
+/tooling/cache/
+/tooling/java/build/
+__pycache__/
+*.pyc
+.python-version.local

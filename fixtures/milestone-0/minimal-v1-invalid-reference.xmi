@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xmi:XMI
+    xmlns:xmi="http://www.omg.org/spec/XMI/20131001"
+    xmlns:uml="http://www.omg.org/spec/UML/20161101">
+  <uml:Package
+      xmi:type="uml:Package"
+      xmi:id="BrokenLibrary"
+      name="BrokenLibrary">
+    <packagedElement
+        xmi:type="uml:Class"
+        xmi:id="Container"
+        name="Container">
+      <ownedAttribute
+          xmi:type="uml:Property"
+          xmi:id="broken"
+          name="broken">
+        <type
+            xmi:type="uml:Class"
+            href="https://www.omg.org/spec/UML/20161101/UML.xmi#DoesNotExist"/>
+      </ownedAttribute>
+    </packagedElement>
+  </uml:Package>
+</xmi:XMI>

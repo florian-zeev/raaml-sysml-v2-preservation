@@ -1,0 +1,633 @@
+package org.raaml.preservation;
+
+import java.io.IOException;
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.eclipse.emf.common.util.Diagnostic;
+import org.eclipse.emf.common.util.TreeIterator;
+import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EClassifier;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.EReference;
+import org.eclipse.emf.ecore.EcoreFactory;
+import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
+import org.eclipse.emf.ecore.util.Diagnostician;
+import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.emf.ecore.xmi.XMLResource;
+import org.eclipse.ocl.ParserException;
+import org.eclipse.ocl.ecore.OCL;
+import org.eclipse.ocl.ecore.OCLExpression;
+import org.eclipse.ocl.ecore.OperationCallExp;
+import org.eclipse.ocl.ecore.PropertyCallExp;
+import org.eclipse.ocl.ecore.TypeExp;
+import org.eclipse.ocl.ecore.IteratorExp;
+import org.eclipse.uml2.uml.resources.util.UMLResourcesUtil;
+import org.eclipse.uml2.uml.internal.resource.XMI2UMLResourceFactoryImpl;
+import org.eclipse.xtext.diagnostics.Severity;
+import org.eclipse.xtext.validation.Issue;
+import org.omg.sysml.interactive.SysMLInteractive;
+import org.omg.sysml.interactive.SysMLInteractiveResult;
+import org.eclipse.uml2.uml.UMLPackage;
+import org.eclipse.uml2.uml.Profile;
+
+/**
+ * Narrow, machine-readable adapters over the pinned upstream Java distribution.
+ */
+public final class ToolAdapter {
+    private static final String ADAPTER_VERSION = "0.1.0";
+    private static final Pattern UNTYPED_HREF = Pattern.compile(
+        "<([A-Za-z_][A-Za-z0-9_.:-]*)(\\s+)"
+            + "((?:(?!xmi:type=)[^>])*?\\bhref=\"([^\"]+)\"[^>]*)>"
+    );
+
+    private ToolAdapter() {
+    }
+
+    public static void main(String[] args) {
+        Map<String, Object> report;
+        int exitCode;
+        try {
+            if (args.length < 1) {
+                throw new IllegalArgumentException("expected adapter mode: v2, v1, or ocl");
+            }
+            report = switch (args[0]) {
+                case "v2" -> validateV2(args);
+                case "v1" -> validateV1(args);
+                case "ocl" -> parseOcl(args);
+                default -> throw new IllegalArgumentException("unknown adapter mode: " + args[0]);
+            };
+            exitCode = Boolean.TRUE.equals(report.get("ok")) ? 0 : 1;
+        } catch (Exception error) {
+            report = baseReport(args.length == 0 ? "unknown" : args[0]);
+            report.put("ok", false);
+            report.put("diagnostics", List.of(diagnostic(
+                "error",
+                "ADAPTER_FAILURE",
+                error.getClass().getSimpleName() + ": " + safeMessage(error)
+            )));
+            finalizeReport(report);
+            exitCode = 2;
+        }
+        System.out.println(toJson(report));
+        System.exit(exitCode);
+    }
+
+    private static Map<String, Object> validateV2(String[] args) throws IOException {
+        if (args.length != 3) {
+            throw new IllegalArgumentException("usage: v2 MODEL_FILE LIBRARY_DIRECTORY");
+        }
+        Path model = existingRegularFile(args[1]);
+        Path library = existingDirectory(args[2]);
+        String input = Files.readString(model, StandardCharsets.UTF_8);
+
+        SysMLInteractive validator = SysMLInteractive.createInstance();
+        validator.loadLibrary(library.toAbsolutePath().toString());
+        SysMLInteractiveResult result = validator.process(input, false);
+
+        List<Map<String, Object>> diagnostics = new ArrayList<>();
+        Map<String, Integer> categories = new LinkedHashMap<>();
+        categories.put("lexicalSyntax", 0);
+        categories.put("importLibrary", 0);
+        categories.put("nameResolutionLinking", 0);
+        categories.put("typeMultiplicity", 0);
+        categories.put("modelValidation", 0);
+
+        if (result.getException() != null) {
+            diagnostics.add(diagnostic(
+                "error",
+                "V2_ADAPTER_EXCEPTION",
+                result.getException().getClass().getSimpleName() + ": "
+                    + safeMessage(result.getException())
+            ));
+            categories.compute("modelValidation", (key, count) -> count + 1);
+        }
+
+        for (Issue issue : result.getIssues()) {
+            String category = classifyV2Issue(issue);
+            if (issue.getSeverity() == Severity.ERROR) {
+                categories.compute(category, (key, count) -> count + 1);
+            }
+            Map<String, Object> item = diagnostic(
+                issue.getSeverity().name().toLowerCase(Locale.ROOT),
+                issue.getCode() == null ? "V2_VALIDATION" : issue.getCode(),
+                issue.getMessage()
+            );
+            item.put("category", category);
+            if (issue.getLineNumber() != null) {
+                item.put("line", issue.getLineNumber());
+            }
+            if (issue.getColumn() != null) {
+                item.put("column", issue.getColumn());
+            }
+            diagnostics.add(item);
+        }
+
+        boolean ok = categories.values().stream().mapToInt(Integer::intValue).sum() == 0;
+        Map<String, Object> report = baseReport("v2");
+        report.put("ok", ok);
+        report.put("input", model.getFileName().toString());
+        report.put("errorCategories", categories);
+        report.put("diagnostics", diagnostics);
+        finalizeReport(report);
+        return report;
+    }
+
+    private static String classifyV2Issue(Issue issue) {
+        if (issue.isSyntaxError()) {
+            return "lexicalSyntax";
+        }
+        String text = ((issue.getCode() == null ? "" : issue.getCode()) + " "
+            + (issue.getMessage() == null ? "" : issue.getMessage())).toLowerCase(Locale.ROOT);
+        if (containsAny(text, "import", "library", "package not found")) {
+            return "importLibrary";
+        }
+        if (containsAny(text, "resolve", "reference", "linking", "not visible", "not found")) {
+            return "nameResolutionLinking";
+        }
+        if (containsAny(text, "type", "multiplicity", "conform", "cardinality")) {
+            return "typeMultiplicity";
+        }
+        return "modelValidation";
+    }
+
+    private static Map<String, Object> validateV1(String[] args) throws IOException {
+        if (args.length != 3) {
+            throw new IllegalArgumentException("usage: v1 MODEL_FILE CATALOG_DIRECTORY");
+        }
+        Path model = existingRegularFile(args[1]);
+        Path catalog = existingDirectory(args[2]);
+
+        ResourceSet resourceSet = UMLResourcesUtil.init(new ResourceSetImpl());
+        resourceSet.getPackageRegistry().put(
+            "http://www.omg.org/spec/UML/20131001",
+            UMLPackage.eINSTANCE
+        );
+        String umlBase = "http://www.omg.org/spec/UML/20131001/";
+        preload(resourceSet, umlBase + "PrimitiveTypes.xmi", catalog.resolve("PrimitiveTypes.xmi"));
+        preload(resourceSet, umlBase + "UML.xmi", catalog.resolve("UML.xmi"));
+        requireFragment(resourceSet, umlBase + "UML.xmi", "Parameter");
+        preload(resourceSet, umlBase + "StandardProfile.xmi", catalog.resolve("StandardProfile.xmi"));
+        String localSysml = catalog.resolve("SysML.xmi").toUri().toString();
+        preload(resourceSet, localSysml, catalog.resolve("SysML.xmi"));
+        requireFragment(
+            resourceSet,
+            localSysml,
+            "SysML.DirectedRelationshipPropertyPath"
+        );
+        alias(resourceSet, "https://www.omg.org/spec/UML/20161101/UML.xmi", umlBase + "UML.xmi");
+        alias(resourceSet, "http://www.omg.org/spec/UML/20161101/UML.xmi", umlBase + "UML.xmi");
+        alias(
+            resourceSet,
+            "https://www.omg.org/spec/UML/20161101/PrimitiveTypes.xmi",
+            umlBase + "PrimitiveTypes.xmi"
+        );
+        alias(
+            resourceSet,
+            "http://www.omg.org/spec/UML/20161101/PrimitiveTypes.xmi",
+            umlBase + "PrimitiveTypes.xmi"
+        );
+        alias(
+            resourceSet,
+            "https://www.omg.org/spec/UML/20161101/StandardProfile.xmi",
+            umlBase + "StandardProfile.xmi"
+        );
+        alias(
+            resourceSet,
+            "http://www.omg.org/spec/UML/20161101/StandardProfile.xmi",
+            umlBase + "StandardProfile.xmi"
+        );
+        alias(
+            resourceSet,
+            "https://www.omg.org/spec/SysML/20181001/SysML.xmi",
+            localSysml
+        );
+        alias(
+            resourceSet,
+            "http://www.omg.org/spec/SysML/20181001/SysML.xmi",
+            localSysml
+        );
+
+        try (var files = Files.list(catalog)) {
+            files.filter(path -> path.getFileName().toString().endsWith(".xmi"))
+                .forEach(path -> alias(
+                    resourceSet,
+                    "https://www.omg.org/spec/RAAML/20240219/" + path.getFileName(),
+                    URI.createFileURI(path.toAbsolutePath().toString()).toString()
+                ));
+        }
+        if (!model.getFileName().toString().equals("CoreRAAML.xmi")) {
+            registerProfile(
+                resourceSet,
+                catalog.resolve("CoreRAAML.xmi")
+            );
+        }
+
+        Resource resource = loadNormalized(
+            resourceSet,
+            URI.createFileURI(model.toAbsolutePath().toString()),
+            model
+        );
+        EcoreUtil.resolveAll(resourceSet);
+
+        List<Map<String, Object>> diagnostics = new ArrayList<>();
+        for (Resource loaded : resourceSet.getResources()) {
+            addResourceDiagnostics(loaded, diagnostics);
+        }
+        TreeIterator<EObject> contents = resource.getAllContents();
+        while (contents.hasNext()) {
+            EObject object = contents.next();
+            if (object.eIsProxy()) {
+                diagnostics.add(diagnostic(
+                    "error",
+                    "V1_UNRESOLVED_PROXY",
+                    EcoreUtil.getURI(object).toString()
+                ));
+            }
+        }
+        for (EObject root : resource.getContents()) {
+            collectDiagnostic(Diagnostician.INSTANCE.validate(root), diagnostics);
+        }
+
+        boolean ok = diagnostics.stream()
+            .noneMatch(item -> "error".equals(item.get("severity")));
+        Map<String, Object> report = baseReport("v1");
+        report.put("ok", ok);
+        report.put("input", model.getFileName().toString());
+        report.put("loadedResources", resourceSet.getResources().size());
+        report.put("diagnostics", diagnostics);
+        finalizeReport(report);
+        return report;
+    }
+
+    private static void registerProfile(ResourceSet resourceSet, Path profilePath) {
+        Resource resource = loadNormalized(
+            resourceSet,
+            URI.createFileURI(profilePath.toAbsolutePath().toString()),
+            profilePath
+        );
+        Profile profile = null;
+        for (EObject root : resource.getContents()) {
+            if (root instanceof Profile candidate) {
+                profile = candidate;
+                break;
+            }
+        }
+        if (profile == null) {
+            throw new IllegalArgumentException("profile artifact has no UML Profile root: " + profilePath);
+        }
+        EPackage definition = profile.define();
+        if (definition == null || definition.getNsURI() == null) {
+            throw new IllegalArgumentException("profile could not be defined: " + profilePath);
+        }
+        resourceSet.getPackageRegistry().put(definition.getNsURI(), definition);
+    }
+
+    private static void addResourceDiagnostics(
+        Resource resource,
+        List<Map<String, Object>> diagnostics
+    ) {
+        for (Resource.Diagnostic error : resource.getErrors()) {
+            Map<String, Object> item = diagnostic("error", "V1_RESOURCE_ERROR", error.getMessage());
+            item.put("line", error.getLine());
+            item.put("column", error.getColumn());
+            diagnostics.add(item);
+        }
+        for (Resource.Diagnostic warning : resource.getWarnings()) {
+            Map<String, Object> item = diagnostic("warning", "V1_RESOURCE_WARNING", warning.getMessage());
+            item.put("line", warning.getLine());
+            item.put("column", warning.getColumn());
+            diagnostics.add(item);
+        }
+    }
+
+    private static void collectDiagnostic(
+        Diagnostic source,
+        List<Map<String, Object>> diagnostics
+    ) {
+        if (source.getSeverity() >= Diagnostic.WARNING) {
+            String severity = source.getSeverity() >= Diagnostic.ERROR ? "error" : "warning";
+            diagnostics.add(diagnostic(severity, "V1_MODEL_DIAGNOSTIC", source.getMessage()));
+        }
+        for (Diagnostic child : source.getChildren()) {
+            collectDiagnostic(child, diagnostics);
+        }
+    }
+
+    private static Map<String, Object> parseOcl(String[] args) throws IOException {
+        if (args.length != 2) {
+            throw new IllegalArgumentException("usage: ocl EXPRESSION_FILE");
+        }
+        Path expressionFile = existingRegularFile(args[1]);
+        String text = Files.readString(expressionFile, StandardCharsets.UTF_8);
+
+        EcoreFactory factory = EcoreFactory.eINSTANCE;
+        EPackage scope = factory.createEPackage();
+        scope.setName("raamlSmoke");
+        scope.setNsPrefix("raamlSmoke");
+        scope.setNsURI("urn:raaml:smoke");
+        EClass situation = factory.createEClass();
+        situation.setName("Situation");
+        scope.getEClassifiers().add(situation);
+        EReference from = factory.createEReference();
+        from.setName("from");
+        from.setEType(situation);
+        from.setUpperBound(-1);
+        situation.getEStructuralFeatures().add(from);
+
+        List<Map<String, Object>> diagnostics = new ArrayList<>();
+        Set<String> names = new LinkedHashSet<>();
+        OCL ocl = OCL.newInstance();
+        try {
+            OCL.Helper helper = ocl.createOCLHelper();
+            helper.setContext(situation);
+            OCLExpression expression = helper.createQuery(text);
+            names.add(situation.getName());
+            collectOclName(expression, names);
+            TreeIterator<EObject> nodes = expression.eAllContents();
+            while (nodes.hasNext()) {
+                collectOclName(nodes.next(), names);
+            }
+        } catch (ParserException error) {
+            diagnostics.add(diagnostic("error", "OCL_PARSE_ERROR", safeMessage(error)));
+        } finally {
+            ocl.dispose();
+        }
+
+        List<String> referencedNames = new ArrayList<>(names);
+        referencedNames.sort(Comparator.naturalOrder());
+        Map<String, Object> report = baseReport("ocl");
+        report.put("ok", diagnostics.isEmpty());
+        report.put("input", expressionFile.getFileName().toString());
+        report.put("referencedNames", referencedNames);
+        report.put("diagnostics", diagnostics);
+        finalizeReport(report);
+        return report;
+    }
+
+    private static void collectOclName(EObject node, Set<String> names) {
+        if (node instanceof TypeExp typeExpression) {
+            EClassifier type = typeExpression.getReferredType();
+            if (type != null && type.getName() != null) {
+                names.add(type.getName());
+            }
+        } else if (node instanceof PropertyCallExp propertyExpression) {
+            if (propertyExpression.getReferredProperty() != null) {
+                names.add(propertyExpression.getReferredProperty().getName());
+            }
+        } else if (node instanceof OperationCallExp operationExpression) {
+            if (operationExpression.getReferredOperation() != null) {
+                names.add(operationExpression.getReferredOperation().getName());
+            }
+        } else if (node instanceof IteratorExp iteratorExpression) {
+            if (iteratorExpression.getName() != null) {
+                names.add(iteratorExpression.getName());
+            }
+        }
+    }
+
+    private static void preload(ResourceSet resourceSet, String remote, Path local) {
+        if (!Files.isRegularFile(local)) {
+            throw new IllegalArgumentException("catalog artifact is missing: " + local);
+        }
+        try {
+            loadNormalized(resourceSet, URI.createURI(remote), local);
+        } catch (RuntimeException error) {
+            throw new IllegalArgumentException("cannot preload catalog artifact: " + local, error);
+        }
+    }
+
+    private static Resource loadNormalized(
+        ResourceSet resourceSet,
+        URI resourceUri,
+        Path local
+    ) {
+        try {
+            byte[] original = Files.readAllBytes(local);
+            String text = new String(original, StandardCharsets.UTF_8)
+                .replace(
+                    "http://www.omg.org/spec/UML/20161101",
+                    "http://www.omg.org/spec/UML/20131001"
+                )
+                .replace(
+                    "https://www.omg.org/spec/UML/20161101",
+                    "http://www.omg.org/spec/UML/20131001"
+                );
+            for (Map.Entry<URI, URI> mapping
+                : resourceSet.getURIConverter().getURIMap().entrySet()) {
+                text = text.replace(mapping.getKey().toString(), mapping.getValue().toString());
+            }
+            text = addConcreteProxyTypes(resourceSet, text);
+            Resource resource = new XMI2UMLResourceFactoryImpl().createResource(resourceUri);
+            resourceSet.getResources().add(resource);
+            resource.load(
+                new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)),
+                Map.of(
+                    XMLResource.OPTION_DEFER_IDREF_RESOLUTION,
+                    Boolean.TRUE,
+                    XMLResource.OPTION_DEFER_ATTACHMENT,
+                    Boolean.TRUE
+                )
+            );
+            return resource;
+        } catch (IOException error) {
+            throw new IllegalArgumentException("cannot load normalized XMI: " + local, error);
+        }
+    }
+
+    private static String addConcreteProxyTypes(ResourceSet resourceSet, String text) {
+        Matcher matcher = UNTYPED_HREF.matcher(text);
+        StringBuffer result = new StringBuffer();
+        while (matcher.find()) {
+            EObject target;
+            try {
+                target = resourceSet.getEObject(URI.createURI(matcher.group(4)), true);
+            } catch (RuntimeException error) {
+                target = null;
+            }
+            if (target instanceof org.eclipse.uml2.uml.Element) {
+                String replacement = "<" + matcher.group(1) + matcher.group(2)
+                    + "xmi:type=\"uml:" + target.eClass().getName() + "\" "
+                    + matcher.group(3) + ">";
+                matcher.appendReplacement(result, Matcher.quoteReplacement(replacement));
+            } else {
+                matcher.appendReplacement(result, Matcher.quoteReplacement(matcher.group()));
+            }
+        }
+        matcher.appendTail(result);
+        return result.toString();
+    }
+
+    private static void alias(ResourceSet resourceSet, String remote, String target) {
+        resourceSet.getURIConverter().getURIMap().put(
+            URI.createURI(remote),
+            URI.createURI(target)
+        );
+    }
+
+    private static void requireFragment(
+        ResourceSet resourceSet,
+        String resourceUri,
+        String fragment
+    ) {
+        Resource resource = resourceSet.getResource(URI.createURI(resourceUri), false);
+        EObject object = resource == null ? null : resource.getEObject(fragment);
+        if (object == null) {
+            throw new IllegalArgumentException(
+                "catalog fragment is unavailable: " + resourceUri + "#" + fragment
+            );
+        }
+        if (!(object instanceof org.eclipse.uml2.uml.Type)) {
+            throw new IllegalArgumentException(
+                "catalog fragment has wrong runtime type: " + object.getClass().getName()
+            );
+        }
+    }
+
+    private static Path existingRegularFile(String value) {
+        Path path = Path.of(value);
+        if (!Files.isRegularFile(path) || Files.isSymbolicLink(path)) {
+            throw new IllegalArgumentException("not a regular non-symlink file: " + value);
+        }
+        return path;
+    }
+
+    private static Path existingDirectory(String value) {
+        Path path = Path.of(value);
+        if (!Files.isDirectory(path) || Files.isSymbolicLink(path)) {
+            throw new IllegalArgumentException("not a non-symlink directory: " + value);
+        }
+        return path;
+    }
+
+    private static boolean containsAny(String text, String... candidates) {
+        for (String candidate : candidates) {
+            if (text.contains(candidate)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static Map<String, Object> baseReport(String adapter) {
+        Map<String, Object> report = new LinkedHashMap<>();
+        report.put("schemaVersion", "0.1.0");
+        report.put("adapter", adapter);
+        report.put("adapterVersion", ADAPTER_VERSION);
+        report.put("command", "validate-" + adapter);
+        return report;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void finalizeReport(Map<String, Object> report) {
+        List<Map<String, Object>> diagnostics =
+            (List<Map<String, Object>>) report.getOrDefault("diagnostics", List.of());
+        long failures = diagnostics.stream()
+            .filter(item -> "error".equals(item.get("severity")))
+            .count();
+        Map<String, Object> summary = new LinkedHashMap<>();
+        summary.put("checked", 1);
+        summary.put("failed", failures);
+        report.put("summary", summary);
+    }
+
+    private static Map<String, Object> diagnostic(
+        String severity,
+        String code,
+        String message
+    ) {
+        Map<String, Object> value = new LinkedHashMap<>();
+        value.put("severity", severity);
+        value.put("code", code);
+        value.put("message", message == null ? "" : message);
+        return value;
+    }
+
+    private static String safeMessage(Throwable error) {
+        String message = error.getMessage() == null ? "(no message)" : error.getMessage();
+        if (error.getCause() != null && error.getCause() != error) {
+            return message + "; caused by " + error.getCause().getClass().getSimpleName()
+                + ": " + safeMessage(error.getCause());
+        }
+        return message;
+    }
+
+    private static String toJson(Object value) {
+        if (value == null) {
+            return "null";
+        }
+        if (value instanceof String string) {
+            return "\"" + jsonEscape(string) + "\"";
+        }
+        if (value instanceof Boolean || value instanceof Number) {
+            return value.toString();
+        }
+        if (value instanceof Map<?, ?> map) {
+            StringBuilder result = new StringBuilder("{");
+            boolean first = true;
+            for (Map.Entry<?, ?> entry : map.entrySet()) {
+                if (!first) {
+                    result.append(",");
+                }
+                first = false;
+                result.append(toJson(entry.getKey().toString()));
+                result.append(":");
+                result.append(toJson(entry.getValue()));
+            }
+            return result.append("}").toString();
+        }
+        if (value instanceof Iterable<?> iterable) {
+            StringBuilder result = new StringBuilder("[");
+            boolean first = true;
+            for (Object item : iterable) {
+                if (!first) {
+                    result.append(",");
+                }
+                first = false;
+                result.append(toJson(item));
+            }
+            return result.append("]").toString();
+        }
+        throw new IllegalArgumentException("cannot serialize " + value.getClass().getName());
+    }
+
+    private static String jsonEscape(String value) {
+        StringBuilder result = new StringBuilder();
+        for (int index = 0; index < value.length(); index++) {
+            char character = value.charAt(index);
+            switch (character) {
+                case '"' -> result.append("\\\"");
+                case '\\' -> result.append("\\\\");
+                case '\b' -> result.append("\\b");
+                case '\f' -> result.append("\\f");
+                case '\n' -> result.append("\\n");
+                case '\r' -> result.append("\\r");
+                case '\t' -> result.append("\\t");
+                default -> {
+                    if (character < 0x20) {
+                        result.append(String.format("\\u%04x", (int) character));
+                    } else {
+                        result.append(character);
+                    }
+                }
+            }
+        }
+        return result.toString();
+    }
+}

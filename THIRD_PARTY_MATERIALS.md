@@ -19,5 +19,16 @@ Until an item-specific rights review permits redistribution:
 - store it only in the ignored `sources/cache/` directory;
 - never treat a local cache as project-owned source.
 
+Current policy decisions:
+
+- official OMG XMI remains ignored and uncommitted;
+- the SysML v2 Pilot Implementation and Temurin archives remain ignored and
+  uncommitted;
+- `sources fetch` is an explicit user action and never runs as a side effect of
+  parsing, testing, validation, or bootstrap;
+- downloaded bytes must match `standards.lock.json` before use;
+- the repository distributes original adapter source, not the third-party
+  binaries or standards files.
+
 A public release must enumerate every distributed third-party item and the
 basis on which it is distributed.

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xmi:XMI
+    xmlns:xmi="http://www.omg.org/spec/XMI/20131001"
+    xmlns:uml="http://www.omg.org/spec/UML/20161101">
+  <uml:Package
+      xmi:type="uml:Package"
+      xmi:id="SmokeLibrary"
+      name="SmokeLibrary">
+    <packagedElement
+        xmi:type="uml:Class"
+        xmi:id="SmokeClass"
+        name="SmokeClass"/>
+  </uml:Package>
+</xmi:XMI>

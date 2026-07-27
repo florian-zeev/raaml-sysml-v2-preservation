@@ -16,6 +16,33 @@ been demonstrated.**
 The implementation may claim a fact-preserving round trip only after the
 validation and publication gates in the reference implementation plan pass.
 
+The Milestone 0 foundation is implemented and passes locally. The repository
+verifies the 17 official RAAML definition files and the complete standards
+baseline, loads `CoreRAAML.xmi` and `CoreRAAMLLib.xmi` through a pinned UML
+environment, parses representative OCL through an AST, and validates paired
+positive/negative SysML v2 fixtures. The clean Linux workflow must also pass
+before Milestone 0 is closed. This is toolchain evidence, not transformation
+evidence.
+
+## Milestone 0 quick start
+
+Python 3.14.4 is the tested orchestration runtime. On macOS Apple silicon:
+
+```text
+./raaml sources fetch
+./raaml sources verify
+./raaml tooling bootstrap
+./raaml tests unit
+./raaml tests milestone-0
+./raaml validate-v2 fixtures/milestone-0/minimal-valid.sysml
+./raaml validate-v1 sources/cache/CoreRAAML.xmi
+./raaml validate-v1 sources/cache/CoreRAAMLLib.xmi
+./raaml validate-ocl fixtures/milestone-0/ocl-valid.txt
+```
+
+Only `sources fetch` uses the network. Third-party inputs and tool binaries
+remain ignored. See the ADRs for exact versions and known limitations.
+
 ## Documents
 
 | Document | Purpose |

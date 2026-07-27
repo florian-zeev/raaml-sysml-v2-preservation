@@ -1,0 +1,1 @@
+Situation.allInstances()->closure(s | s.from)->includes(self)

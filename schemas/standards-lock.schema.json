@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/florian-zeev/raaml-sysml-v2-preservation/schemas/standards-lock.schema.json",
+  "title": "Standards lock",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "status",
+    "retrievedAt",
+    "artifacts"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "0.1.0"
+    },
+    "status": {
+      "enum": [
+        "partial",
+        "complete"
+      ]
+    },
+    "retrievedAt": {
+      "type": "string",
+      "format": "date"
+    },
+    "artifacts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/artifact"
+      }
+    }
+  },
+  "$defs": {
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "collection",
+        "standard",
+        "standardVersion",
+        "kind",
+        "normativeStatus",
+        "omgFileId",
+        "authoritativeUrl",
+        "filename",
+        "byteSize",
+        "sha256",
+        "redistribution"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "collection": {
+          "type": "string",
+          "minLength": 1
+        },
+        "standard": {
+          "type": "string",
+          "minLength": 1
+        },
+        "standardVersion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "normativeStatus": {
+          "type": "string",
+          "minLength": 1
+        },
+        "omgFileId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "authoritativeUrl": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://"
+        },
+        "filename": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[^/\\\\]+$"
+        },
+        "byteSize": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "redistribution": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "committed"
+          ],
+          "properties": {
+            "status": {
+              "enum": [
+                "unreviewed",
+                "not-redistributable",
+                "redistributable"
+              ]
+            },
+            "committed": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    }
+  }
+}

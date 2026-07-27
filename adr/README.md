@@ -1,8 +1,8 @@
 # Architecture decision records
 
-Milestone 0 will add the decision records required by the reference
-implementation plan. A decision record is accepted only when its alternatives,
-evidence, decision, consequences, and validation commands are documented.
+Milestone 0 decision records are stored here. A decision is accepted only when
+its alternatives, evidence, decision, consequences, and validation commands
+are documented.
 
 The first required decisions cover:
 
