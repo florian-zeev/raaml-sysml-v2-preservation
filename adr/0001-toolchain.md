@@ -1,6 +1,7 @@
 # ADR 0001: orchestration and adapter toolchain
 
 **Status:** Accepted for Milestone 0
+
 **Date:** 2026-07-27
 
 ## Decision
@@ -44,6 +45,10 @@ content-addressed image ID against the Git commit.
 The image is not pushed to a registry during private incubation. A published
 container digest and registry retention policy remain release work, not
 Milestone 0 validation prerequisites.
+
+The clean workflow and offline container gate passed at commit
+`77cfaffda1d95fb7cc4a1a63f32d6132bd6588cc`. The built image ID was
+`sha256:cd3a9f8d2a8a37d160df0f672fa9706b86e6f88f6cca737ace4f7844b0a45aa7`.
 
 ## Why
 

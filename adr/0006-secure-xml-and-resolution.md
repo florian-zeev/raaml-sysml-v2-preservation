@@ -1,6 +1,7 @@
 # ADR 0006: secure XML and reference resolution
 
 **Status:** Accepted for Milestone 0
+
 **Date:** 2026-07-27
 
 ## Decision

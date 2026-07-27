@@ -1,6 +1,7 @@
 # ADR 0004: UML and SysML v1 loading
 
 **Status:** Accepted with a documented compatibility adapter
+
 **Date:** 2026-07-27
 
 ## Decision

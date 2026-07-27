@@ -1,6 +1,6 @@
 # RAAML-on-SysML-v2 reference implementation and evidence plan
 
-**Status:** Draft execution plan; implementation must not begin beyond Milestone 0 until its decisions and gates pass
+**Status:** Active execution plan; Milestone 0 passed at commit `77cfaffda1d95fb7cc4a1a63f32d6132bd6588cc`
 
 **Purpose:** Produce reproducible evidence for the Draft Community Proposal v0.1
 

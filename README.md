@@ -16,13 +16,13 @@ been demonstrated.**
 The implementation may claim a fact-preserving round trip only after the
 validation and publication gates in the reference implementation plan pass.
 
-The Milestone 0 foundation is implemented and passes locally. The repository
+Milestone 0 passed on 2026-07-27. The repository
 verifies the 17 official RAAML definition files and the complete standards
 baseline, loads `CoreRAAML.xmi` and `CoreRAAMLLib.xmi` through a pinned UML
 environment, parses representative OCL through an AST, and validates paired
-positive/negative SysML v2 fixtures. The clean Linux workflow passed for commit
-`5077425`. The digest-pinned container must also pass in that workflow before
-Milestone 0 is closed. This is toolchain evidence, not transformation evidence.
+positive/negative SysML v2 fixtures. The clean Linux and offline,
+digest-pinned-container gates passed for commit `77cfaff`. This is toolchain
+evidence, not transformation evidence.
 
 ## Milestone 0 quick start
 
@@ -51,6 +51,7 @@ remain ignored. See the ADRs for exact versions and known limitations.
 | [`proposal/normative-encoding-v0.1.md`](proposal/normative-encoding-v0.1.md) | Detailed preservation contract and mapping rules |
 | [`docs/executive-summary.md`](docs/executive-summary.md) | Higher-level explanation |
 | [`docs/reference-implementation-plan.md`](docs/reference-implementation-plan.md) | Evidence plan, milestones, and release gates |
+| [`docs/milestone-0-evidence.md`](docs/milestone-0-evidence.md) | Frozen foundation evidence and claim boundary |
 
 ## Repository boundary
 

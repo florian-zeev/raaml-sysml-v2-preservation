@@ -1,6 +1,7 @@
 # ADR 0002: canonical fact identity
 
 **Status:** Accepted for the v0.1 corpus contract
+
 **Date:** 2026-07-27
 
 ## Decision

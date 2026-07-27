@@ -1,6 +1,7 @@
 # ADR 0003: SysML v2 validation
 
 **Status:** Accepted for Milestone 0
+
 **Date:** 2026-07-27
 
 ## Decision

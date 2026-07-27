@@ -1,6 +1,7 @@
 # ADR 0005: OCL parsing
 
 **Status:** Accepted for Milestone 0; full-corpus resolution remains Milestone 1
+
 **Date:** 2026-07-27
 
 ## Decision
