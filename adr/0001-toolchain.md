@@ -28,10 +28,11 @@ The Milestone 0 tested platforms are macOS on Apple silicon and the
 commit, fetches only locked inputs, and runs the same repository commands as a
 local checkout.
 
-A container image and digest are intentionally not selected yet. The clean
-Linux workflow proves the Milestone 0 tool bootstrap, but it does not satisfy
-the later clean-container reproduction gate. A container must be pinned and
-run before the first public conformance release.
+A container image and digest are not selected yet. The clean Linux workflow
+can prove the tool bootstrap, but it does not satisfy the container requirement
+in the reviewed implementation plan. Milestone 0 therefore remains open until
+a container is pinned and exercised, or a separately reviewed plan change
+moves that requirement to a later gate.
 
 ## Why
 
