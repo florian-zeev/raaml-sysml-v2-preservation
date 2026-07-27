@@ -54,7 +54,30 @@ class ArchiveExtractionTests(unittest.TestCase):
             with self.assertRaises(AdapterError):
                 _extract_zip_safely(archive, destination)
 
-    def test_tar_symbolic_link_is_rejected(self) -> None:
+    def test_safe_tar_symbolic_link_extracts(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            archive = root / "fixture.tar.gz"
+            destination = root / "output"
+            destination.mkdir()
+            with tarfile.open(archive, "w:gz") as bundle:
+                payload = b"license"
+                target = tarfile.TarInfo("tool/legal/base/LICENSE")
+                target.size = len(payload)
+                bundle.addfile(target, io.BytesIO(payload))
+                link = tarfile.TarInfo("tool/legal/module/LICENSE")
+                link.type = tarfile.SYMTYPE
+                link.linkname = "../base/LICENSE"
+                bundle.addfile(link)
+
+            _extract_tar_safely(archive, destination)
+
+            self.assertEqual(
+                (destination / "tool/legal/module/LICENSE").read_bytes(),
+                payload,
+            )
+
+    def test_tar_symbolic_link_escape_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             archive = root / "fixture.tar.gz"

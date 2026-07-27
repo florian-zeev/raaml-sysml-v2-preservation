@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import platform
+import posixpath
 from pathlib import Path
 import subprocess
 import sys
@@ -187,12 +188,18 @@ def _extract_tar_safely(archive: Path, destination: Path) -> None:
             raise AdapterError(
                 f"archive has more than {MAX_ARCHIVE_MEMBERS} members: {archive}"
             )
+        members_by_name = {
+            posixpath.normpath(member.name.replace("\\", "/")): member
+            for member in members
+        }
         expanded_bytes = 0
         for member in members:
             _validate_archive_member_name(member.name)
-            if member.issym() or member.islnk() or member.isdev():
+            if member.isdev():
                 raise AdapterError(f"unsafe tar member: {member.name}")
-            if not (member.isfile() or member.isdir()):
+            if member.issym() or member.islnk():
+                _validate_tar_link(member, members_by_name)
+            elif not (member.isfile() or member.isdir()):
                 raise AdapterError(f"unsupported tar member: {member.name}")
             expanded_bytes += member.size
             if expanded_bytes > MAX_ARCHIVE_EXPANDED_BYTES:
@@ -201,6 +208,42 @@ def _extract_tar_safely(archive: Path, destination: Path) -> None:
                     f"{MAX_ARCHIVE_EXPANDED_BYTES} bytes: {archive}"
                 )
         bundle.extractall(destination, filter="data")
+
+
+def _validate_tar_link(
+    member: tarfile.TarInfo,
+    members_by_name: dict[str, tarfile.TarInfo],
+) -> None:
+    member_name = posixpath.normpath(member.name.replace("\\", "/"))
+    link_name = member.linkname.replace("\\", "/")
+    if (
+        not link_name
+        or link_name.startswith("/")
+        or (
+            len(link_name) >= 2
+            and link_name[0].isalpha()
+            and link_name[1] == ":"
+        )
+    ):
+        raise AdapterError(f"unsafe tar link target: {member.name} -> {member.linkname}")
+    if member.issym():
+        target_name = posixpath.normpath(
+            posixpath.join(posixpath.dirname(member_name), link_name)
+        )
+    else:
+        target_name = posixpath.normpath(link_name)
+
+    archive_root = member_name.split("/", 1)[0]
+    if not (
+        target_name == archive_root
+        or target_name.startswith(f"{archive_root}/")
+    ):
+        raise AdapterError(f"tar link escapes archive root: {member.name}")
+    target = members_by_name.get(target_name)
+    if target is None or not target.isfile():
+        raise AdapterError(
+            f"tar link target is not a regular archive member: {member.name}"
+        )
 
 
 def _validate_archive_member_name(name: str) -> None:
