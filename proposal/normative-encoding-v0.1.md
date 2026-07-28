@@ -29,7 +29,7 @@ This is an **independent community proposal** for technical review. It does not 
 
 **Problem.** RAAML 1.1 defines its safety and reliability concepts as SysML v1/UML profiles. SysML v2 uses a different foundation and cannot load those profiles directly.
 
-**Approach.** Rather than redesign RAAML, the proposal gives each official v1 definition a useful v2 form and keeps a record of the source details needed to rebuild it. A stereotype becomes a v2 `metadata def`. A library Class becomes a v2 `def`. The record keeps the original UML bases, inheritance, properties, extension-end names, icons, and OCL references. The original OCL text is stored rather than declared equivalent to a v2 constraint without proof.
+**Approach.** Rather than redesign RAAML, the proposal gives each official v1 definition a useful v2 form and keeps a record of the source details needed to rebuild it. A stereotype becomes a v2 `metadata def`. A plain library Class becomes an `occurrence def`; official specialized rules apply when Block or ConstraintBlock is present. The record keeps the original UML bases, inheritance, properties, extension-end names, icons, and OCL references. The original OCL text is stored rather than declared equivalent to a v2 constraint without proof.
 
 **Key decisions.**
 
@@ -94,6 +94,13 @@ The draft calls this a *fact-preserving round trip*. It does not yet use the str
 Each RAAML 1.1 stereotype becomes a v2 `metadata def`. Section 3 explains how the mapper chooses the kind of v2 element that the metadata can annotate. Facts about one definition are stored with that definition. Facts about the whole source file are stored once in a required **preservation manifest** beside the v2 model.
 
 The manifest records which source file this is, whether it is a profile or library, its package or profile name, its URI, comments, imports, profile applications, namespace values, and the OCL records described in Section 5. Version 0.1 uses JSON. Choosing one form keeps the pass-or-fail test simple.
+
+Each import record distinguishes an ordinary `PackageImport` from a
+`MetamodelReference`. Both reuse the official `NamespaceImport` target for the
+underlying PackageImport. The explicit discriminator is mandatory because the
+official transformation has no MetamodelReference-specific rule. Profile
+applications are also retained in the manifest because the official
+transformation does not map them.
 
 The SysML v2 fragments below show the structure the proposal intends. They have not yet passed a SysML v2 parser. Before release, every generated official definition must be written in accepted v2 syntax and parsed successfully.
 
@@ -207,45 +214,35 @@ datatype Raaml_OCLConstraintRef {
 }
 ```
 
-The base-metaclass → v2-kind table used by the forward mapping. This table is total over the base metaclasses actually used in the RAAML 1.1 XMIs (including the non-STPA profiles — `IDCarrier`, `ASILAssignment`, `HazardAndRiskAssessment`, `LessonLearned`, `ASILOverrideRationale`, `SecurityActor`, `Undeveloped`, `Item`, `IndependenceRequirement`, `ASILDecompose`):
+Every RAAML 1.1 `uml:Stereotype` maps to a SysML v2
+`MetadataDefinition`, following official rule
+`StereotypeMetadataDefinition_Mapping`. The stereotype's `base_*` Properties
+do not select a different definition kind. They state which UML metaclasses
+the metadata may annotate and remain explicit preservation facts.
 
-| RAAML 1.1 `base_*` | v2 primary annotation target | Notes |
+The following table is total over the base metaclasses used in the RAAML 1.1
+XMIs:
+
+| RAAML 1.1 `base_*` | Normative v2 carrier | Preservation consequence |
 | --- | --- | --- |
-| `Class` (structural) | `Definition` (most specific applicable subtype) | Elevated to `PartDefinition` when the stereotype generalizes `SysML::Block` or to `OccurrenceDefinition` when it generalizes `CoreRAAML::Situation` (Section 3.4) |
-| `Property` | `PartUsage` / `AttributeUsage` / `ReferenceUsage` | Chosen by aggregation & type (Section 4) |
-| `Signal` | `ItemDefinition` | `ActionUsage` at emission sites where v1 uses them |
-| `DataType` | `AttributeDefinition` | |
-| `State` | `StateDefinition` | `StateUsage` at usage-side references |
-| `Dependency` | `Dependency` | Preserved in v2 |
-| `Abstraction` | `Dependency` with `kind = "Abstraction"` marker | Section 7 for `Satisfy`/`DeriveReqt`/`Allocation` subtypes |
-| `Comment` | v2 `Comment` (annotating element) | `v1AnnotatedMetaclass = "Comment"` to disambiguate from ordinary v2 comments |
-| `Package` | `Package` | |
-| `Classifier` | `Definition` | `v1AnnotatedMetaclass = "Classifier"` set |
-| `Element` | (no anchor — preserved via `v1AnnotatedMetaclass`) | See Section 3.3 |
-| `Association` | `connection def` (KerML `AssociationStructure`) | Used for `uml:Association` in library packages |
+| `Class`, `Property`, `Signal`, `DataType`, `State` | `MetadataDefinition` | Retain the exact base metaclass, Property multiplicity, Extension, and ExtensionEnd. |
+| `Dependency`, `Abstraction`, `Association` | `MetadataDefinition` | Retain the exact relationship metaclass; nearby v2 relationship concepts do not replace the RAAML stereotype. |
+| `Comment`, `Package`, `Classifier`, `Element` | `MetadataDefinition` | Retain the exact general or concrete annotation domain for reversal. |
 
-`SysML::Block` is a SysML v1 stereotype, not a basic kind of UML element. It therefore never appears as `base_SysML::Block`. Definitions such as `CoreRAAML::Situation`, `STPA::ControlStructure`, and `ISO26262::DependabilityRequirement` extend UML `Class` and separately inherit from the SysML `Block` stereotype. The mapper must preserve both facts. Section 3.4 handles this case.
+`SysML::Block` is a SysML v1 stereotype, not a basic kind of UML element. It therefore never appears as `base_SysML::Block`. Definitions such as `CoreRAAML::Situation`, `STPA::ControlStructure`, and `ISO26262::DependabilityRequirement` extend UML `Class` and separately inherit from the SysML `Block` stereotype. The mapper preserves both facts without changing the RAAML stereotype's `MetadataDefinition` carrier.
 
-## 3. How the mapper chooses one main v2 form
+## 3. Stereotype definitions and applications
 
-### 3.1 Precedence rule (total)
+### 3.1 One carrier for every stereotype definition
 
-Some v1 stereotypes can be applied to more than one kind of UML element. The mapper still needs one main v2 form. It chooses the first matching entry in this list:
+Every source `uml:Stereotype` has one normative v2 carrier:
+`MetadataDefinition`. There is no base-metaclass precedence list. A stereotype
+that extends `Signal`, `Class`, and `DataType` remains one
+`MetadataDefinition` with three preserved source bases.
 
-1. `Property` → `PartUsage` / `AttributeUsage` / `ReferenceUsage` (Section 4)
-2. `Signal` → `ItemDefinition`
-3. `Class` → `Definition` (override via Section 3.4 for `SysML::Block`- or `Situation`-generalizing stereotypes)
-4. `State` → `StateDefinition`
-5. `DataType` → `AttributeDefinition`
-6. `Package` → `Package`
-7. `Association` → `connection def`
-8. `Dependency` → `Dependency`
-9. `Abstraction` → `Dependency` (with `Abstraction` marker)
-10. `Classifier` → `Definition`
-11. `Comment` → v2 `Comment`
-12. `Element` → see Section 3.3
-
-The order follows how the definitions are used: Property-based stereotypes annotate usages, Signal-based stereotypes describe items that flow, and Class-based stereotypes describe definitions. The decision uses both bases declared by the stereotype itself and bases inherited from its parents.
+The forward mapper may derive domain-oriented views for navigation, but those
+views are non-normative and cannot be used to infer the v1 bases during
+reversal.
 
 ### 3.2 Reverse rule
 
@@ -267,62 +264,81 @@ FTA `Event` and `Gate` allow each base with multiplicity `[0..1]`, so the record
 - **Application:** if an in-scope source application targets a Class, Property, Package, Comment, or another UML kind, `v1AnnotatedMetaclass` records that original kind.
 - **Reverse:** the recorded kind tells the mapper which `base_*` value to write. Without it, the mapper would know only that the original target was some UML element.
 
-`v1AnnotatedMetaclass` is **mandatory on every instance-level annotation** whenever any of the following holds (which in practice is almost always):
+`v1AnnotatedMetaclass` is mandatory on every instance-level application. The
+official occurrence helpers do not map an application instance, connect it to
+the applied element, or preserve its tagged values. The reverse mapper must
+therefore use the explicit application record rather than infer the source
+metaclass from a v2 element kind.
 
-- `v1Bases` contains `Element`.
-- `v1Bases` has more than one entry (so the primary-kind selection erased disambiguating bases).
-- The v2 element's kind has more than one reverse candidate per the Section 2 table. By that table: `Definition` can reverse to `Class`, `Classifier`, or `DataType`; `ItemDefinition` to `Signal` or `DataType`; `Dependency` to `Dependency` or `Abstraction`; `PartDefinition` to `SysML::Block` or `Class`; `PartUsage` to `Property`+`Class` or `Property`+`DataType`. Each of these cases requires `v1AnnotatedMetaclass`.
+### 3.4 Stereotype generalizations
 
-`v1AnnotatedMetaclass` may be elided **only** when `v1Bases` has exactly one entry and the v2 kind has exactly one reverse candidate. In practice, this applies to a small set: `StateDefinition` ↔ `State`, `Package` ↔ `Package`, v2 `Comment` ↔ `Comment`, and a few other singletons. On profile-declaration annotations (not instance applications), the field is always elided because there is no instance target to disambiguate.
+Generalizations to `SysML::Block`, `CoreRAAML::Situation`,
+`SysML::AbstractRequirement`, and other RAAML or SysML v1 stereotypes remain
+ordered source references in `v1Generalizations`. They do not change the
+normative `MetadataDefinition` carrier.
 
-### 3.4 `SysML::Block`- and `Situation`-generalizing stereotypes
+For example, `ISO26262::DependabilityRequirement` retains both of its source
+generalizations, and `CoreRAAML::Situation` retains its generalization to
+SysML v1 `Block`. Reversal rebuilds those recorded edges directly. A
+domain-oriented tool may interpret them to derive PartDefinition or
+OccurrenceDefinition views, but those views are outside the version 0.1
+preservation encoding.
 
-A Class-based stereotype normally becomes a v2 `Definition`. The mapper chooses a more specific form when the source inheritance gives a clear reason:
+### 3.5 Application records
 
-| Generalization target in `v1Generalizations` | v2 primary override |
-| --- | --- |
-| `SysML::Block` (href: `...SysML.xmi#SysML.Block`) | `PartDefinition` |
-| `CoreRAAML::Situation` (href: `...CoreRAAML.xmi#...Situation.id`) | `OccurrenceDefinition` |
-| `CoreRAAML::RelevantTo` or `DirectedRelationshipPropertyPath` | `Dependency` (no elevation; see Section 8) |
-| `SysML::Requirement`, `SysML::AbstractRequirement`, `SysML::Satisfy`, `SysML::DeriveReqt`, `SysML::Allocation` | `Definition` (no elevation; v2 kind choice is unchanged — the v1 edge is preserved in `v1Generalizations` only) |
+For each of the 108 in-scope RAAML stereotype applications, the manifest
+records:
 
-The rule follows the full inheritance chain. If a stereotype inherits from `STPA::UndesiredControlAction`, which inherits from `CoreRAAML::Situation`, it also becomes an `OccurrenceDefinition`. Reversal does not infer the source from that v2 choice. It rebuilds the recorded `base_Class` and inheritance links directly.
+- the qualified RAAML stereotype identity;
+- the resolved target element identity;
+- the target's original UML metaclass;
+- every non-`base_*` tagged value, including primitive kind, enumeration
+  literal identity, order, and resolved element references where applicable.
 
-**`Situation` starts the occurrence branch.** `CoreRAAML::Situation` inherits from SysML v1 `Block`, which would normally suggest `PartDefinition`. But a Situation describes something that occurs, and its RAAML descendants follow that meaning. Version 0.1 therefore makes `Situation` and every descendant an `OccurrenceDefinition`. Other stereotypes that inherit from `Block`, such as `DependabilityRequirement` and `FMEAItem`, remain `PartDefinition`s.
+The official `StereotypeOccurenceUsage_Mapping` takes a `Stereotype`
+definition as its source. It does not take an application instance, connect a
+usage to the applied element, or transfer tagged values. The helper operations
+for discovering applied stereotypes and tag values are implementation
+specific. A mapper may emit a `MetadataUsage` as a supplemental navigable
+view, but reversal always uses the application record.
 
-**Several inheritance targets.** If different parents suggest different v2 forms, use the first matching rule:
+## 4. Properties and Property-based stereotypes
 
-1. Any edge reaches `CoreRAAML::Situation` transitively → `OccurrenceDefinition`.
-2. Any edge reaches `SysML::Block` (without passing through `Situation`) → `PartDefinition`.
-3. No elevation-eligible edge → `Definition`.
+`Controller`, `Sensor`, `Actuator`, and `ControlledProcess` extend UML
+`Property` and `Class`. `BasicEvent` also extends both, while FTA `TransferIn`
+extends `Property` without extending `Class`.
 
-Example: `ISO26262::DependabilityRequirement` generalizes both `SysML::AbstractRequirement` (no elevation) and `SysML::Block` (elevation to `PartDefinition`) — result: `PartDefinition`. A hypothetical stereotype generalizing both `SysML::Block` and `CoreRAAML::Situation` would elevate to `OccurrenceDefinition` by rule 1.
+These are facts about each stereotype definition, so all of those stereotypes
+remain `MetadataDefinition`s. The mapper does not create a companion Class or
+choose a usage kind from an extension Property's aggregation.
 
-This separates two questions: the UML base says what the stereotype can annotate; the inheritance chain helps choose the most useful v2 definition.
+Actual UML Properties in the library files follow the official Property
+rules. Across the 267 source Properties, the relevant selectors are ownership,
+association role, owning ConstraintBlock, source type, and whether the type
+has SysML v1 `Block` applied. Composite aggregation alone does not select
+`PartUsage`; the corpus contains no Property that satisfies the official
+PartProperty filter.
 
-## 4. Stereotypes based on UML Property
-
-`Controller`, `Sensor`, `Actuator`, `ControlledProcess` extend `Property` and `Class`. `BasicEvent` (FTA.xmi:125-141) extends `Class` and `Property`.
-
-**Forward rule.** Choose the v2 usage from the Property's ownership and type:
-
-| v1 `uml:Property` shape | v2 carrier |
-| --- | --- |
-| `aggregation = "composite"`, typed by a `Class` | `PartUsage` |
-| `aggregation = "none"`, typed by a `Class` | `ReferenceUsage` |
-| Typed by a `DataType` or primitive | `AttributeUsage` |
-
-If the same stereotype also extends UML `Class`, the mapper creates a companion v2 definition: `PartDefinition` for a composite Property and `Definition` otherwise. The v2 usage is typed by that definition, using the normal v2 link between a usage and its type. Both annotations retain `v1Bases = ["Property", "Class"]`.
-
-**Reverse.** Rebuild the usage as a UML Property owned by the surrounding Class. Rebuild the companion definition as a separate UML Class. The stereotype application's `base_Property` points to the Property and `base_Class` points to the Class. If several usages share one v2 definition, rebuild one Class and several Properties, as in the source model.
-
-**Do not invent a companion Class.** FTA `TransferIn` extends Property but not Class, directly or through inheritance. The reverse mapper therefore rebuilds only the UML Property. The rule depends on the recorded bases, not on the stereotype's name.
-
-The enclosing `ControlStructure` (STPA.xmi:173) is a `PartDefinition` annotated by `Raaml_ControlStructure` with locally owned `v1Bases = ["Class"]` and a preserved generalization to the SysML v1 `Block` stereotype.
+The complete mutually exclusive Property table is frozen in
+`analysis/property-transformation-surface-v0.1.json`. The preservation record
+still retains source ownership, type reference, aggregation, multiplicity,
+subset/redefinition references, and the `Property` versus `Port` distinction.
 
 ## 5. OCL constraint store
 
-The JSON manifest keeps the original OCL constraints in a **constraint store**. Version 0.1 does not replace them with v2 `constraint def`s. A tool may generate a v2 constraint as an additional view, but the stored OCL remains the source used for reconstruction.
+The JSON manifest keeps the original OCL and JavaScript constraints in a
+**constraint store**. Version 0.1 also emits the official
+`ConstraintDefinition`, `AssertConstraintUsage`, and `CalculationUsage` view
+when its required fields exist. The stored source expression remains the
+source used for reconstruction and behavioral claims.
+
+The corpus contains 60 constraint OpaqueExpressions. Fifty-nine have exactly
+one language and one body: 33 OCL2.0 and 26 JavaScript. FMEALib
+`RPNCalculation` has one body, `RPN=SEV*DET*OCC`, but no language. The official
+`OpaqueExpressionSpecification_Mapping` evaluates `language.get(0)`, which is
+invalid for that source. Version 0.1 does not invent a language; it preserves
+the expression and emits an explicit diagnostic instead of a
+TextualRepresentation for that body.
 
 Constraint store schema (one entry per v1 `uml:Constraint`):
 
@@ -394,7 +410,14 @@ A text search is not enough. OCL contains nested navigation, `closure(...)`, `.a
 
 ## 6. Library elements
 
-Each UML Class in an official library becomes a v2 `Definition` marked with `Raaml_LibraryClass`. Version 0.1 does not guess a more specific v2 form from the Class name. A later layer may add such specializations when the source gives a clear reason and reconstruction remains unchanged. AssociationClasses, ordinary associations, and enumerations use the separate rules below.
+Each plain UML Class in an official library becomes a v2
+`OccurrenceDefinition`, following `Class_Mapping`, and is marked with
+`Raaml_LibraryClass`. The corpus contains 100 such Classes. Seven other
+Classes have SysML v1 `Block` applied and become `PartDefinition`s; 36 have
+`ConstraintBlock` applied and become `ConstraintDefinition`s. The
+preservation marker records the original UML Class and applied stereotype
+facts in every case. AssociationClasses, ordinary Associations, and
+Enumerations use the separate rules below.
 
 Each generated `def` carries a `Raaml_LibraryClass` annotation that extends `Raaml_BaseAnnotation`:
 
@@ -412,7 +435,7 @@ metadata def Raaml_LibraryClass :> Raaml_BaseAnnotation {
 
 A UML library Class that inherits from another Class becomes a v2 definition that specializes its parent. The source may point to a parent in the same file with an ID or to a parent in another file with a URL plus fragment. `v1Generalizations` records which form was used so the reverse mapper can write it again.
 
-A UML Enumeration becomes a v2 `enum def`. Literal order is preserved because changing the sequence would change the listed source fact.
+A UML Enumeration becomes a v2 `enum def`. Literal order is preserved because changing the sequence would change the listed source fact. Four of the five Enumerations also have SysML v1 `ValueType` applied. For those four, version 0.1 deliberately chooses the EnumerationDefinition rule over the overlapping AttributeDefinition rule and preserves the ValueType application. This keeps all 15 affected literals native and reversible.
 
 **AssociationClasses.** A UML AssociationClass is both a relationship and a Class: the relationship itself may have properties and inheritance. `RiskRealization` (`STPALib.xmi:197`) is the only one in the eight official library files. Its main v2 form is a `connection def`, and the following marker keeps the facts needed to rebuild the Class side as well:
 
@@ -483,7 +506,9 @@ If a stereotype has several parents, `v1Generalizations` contains one entry for 
 
 `ControllingMeasure`, `Violates`, `RelevantTo`, `Detection`, `Prevention`, `Recommendation`, and `Mitigation` extend UML `Dependency`. `RelevantTo` and `ControllingMeasure` also inherit four ordered path properties from the SysML v1 `DirectedRelationshipPropertyPath` stereotype.
 
-**Encoding.** Each becomes a `metadata def` annotating v2 `Dependency`, extending `Raaml_BaseAnnotation`. When inheriting from `DirectedRelationshipPropertyPath`, the stereotype carries:
+**Encoding.** Each becomes a `metadata def`, extending
+`Raaml_BaseAnnotation`, with `Dependency` retained in `v1Bases`. When
+inheriting from `DirectedRelationshipPropertyPath`, the stereotype carries:
 
 ```
 metadata def Raaml_PathRelationship :> Raaml_BaseAnnotation {
@@ -499,17 +524,22 @@ All four paths are kept. If an in-scope stereotype application supplies values f
 
 SysML v2 has relationships such as `Satisfy`, `Allocation`, and `DeriveReqt` whose meanings may look close to some RAAML relationships. They are not substituted. `Detection`, `Prevention`, `Mitigation`, and the other RAAML relationships must keep their own names and identities so the reverse mapper knows which stereotype to rebuild.
 
-**ISO26262 `Abstraction`-based stereotypes.** `IndependenceRequirement`, `ASILDecompose`, `UserInfoRequirement`, `RecoveryRequirement` extend `Abstraction` (a UML `Dependency` subtype). Their v2 primary kind is `Dependency` with a `v1Bases` entry of `Abstraction` (and `v1AnnotatedMetaclass` disambiguating on reverse). `IndependenceRequirement` inherits from `SysML::DeriveReqt` (ISO26262.xmi:58-60); `ASILDecompose` inherits from `SysML::DeriveReqt` (ISO26262.xmi:77-79); `UserInfoRequirement` and `RecoveryRequirement` inherit from `SysML::Satisfy` (ISO26262.xmi:112-114, :123-125). These inheritance edges are recorded in `v1Generalizations` with `kind = "sysmlMetaclass"`.
+**ISO26262 `Abstraction`-based stereotypes.** `IndependenceRequirement`, `ASILDecompose`, `UserInfoRequirement`, and `RecoveryRequirement` extend `Abstraction` (a UML `Dependency` subtype). Each remains a `MetadataDefinition` with `Abstraction` in `v1Bases`. `IndependenceRequirement` and `ASILDecompose` inherit from `SysML::DeriveReqt`; `UserInfoRequirement` and `RecoveryRequirement` inherit from `SysML::Satisfy`. These inheritance edges are recorded in `v1Generalizations` with `kind = "sysmlMetaclass"`.
 
-**`Verified` and `Confirmed` are *not* `Abstraction`-based.** Both own `base_Class` only and have no `<generalization>` edges (ISO26262.xmi:285-298, :299-312). They carry a `result: String` property each. Section 9.8 lists them with `Class` base and no elevation.
+**`Verified` and `Confirmed` are *not* `Abstraction`-based.** Both own `base_Class` only and have no `<generalization>` edges (ISO26262.xmi:285-298, :299-312). They carry a `result: String` property each.
 
 ## 9. Concept-by-concept table
 
-Covers every stereotype declared across the nine profile XMIs. "Base" column lists all `base_*` metaclasses; v2 "Primary" applies Section 3 precedence.
+Covers every stereotype declared across the nine profile XMIs. The "Base"
+column lists all `base_*` metaclasses. The domain-view column is informative:
+it records a possible derived interpretation from the earlier draft. It is
+not part of the version 0.1 encoding, is not emitted by the reference mapper,
+and is never used for reversal. The normative carrier for every stereotype
+listed below is `MetadataDefinition`.
 
 ### 9.1 CoreRAAML
 
-| Element | Bases | v2 primary | Notes |
+| Element | Bases | Informative domain view | Notes |
 | --- | --- | --- | --- |
 | `ControllingMeasure` (CoreRAAML.xmi:14, abstract, `:> DirectedRelationshipPropertyPath`) | `Dependency` | `Dependency` | Section 8; `affects: uml:Property[0..*]` in `v1OwnedProperties` |
 | `Violates` (CoreRAAML.xmi:41) | `Dependency` | `Dependency` | |
@@ -519,7 +549,7 @@ Covers every stereotype declared across the nine profile XMIs. "Base" column lis
 
 ### 9.2 GeneralRAAML
 
-| Element | Bases | v2 primary | Notes |
+| Element | Bases | Informative domain view | Notes |
 | --- | --- | --- | --- |
 | `FailureMode` (GeneralRAAML.xmi:18) | `Class` | `Definition` → `OccurrenceDefinition` (Section 3.4) | Generalization → `CoreRAAML::Situation` |
 | `Error` (GeneralRAAML.xmi:46) | `Class` | `Definition` → `OccurrenceDefinition` (Section 3.4) | Generalization → `CoreRAAML::Situation` |
@@ -540,7 +570,7 @@ Covers every stereotype declared across the nine profile XMIs. "Base" column lis
 
 Verified by `grep 'uml:Stereotype.*name='` against `STPA.xmi`. `OperationalSituation` and `MalfunctioningBehavior` are ISO26262 stereotypes (see Section 9.8), not STPA — any prior revision that listed them here was incorrect.
 
-| Element | Bases | v2 primary | Notes |
+| Element | Bases | Informative domain view | Notes |
 | --- | --- | --- | --- |
 | `ControlAction` (STPA.xmi:15, decl + 3 Extensions at 29-52) | `Signal`, `Class`, `DataType` | `ItemDefinition` | Triple base preserved in `v1Bases`; emitted as three separate `uml:Extension` elements on reverse |
 | `Feedback` (STPA.xmi:53, decl + 3 Extensions) | `Signal`, `Class`, `DataType` | `ItemDefinition` | Same shape as `ControlAction` |
@@ -557,7 +587,7 @@ Verified by `grep 'uml:Stereotype.*name='` against `STPA.xmi`. `OperationalSitua
 
 Verified stereotype list: 19 stereotypes. The **only** stereotypes with locally-owned `base_*` attributes are `Tree`, `Gate`, `Event`, `TransferIn`, `TransferOut`. Every event subtype (DormantEvent, BasicEvent, ConditionalEvent, ZeroEvent, HouseEvent, IntermediateEvent, TopEvent) inherits its bases from `Event` via `uml:Generalization`. Every gate subtype (AND, OR, SEQ, XOR, INHIBIT, MAJORITY_VOTE, NOT) inherits its bases from `Gate`. Per Section 3.2, `v1Bases` is empty on each inheriting subtype; the effective set is reconstructed from the generalization chain.
 
-| Element | Owned bases (`v1Bases`) | Inherits bases from | v2 primary | Notes |
+| Element | Owned bases (`v1Bases`) | Inherits bases from | Informative domain view | Notes |
 | --- | --- | --- | --- | --- |
 | `Tree` (FTA.xmi:19) | `Class` | — | `Definition` → `OccurrenceDefinition` (Section 3.4) | OCL `TreeIsFTATree`; generalization → `CoreRAAML::Situation` |
 | `Gate` (FTA.xmi:46, abstract) | `Class` (FTA.xmi:50, multiplicity `[0..1]`), `Property` (FTA.xmi:54, multiplicity `[0..1]`) | — | `PartUsage` + companion (Section 4) | |
@@ -585,15 +615,21 @@ All FTA event / gate icons are preserved in `v1Icons` as hex-encoded SVG with `f
 
 `FMEA.xmi` declares exactly one stereotype.
 
-| Element | Bases | v2 primary | Notes |
+| Element | Bases | Informative domain view | Notes |
 | --- | --- | --- | --- |
 | `FMEAItem` (FMEA.xmi:23) | `Class` | `Definition` → `PartDefinition` (Section 3.4) | Generalization → `SysML::Block` (FMEA.xmi:35-37, cross-metamodel href); OCL `FMEAItemIsAbstractFMEAItem` binds library class `AbstractFMEAItem` by name |
 
 ### 9.6 RBD
 
-Only `ReliabilitySituation` and `Restorable` locally own their `base_Class`; the other six stereotypes inherit via generalization (per Section 3.2, their `v1Bases` is empty). `ReliabilitySituation` generalizes `CoreRAAML::Situation`, so it and its descendants (`ComponentReliability`, `SystemReliability`, `InSeries`, `InParallel`, `HomogeneousKofN`, `HeterogeneousKofN`) elevate transitively to `OccurrenceDefinition` (Section 3.4). `Restorable` has no generalization edge and therefore stays at plain `Definition` — Section 3.4 is generalization-driven and does not elevate on library-class name anchors.
+Only `ReliabilitySituation` and `Restorable` locally own their `base_Class`;
+the other six stereotypes inherit via generalization, so their local
+`v1Bases` lists are empty. `ReliabilitySituation` generalizes
+`CoreRAAML::Situation`; its descendants retain that chain. `Restorable` has no
+generalization edge. All eight stereotype declarations remain
+`MetadataDefinition`s; the occurrence-oriented entries below are informative
+domain views only.
 
-| Element | Owned bases (`v1Bases`) | Inherits bases from | v2 primary | Notes |
+| Element | Owned bases (`v1Bases`) | Inherits bases from | Informative domain view | Notes |
 | --- | --- | --- | --- | --- |
 | `ReliabilitySituation` (RBD.xmi:15, abstract) | `Class` (RBD.xmi:22) | — | `Definition` → `OccurrenceDefinition` (Section 3.4) | Generalization → `CoreRAAML::Situation` (RBD.xmi:19-21) |
 | `Restorable` (RBD.xmi:34) | `Class` (RBD.xmi:45) | — | `Definition` (no elevation — no generalization edge) | OCL binds library class `Restorable` by name |
@@ -608,7 +644,7 @@ Only `ReliabilitySituation` and `Restorable` locally own their `base_Class`; the
 
 The three abstract parent stereotypes (`GSNNode`, `GSNArgumentNode`, `ContextualInformation`) extend `Element`, not `Class` (GSN.xmi:184,201,233). The concrete subtypes extend `Class`. This matters because `Element`-based annotations require `v1AnnotatedMetaclass` on every instance application per Section 3.3.
 
-| Element | Bases | v2 primary | Notes |
+| Element | Bases | Informative domain view | Notes |
 | --- | --- | --- | --- |
 | `GSNNode` (GSN.xmi:175, abstract) | `Element` | (any) + `v1AnnotatedMetaclass` | |
 | `GSNArgumentNode` (GSN.xmi:196, abstract, `:> GSNNode`) | `Element` | (any) + `v1AnnotatedMetaclass` | |
@@ -625,7 +661,7 @@ The three abstract parent stereotypes (`GSNNode`, `GSNArgumentNode`, `Contextual
 
 ### 9.8 ISO26262
 
-| Element | Bases | v2 primary | Notes |
+| Element | Bases | Informative domain view | Notes |
 | --- | --- | --- | --- |
 | `OperationalSituation` (ISO26262.xmi:15) | `Class` | `Definition` → `OccurrenceDefinition` (Section 3.4) | Generalization → `CoreRAAML::Situation` (ISO26262.xmi:19-21) |
 | `MalfunctioningBehavior` (ISO26262.xmi:34) | `Class` | `Definition` → `OccurrenceDefinition` (Section 3.4) | Generalization → `GeneralRAAML::FailureMode` (ISO26262.xmi:38-40); transitive via `FailureMode → Situation` |
@@ -650,7 +686,7 @@ The three abstract parent stereotypes (`GSNNode`, `GSNArgumentNode`, `Contextual
 
 ### 9.9 GeneralRAAMLSecurity
 
-| Element | Bases | v2 primary | Notes |
+| Element | Bases | Informative domain view | Notes |
 | --- | --- | --- | --- |
 | `Threat` (GeneralRAAMLSecurity.xmi:15, base decl at :22, `:> Situation`) | `Class` | `Definition` → `OccurrenceDefinition` (Section 3.4) | Generalization → `CoreRAAML::Situation` (GeneralRAAMLSecurity.xmi:19-21) |
 | `Impacts` (GeneralRAAMLSecurity.xmi:34, `:> RelevantTo`) | `Dependency` | `Dependency` | Section 8 |
@@ -663,11 +699,11 @@ The three abstract parent stereotypes (`GSNNode`, `GSNArgumentNode`, `Contextual
 
 | Library | Notable elements | v2 form |
 | --- | --- | --- |
-| `CoreRAAMLLib` | `AnySituation`, `Causality` | `Definition` + `Raaml_LibraryAssociation` for the association |
-| `GeneralRAAMLLib` | `FailureMode`, `Hazard`, `HarmPotential`, `Loss`; named associations including `ErrorPropagation`, `Activation`, `ErrorRealization` | `Definition` + `Raaml_LibraryAssociation` for associations |
-| `STPALib` | `ProcessModelFlaw`, `UndesiredControlAction`, `LossScenario`, `Loss`, `RiskRealization` (AssociationClass) | `Definition` + `Raaml_AssociationClass` for `RiskRealization` |
-| `FTALib` | gate/event classes, `FTATree`, `HouseEventProbability` enumeration | `Definition` + `enum def` |
-| `FMEALib`, `RBDLib`, `ISO26262Lib` (`Exposure`, `Severity`, `Controllability` enums), `GeneralRAAMLSecurityLib` | per library | `Definition` + `enum def` for the enumerations |
+| `CoreRAAMLLib` | `AnySituation`, `Causality` | `OccurrenceDefinition` + `Raaml_LibraryAssociation` for the association |
+| `GeneralRAAMLLib` | `FailureMode`, `Hazard`, `HarmPotential`, `Loss`; named associations including `ErrorPropagation`, `Activation`, `ErrorRealization` | Official Class specialization + `Raaml_LibraryAssociation` for associations |
+| `STPALib` | `ProcessModelFlaw`, `UndesiredControlAction`, `LossScenario`, `Loss`, `RiskRealization` (AssociationClass) | Official Class specialization + `Raaml_AssociationClass` for `RiskRealization` |
+| `FTALib` | gate/event classes, `FTATree`, `HouseEventProbability` enumeration | Official Class specialization + `enum def` |
+| `FMEALib`, `RBDLib`, `ISO26262Lib` (`Exposure`, `Severity`, `Controllability` enums), `GeneralRAAMLSecurityLib` | per library | Official Class specialization + `enum def` for the enumerations |
 
 ## 10. How to rebuild the v1 files
 
@@ -795,10 +831,10 @@ The test does not compare raw XML bytes. It ignores the file-format differences 
 
 The following shortcuts may look cleaner in v2, but each would erase or add a listed source fact:
 
-- **Picking a canonical reading of `ControlAction` / `Feedback`.** The `Signal`/`Class`/`DataType` triple extension is preserved in full in `v1Bases`; the v2 primary kind is a selection rule, not a reduction.
+- **Picking one base for `ControlAction` / `Feedback`.** The `Signal`/`Class`/`DataType` triple extension is preserved in full in `v1Bases`; the common `MetadataDefinition` carrier does not reduce it.
 - **Collapsing `Detection` / `Prevention` / `ControllingMeasure` / `Impacts` / `Valuates` into v2 `Satisfy`, `Allocation`, or `DeriveReqt`.** Each RAAML stereotype keeps its own `metadata def`; v2's own relationship kinds are used only as inheritance targets recorded in `v1Generalizations`.
 - **Replacing `RiskRealization`'s AssociationClass form with a plain `connection def`.** The `Raaml_AssociationClass` marker is mandatory.
-- **Translating OCL to native `constraint def` as the sole form.** The constraint store is authoritative; a native `constraint def` is optional additional tooling.
+- **Translating a source expression to native `constraint def` as the sole form.** The constraint store is authoritative. Native constraint views are also emitted where possible, but they do not replace the source.
 - **Flattening `DirectedRelationshipPropertyPath` to a single path.** All four paths (`sourceContext`, `targetContext`, `sourcePropertyPath`, `targetPropertyPath`) are preserved.
 - **Dropping SVG icons.** `v1Icons` is mandatory when the v1 declaration has an `<icon>`.
 - **Dropping `ExtensionEnd.name` values.** `v1ExtensionEndNames` preserves each.
@@ -806,7 +842,7 @@ The following shortcuts may look cleaner in v2, but each would erase or add a li
 - **Inferring `base_Element` targets from context alone.** `v1AnnotatedMetaclass` is mandatory whenever `v1Bases` contains `Element` on an instance-level application.
 - **Translating enumeration-typed stereotype properties to strings.** `Raaml_PropertyValue.enumerationRef` + `enumerationLiteralName` preserves the literal identity; the reverse resolves to the matching `uml:EnumerationLiteral` idref.
 - **Dropping plain `uml:Association` elements in libraries.** `Raaml_LibraryAssociation` is mandatory for every library `uml:Association`; reverse without the marker produces a `uml:Association` with no RAAML lineage, losing the fact-set entry.
-- **Eliding `v1AnnotatedMetaclass` on ambiguous v2 kinds.** Per Section 3.3's tightened rule, the hint is mandatory whenever `v1Bases` has >1 entry or the v2 kind has >1 reverse candidate.
+- **Eliding `v1AnnotatedMetaclass` from an application.** The explicit target metaclass is mandatory because the official occurrence helpers do not fully map application instances.
 - **Using a non-specified hash or alternative synthesis for intra-profile idrefs.** Section 10.5.1 locks the algorithm; any other hash breaks cross-implementation consistency.
 - **Dropping the `format` attribute on `uml:Image`.** `Raaml_Icon.format` is preserved verbatim.
 - **Renaming library classes, profile stereotypes, or library enumerations without rewriting OCL text.** Section 5 commits to stability; a rename is a breaking change to every constraint that mentions the renamed entity.
@@ -816,12 +852,12 @@ The following shortcuts may look cleaner in v2, but each would erase or add a li
 - **Dropping `uml:Image@location`.** Preserved in `Raaml_Icon.location`.
 - **Normalizing `20131001` UML URIs to `20161101`.** `Raaml_BaseRef.typeHref` preserves the source per entry; reverse emits what was read.
 - **Treating `SysML::Block` as a UML metaclass.** It is a SysML 1.6 stereotype; stereotypes "extending SysML::Block" actually own `base_Class` + a generalization (Section 3.4).
-- **Elevating `Situation` itself to `PartDefinition`.** `Situation` generalizes `SysML::Block` but is the hard-coded `OccurrenceDefinition` anchor per Section 3.4. Elevating it would cascade `PartDefinition` to every situation-descendant.
-- **Emitting a companion `uml:Class` for a Property-only stereotype.** Guarded per Section 4 reverse rule; `TransferIn` is the single case in the current corpus.
+- **Changing a stereotype carrier because it generalizes `Situation` or `SysML::Block`.** Those edges are preserved generalizations; the stereotype remains a `MetadataDefinition`.
+- **Emitting a companion `uml:Class` for a Property-based stereotype.** A source extension Property describes the stereotype's annotation domain; it is not an application instance or a request to invent another Class.
 - **Claiming `Verified`/`Confirmed` are `Abstraction`-based or `:> SysML::Satisfy`.** Neither is true; both own `base_Class` with no generalization (Section 8, Section 9.8).
 - **Degrading `uml:Port` to `uml:Property` on reverse.** `Raaml_PropertyDef.propertyKind` discriminates; emitting `xmi:type="uml:Property"` for a Port loses the port semantics that RBDLib's parametric-distribution blocks rely on.
 - **Dropping `<ownedConnector>` elements.** Library classes that own connectors (94 across RBDLib, FTALib, and FMEALib) preserve them via `Raaml_LibraryClass.v1OwnedConnectors`; the reverse emits `<ownedConnector xmi:type="uml:Connector">` with ends.
-- **Elevating `Restorable` based on its library-class name match.** Section 3.4 is generalization-driven; a stereotype with no generalization edge stays at `Definition` regardless of whether its name matches a library class. The OCL anchor on the library class is a separate concern (Section 5).
+- **Changing `Restorable` because its name matches a library Class.** The stereotype and library Class are distinct source declarations with distinct official carriers. The OCL name reference is a separate concern.
 
 ## 12. Non-goals
 

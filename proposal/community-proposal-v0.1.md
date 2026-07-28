@@ -141,27 +141,25 @@ The manifest is required. It is part of the representation, not merely backgroun
 
 ### 6.1 Stereotypes become metadata definitions
 
-Each RAAML stereotype becomes a SysML v2 metadata definition. The mapper chooses a primary v2 form based on the UML elements that the stereotype extends and on its inheritance chain.
+Each RAAML stereotype becomes a SysML v2 metadata definition.
 
-The chosen form does not replace the source facts. It is the part a v2 tool works with directly. The preservation record holds the original UML bases, generalizations, properties, extension ends, icons, and OCL references needed to reconstruct the v1 definition.
+The `MetadataDefinition` is the primary form. This follows the official SysML v1-to-v2 transformation. The preservation record holds the original UML bases, generalizations, properties, extension ends, icons, and constraint references needed to reconstruct the v1 definition.
 
-### 6.2 Choosing one v2 form when several seem possible
+The UML elements that a stereotype may annotate still matter, but they do not change the stereotype itself into a `PartDefinition`, `ItemDefinition`, or another domain definition. They constrain its annotation targets and are retained for reversal. A tool may derive additional domain-oriented views, but those views are not the normative carrier in version 0.1.
 
-The same input must lead to the same choice. Representative rules are:
+### 6.2 Stereotype applications
 
-- a stereotype based on UML `Property` becomes an appropriate v2 usage;
-- when a stereotype extends `Signal`, `Class`, and `DataType`, `Signal` takes precedence and the primary form is an `ItemDefinition`;
-- a Class-based stereotype that inherits from the SysML v1 `Block` stereotype becomes a `PartDefinition`;
-- `CoreRAAML::Situation` and its descendants become `OccurrenceDefinition`s;
-- relationship stereotypes keep their exact RAAML identity even when v2 has a nearby relationship concept.
+The official transformation defines occurrence helpers whose source is a UML `Stereotype` definition. It does not completely specify how an individual stereotype application is connected to its applied element or how the application's tagged values are transferred. The helper operations for discovering applied stereotypes and tag values are implementation-specific.
 
-The important point is simple: choosing one form must not erase the other source facts.
+Version 0.1 therefore records every in-scope RAAML application explicitly: the stereotype, target element, original target metaclass, and each tagged value. A v2 `MetadataUsage` may provide a navigable view of that record, but the preservation record remains authoritative for reversal.
 
 ### 6.3 Library elements
 
-Version 0.1 maps every UML library Class conservatively to a v2 `Definition`. It does not guess that a class is an occurrence merely because its name sounds like one.
+The official transformation maps a plain UML library Class to an `OccurrenceDefinition`. Of the 143 Classes in the corpus, 100 are plain Classes, seven have SysML v1 `Block` applied and become `PartDefinition`s, and 36 have `ConstraintBlock` applied and become `ConstraintDefinition`s.
 
 Enumerations become v2 enum definitions. Ordinary UML Associations and UML AssociationClasses both use connection-oriented v2 forms, but each carries a different marker so the reverse mapper knows which UML element to rebuild.
+
+Four source Enumerations also have SysML v1 `ValueType` applied. The official Enumeration and ValueType mappings overlap for these elements and do not state a precedence rule. Version 0.1 deliberately keeps the `EnumerationDefinition` form, because it preserves the native structure of all 15 ordered literals, and records the ValueType application for reversal.
 
 The source files contain 40 ordinary library associations, 65 Ports, 94 owned connectors, and one AssociationClass. These counts are checks, not rules. The implementation must discover them from the files rather than assume them.
 
@@ -171,7 +169,11 @@ OCL constraints can refer to UML-specific features such as `base_Class` and can 
 
 Version 0.1 therefore keeps the original OCL text, its owner, the elements it constrains, and its comments. It also gives each constraint an owner-qualified key. This is necessary because `CoreRAAML` contains two different constraints named `ClientIsSituation`; their different owners are what distinguish them.
 
-A pinned OCL 2.4 parser must list and resolve the RAAML names used inside each expression. That lets the test detect a constraint whose text survived but whose referenced element disappeared. This is a syntax and reference check, not proof that the constraint evaluates identically in every OCL engine. A generated v2 constraint may be useful, but it is an additional view, not a replacement for the source OCL.
+A pinned OCL 2.4 parser must list and resolve the RAAML names used inside each expression. That lets the test detect a constraint whose text survived but whose referenced element disappeared. This is a syntax and reference check, not proof that the constraint evaluates identically in every OCL engine.
+
+Version 0.1 also emits the official `ConstraintDefinition`, `AssertConstraintUsage`, and calculation view where the source supplies the required fields. This is an additional view, not a replacement for the source expression.
+
+The corpus contains 60 constraint expressions. Fifty-nine have one language and one body. One FMEALib expression, `RPN=SEV*DET*OCC`, has no language. The official textual-representation rule requires a first language value, so the mapper does not invent one. It preserves that expression and reports that no faithful native textual representation was emitted.
 
 ### 6.5 Stable generated IDs
 

@@ -4,3 +4,6 @@ This directory will contain original project fixtures for validation,
 unsupported inputs, expected diagnostics, and adversarial security cases.
 Official third-party definition files do not belong here unless redistribution
 has been explicitly approved.
+
+`milestone-2/resolved-carriers.sysml` exercises the concrete textual carriers
+selected by the resolved transformation matrix.

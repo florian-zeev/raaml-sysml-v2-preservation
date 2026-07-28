@@ -48,8 +48,10 @@ Python 3.14.4 is the tested orchestration runtime. On macOS Apple silicon:
 ./raaml tests milestone-1
 ./raaml transformation surface
 ./raaml transformation properties
-./raaml transformation audit
+./raaml transformation constraints
+./raaml transformation audit --require-resolved
 ./raaml validate-v2 fixtures/milestone-0/minimal-valid.sysml
+./raaml validate-v2 fixtures/milestone-2/resolved-carriers.sysml
 ./raaml validate-v1 sources/cache/CoreRAAML.xmi
 ./raaml validate-v1 sources/cache/CoreRAAMLLib.xmi
 ./raaml validate-ocl fixtures/milestone-0/ocl-valid.txt
@@ -72,6 +74,7 @@ remain ignored. See the ADRs for exact versions and known limitations.
 | [`docs/milestone-2-transformation-analysis.md`](docs/milestone-2-transformation-analysis.md) | In-progress comparison with the official SysML v1-to-v2 transformation |
 | [`analysis/corpus-transformation-surface-v0.1.json`](analysis/corpus-transformation-surface-v0.1.json) | Reproducible inventory of SysML v1 applications that select specialized transformation rules |
 | [`analysis/property-transformation-surface-v0.1.json`](analysis/property-transformation-surface-v0.1.json) | Total official-rule classification of all 267 UML Properties |
+| [`analysis/constraint-transformation-surface-v0.1.json`](analysis/constraint-transformation-surface-v0.1.json) | Total split of all 60 constraint OpaqueExpressions by official mapping fidelity |
 | [`analysis/transformation-matrix-v0.1.json`](analysis/transformation-matrix-v0.1.json) | Machine-checkable rule classifications, citations, and test obligations |
 
 ## Repository boundary

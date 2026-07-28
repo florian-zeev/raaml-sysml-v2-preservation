@@ -11,6 +11,8 @@ All schemas use JSON Schema draft 2020-12 and reject undeclared fields.
   applications that select specialized official transformation rules.
 - `property-transformation-surface.schema.json` defines the total,
   mutually exclusive official-rule classification of all corpus Properties.
+- `constraint-transformation-surface.schema.json` defines the split between
+  labeled and unlabeled constraint OpaqueExpressions.
 - `transformation-matrix.schema.json` defines the reproducible Milestone 2
   comparison with the official SysML v1-to-v2 transformation.
 

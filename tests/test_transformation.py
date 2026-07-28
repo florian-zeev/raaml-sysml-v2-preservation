@@ -3,14 +3,17 @@ from __future__ import annotations
 import copy
 import json
 from pathlib import Path
+import tempfile
 import unittest
 import xml.etree.ElementTree as ET
 
 from raaml_preservation.schemas import validate_instance_against_schema
 from raaml_preservation.transformation import (
+    _check_constraint_surface,
     _check_corpus_surface_counts,
     _check_machine_rules,
     _check_property_surface,
+    analyze_constraint_transformation_surface,
     analyze_corpus_transformation_surface,
     analyze_property_transformation_surface,
     audit_transformation_matrix,
@@ -38,6 +41,11 @@ PROPERTY_SURFACE_PATH = (
     REPOSITORY_ROOT
     / "analysis"
     / "property-transformation-surface-v0.1.json"
+)
+CONSTRAINT_SURFACE_PATH = (
+    REPOSITORY_ROOT
+    / "analysis"
+    / "constraint-transformation-surface-v0.1.json"
 )
 
 
@@ -73,13 +81,30 @@ class TransformationMatrixTests(unittest.TestCase):
             ["TRANSFORMATION_RULE_MISSING"],
         )
 
-    def test_require_resolved_fails_while_open_rows_remain(self) -> None:
+    def test_require_resolved_passes_when_no_open_rows_remain(self) -> None:
         report = audit_transformation_matrix(
             REPOSITORY_ROOT,
             require_resolved=True,
         )
+        self.assertTrue(report["ok"])
+        self.assertEqual(report["summary"]["open"], 0)
+
+    def test_require_resolved_rejects_an_open_row(self) -> None:
+        changed = copy.deepcopy(self.matrix)
+        changed["rows"][0]["classification"] = "open"
+        with tempfile.TemporaryDirectory() as temporary:
+            matrix_path = Path(temporary) / "matrix.json"
+            matrix_path.write_text(
+                json.dumps(changed),
+                encoding="utf-8",
+            )
+            report = audit_transformation_matrix(
+                REPOSITORY_ROOT,
+                matrix_path=matrix_path,
+                require_resolved=True,
+            )
         self.assertFalse(report["ok"])
-        self.assertGreater(report["summary"]["open"], 0)
+        self.assertEqual(report["summary"]["open"], 1)
         self.assertIn(
             "TRANSFORMATION_RULE_OPEN",
             {item["code"] for item in report["diagnostics"]},
@@ -191,4 +216,53 @@ class TransformationMatrixTests(unittest.TestCase):
         self.assertEqual(
             [item["code"] for item in diagnostics],
             ["TRANSFORMATION_PROPERTY_COUNT_MISMATCH"],
+        )
+
+    def test_constraint_transformation_surface_is_reproducible(self) -> None:
+        expected = json.loads(
+            CONSTRAINT_SURFACE_PATH.read_text(encoding="utf-8")
+        )
+        actual = analyze_constraint_transformation_surface(REPOSITORY_ROOT)
+        self.assertEqual(actual, expected)
+
+    def test_constraint_transformation_surface_is_schema_valid(self) -> None:
+        surface = json.loads(
+            CONSTRAINT_SURFACE_PATH.read_text(encoding="utf-8")
+        )
+        validate_instance_against_schema(
+            surface,
+            REPOSITORY_ROOT
+            / "schemas"
+            / "constraint-transformation-surface.schema.json",
+        )
+
+    def test_constraint_surface_covers_every_expression(self) -> None:
+        surface = json.loads(
+            CONSTRAINT_SURFACE_PATH.read_text(encoding="utf-8")
+        )
+        self.assertEqual(
+            sum(row["count"] for row in surface["categories"]),
+            surface["opaqueExpressionCount"],
+        )
+        self.assertEqual(
+            {row["language"]: row["count"] for row in surface["languageCounts"]},
+            {"<absent>": 1, "JavaScript": 26, "OCL2.0": 33},
+        )
+
+    def test_constraint_matrix_count_must_match_source_surface(self) -> None:
+        changed = copy.deepcopy(self.matrix)
+        unlabeled = next(
+            row
+            for row in changed["rows"]
+            if row["id"] == "opaque-expression-unlabeled"
+        )
+        unlabeled["corpusCount"] = 0
+        surface = json.loads(
+            CONSTRAINT_SURFACE_PATH.read_text(encoding="utf-8")
+        )
+        diagnostics: list[dict[str, str]] = []
+        _check_constraint_surface(changed, surface, diagnostics)
+        self.assertEqual(
+            [item["code"] for item in diagnostics],
+            ["TRANSFORMATION_EXPRESSION_COUNT_MISMATCH"],
         )

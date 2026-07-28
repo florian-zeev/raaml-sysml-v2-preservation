@@ -83,11 +83,12 @@
       "machineRuleIds": [
         "Mappings-UML4SysML-Packages-PackageImport_Mapping"
       ],
-      "classification": "open",
-      "proposalRule": "Determine whether the official stereotype processing preserves the MetamodelReference distinction.",
-      "rationale": "The official PackageImport target is known, but the exact treatment of this applied standard-profile stereotype is not yet resolved.",
+      "classification": "supplement",
+      "proposalRule": "Reuse NamespaceImport for the underlying PackageImport and retain an explicit MetamodelReference discriminator in the preservation manifest.",
+      "rationale": "The official transformation has no MetamodelReference-specific rule. Its PackageImport rule preserves the import but not the distinction introduced by the applied StandardProfileL2 stereotype.",
       "testObligations": [
-        "A fixture distinguishes MetamodelReference from an ordinary PackageImport after reversal."
+        "All nine MetamodelReferences reconstruct as MetamodelReferences rather than ordinary PackageImports.",
+        "Removing the manifest discriminator causes the round-trip comparison to fail."
       ]
     },
     {
@@ -169,8 +170,8 @@
     },
     {
       "id": "library-class",
-      "sourceConstruct": "UML Class in a RAAML library",
-      "corpusCount": 143,
+      "sourceConstruct": "Plain UML Class in a RAAML library without Block or ConstraintBlock applied",
+      "corpusCount": 100,
       "officialTarget": "OccurrenceDefinition",
       "officialClauses": [
         "7.7.12.2.10"
@@ -178,11 +179,11 @@
       "machineRuleIds": [
         "Mappings-UML4SysML-StructuredClassifiers-Class_Mapping"
       ],
-      "classification": "open",
-      "proposalRule": "Replace or justify the proposal's generic Definition carrier.",
-      "rationale": "The current proposal differs from the official rule and has not identified validated generic def syntax.",
+      "classification": "supplement",
+      "proposalRule": "Reuse OccurrenceDefinition as the concrete carrier and retain the exact UML Class facts needed for reversal.",
+      "rationale": "The corpus has 143 UML Classes. Seven select Block_Mapping and 36 select ConstraintBlock_Mapping, leaving 100 plain Classes for Class_Mapping. The proposal's generic Definition carrier is neither the official target nor a validated textual production.",
       "testObligations": [
-        "The selected concrete definition kind validates as SysML v2.",
+        "All 100 plain library Classes emit validating occurrence definitions.",
         "Class properties, inheritance, connectors, and stereotype applications survive reversal."
       ]
     },
@@ -267,19 +268,24 @@
       "id": "value-type-enumeration",
       "sourceConstruct": "UML Enumeration with SysML v1 ValueType applied",
       "corpusCount": 4,
-      "officialTarget": "AttributeDefinition",
+      "officialTarget": "AttributeDefinition under ValueType_Mapping; EnumerationDefinition under the overlapping Enumeration_Mapping",
       "officialClauses": [
+        "7.7.10.2.11-13",
         "7.8.4.3.15"
       ],
       "machineRuleIds": [
-        "Mappings-SysMLv1-Blocks-ValueType_Mapping"
+        "Mappings-SysMLv1-Blocks-ValueType_Mapping",
+        "Mappings-UML4SysML-SimpleClassifiers-Enumeration_Mapping",
+        "Mappings-UML4SysML-SimpleClassifiers-EnumerationLiteral_Mapping",
+        "Mappings-UML4SysML-SimpleClassifiers-EnumerationVariantMembership_Mapping"
       ],
-      "classification": "open",
-      "proposalRule": "Resolve the overlap between ValueType_Mapping and Enumeration_Mapping without losing literal identity or order.",
-      "rationale": "HouseEventProbability, Exposure, Severity, and Controllability are Enumerations with ValueType applied. The official ValueType target is AttributeDefinition, while the generic Enumeration target is EnumerationDefinition.",
+      "classification": "deviate",
+      "proposalRule": "Use EnumerationDefinition as the primary v2 carrier for these four source Enumerations and retain the ValueType application in the preservation manifest.",
+      "rationale": "HouseEventProbability, Exposure, Severity, and Controllability are Enumerations with ValueType applied. The official model makes both inherited main mappings applicable but does not state precedence for this overlap. Choosing AttributeDefinition would discard the native enumeration structure for 15 ordered literals, so v0.1 chooses the Enumeration target and records the deviation.",
       "testObligations": [
-        "A focused fixture determines which official main mapping is selected for an Enumeration with ValueType applied.",
-        "All 15 literals across the four ValueTypes remain reconstructable in source order."
+        "All four ValueType Enumerations validate as EnumerationDefinitions.",
+        "All 15 literals remain reconstructable in source order.",
+        "The reconstructed v1 Enumerations have ValueType applied."
       ]
     },
     {
@@ -585,17 +591,18 @@
         "Mappings-UML4SysML-CommonStructure-Constraint_Mapping",
         "Mappings-UML4SysML-CommonStructure-ConstraintUsage_Mapping"
       ],
-      "classification": "open",
-      "proposalRule": "Decide whether the official native view is mandatory in addition to the authoritative source constraint store.",
-      "rationale": "The native mapping should not be treated as behavioral equivalence with the original OCL.",
+      "classification": "supplement",
+      "proposalRule": "Emit the official ConstraintDefinition and AssertConstraintUsage view, and retain the authoritative source constraint record for reversal.",
+      "rationale": "The official structural target is useful and reproducible, but it does not prove behavioral equivalence for OCL or JavaScript. Exact source text, owner, constrained elements, comments, and expression metadata therefore remain mandatory preservation facts.",
       "testObligations": [
         "All 60 source Constraints retain identity, owner, constrained elements, and source expression.",
-        "Any generated native view passes the pinned v2 validator."
+        "Every generated native constraint view passes the pinned v2 validator.",
+        "No report describes native validation as behavioral equivalence."
       ]
     },
     {
-      "id": "opaque-expression",
-      "sourceConstruct": "UML OpaqueExpression used by a Constraint",
+      "id": "opaque-expression-labeled",
+      "sourceConstruct": "UML OpaqueExpression used by a Constraint with one language and one body",
       "corpusCount": 59,
       "officialTarget": "CalculationUsage with language/body specification",
       "officialClauses": [
@@ -606,12 +613,33 @@
         "Mappings-UML4SysML-Values-OpaqueExpression_Mapping",
         "Mappings-UML4SysML-Values-OpaqueExpressionSpecification_Mapping"
       ],
-      "classification": "open",
-      "proposalRule": "Check official output fidelity and preserve the original language/body arrays regardless.",
-      "rationale": "The corpus contains 33 OCL and 26 JavaScript bodies whose exact source representation is in scope.",
+      "classification": "supplement",
+      "proposalRule": "Emit the official CalculationUsage and TextualRepresentation, and retain the exact source language/body arrays.",
+      "rationale": "These 59 expressions each have exactly one language and one body, matching the official get(0) rules. The corpus contains 33 OCL2.0 and 26 JavaScript expressions; preservation still retains exact text and source ordering.",
       "testObligations": [
         "Language/body order and exact text survive reversal.",
         "All 33 OCL bodies continue to parse and resolve source names."
+      ]
+    },
+    {
+      "id": "opaque-expression-unlabeled",
+      "sourceConstruct": "UML OpaqueExpression used by a Constraint with a body but no language",
+      "corpusCount": 1,
+      "officialTarget": "CalculationUsage; the official TextualRepresentation language rule evaluates invalid",
+      "officialClauses": [
+        "7.7.14.3.18",
+        "7.7.14.3.31"
+      ],
+      "machineRuleIds": [
+        "Mappings-UML4SysML-Values-OpaqueExpression_Mapping",
+        "Mappings-UML4SysML-Values-OpaqueExpressionSpecification_Mapping"
+      ],
+      "classification": "deviate",
+      "proposalRule": "Do not invent a language for FMEALib RPNCalculation; retain its exact unlabeled body in the preservation manifest and report that no faithful native textual representation was emitted.",
+      "rationale": "OpaqueExpressionSpecification_Mapping requires language.get(0), which is invalid when the language collection is empty. Guessing a language would add a source fact that RAAML 1.1 does not contain.",
+      "testObligations": [
+        "The unlabeled RPN=SEV*DET*OCC body reconstructs without an added language.",
+        "The report identifies the omitted native textual representation explicitly."
       ]
     },
     {
@@ -643,12 +671,13 @@
       "machineRuleIds": [
         "Mappings-UML4SysML-Packages-StereotypeOccurenceUsage_Mapping"
       ],
-      "classification": "open",
-      "proposalRule": "Resolve the exact official target and tagged-value handling; retain the manifest record until proven.",
-      "rationale": "The helper is explicitly implementation-specific, and the 108 applications are normative source facts.",
+      "classification": "supplement",
+      "proposalRule": "Retain every application target and tagged value in the preservation manifest; a v2 MetadataUsage may be emitted as an additional navigable view.",
+      "rationale": "The official StereotypeOccurenceUsage rules take a Stereotype definition as their source, not an individual application instance, and do not bind the resulting usage to the applied element or map its tagged values. Applied-stereotype and tag-value discovery are explicitly implementation-specific helpers.",
       "testObligations": [
         "Every application target and tagged value reconstructs exactly.",
-        "The official mapping behavior is demonstrated with a focused fixture."
+        "Removing or changing any application record causes the fact comparison to fail.",
+        "Any emitted MetadataUsage is reported as a supplemental view rather than an official application mapping."
       ]
     },
     {

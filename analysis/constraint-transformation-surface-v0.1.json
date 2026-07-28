@@ -1,0 +1,41 @@
+{
+  "categories": [
+    {
+      "count": 59,
+      "id": "opaque-expression-labeled",
+      "machineRuleIds": [
+        "Mappings-UML4SysML-Values-OpaqueExpression_Mapping",
+        "Mappings-UML4SysML-Values-OpaqueExpressionSpecification_Mapping"
+      ],
+      "officialTarget": "CalculationUsage with language/body specification"
+    },
+    {
+      "count": 1,
+      "id": "opaque-expression-unlabeled",
+      "machineRuleIds": [
+        "Mappings-UML4SysML-Values-OpaqueExpression_Mapping",
+        "Mappings-UML4SysML-Values-OpaqueExpressionSpecification_Mapping"
+      ],
+      "officialTarget": "CalculationUsage; the official TextualRepresentation language rule evaluates invalid"
+    }
+  ],
+  "constraintCount": 60,
+  "corpus": "raaml-1.1-definitions",
+  "documentKind": "constraint-transformation-surface",
+  "languageCounts": [
+    {
+      "count": 1,
+      "language": "<absent>"
+    },
+    {
+      "count": 26,
+      "language": "JavaScript"
+    },
+    {
+      "count": 33,
+      "language": "OCL2.0"
+    }
+  ],
+  "opaqueExpressionCount": 60,
+  "schemaVersion": "0.1.0"
+}

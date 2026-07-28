@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raaml-sysml-v2-preservation.example/schema/constraint-transformation-surface-v0.1.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "documentKind",
+    "corpus",
+    "constraintCount",
+    "opaqueExpressionCount",
+    "languageCounts",
+    "categories"
+  ],
+  "properties": {
+    "schemaVersion": {"const": "0.1.0"},
+    "documentKind": {"const": "constraint-transformation-surface"},
+    "corpus": {"const": "raaml-1.1-definitions"},
+    "constraintCount": {"const": 60},
+    "opaqueExpressionCount": {"const": 60},
+    "languageCounts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/languageCount"}
+    },
+    "categories": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/category"}
+    }
+  },
+  "$defs": {
+    "languageCount": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["language", "count"],
+      "properties": {
+        "language": {"type": "string", "minLength": 1},
+        "count": {"type": "integer", "minimum": 0}
+      }
+    },
+    "category": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "count",
+        "officialTarget",
+        "machineRuleIds"
+      ],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z0-9-]+$"},
+        "count": {"type": "integer", "minimum": 0},
+        "officialTarget": {"type": "string", "minLength": 1},
+        "machineRuleIds": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}

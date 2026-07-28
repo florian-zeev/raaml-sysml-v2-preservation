@@ -416,6 +416,134 @@ def analyze_property_transformation_surface(
     }
 
 
+def analyze_constraint_transformation_surface(
+    repository_root: Path,
+) -> dict[str, Any]:
+    """Classify constraint OpaqueExpressions by official mapping fidelity."""
+    lock_path = repository_root / "standards.lock.json"
+    source_dir = repository_root / "sources" / "cache"
+    verification = verify_sources(
+        lock_path=lock_path,
+        source_dir=source_dir,
+        collection=RAAML_CORPUS,
+    )
+    if not verification["ok"]:
+        first = verification["diagnostics"][0]
+        raise LockError(first["message"])
+
+    lock = load_lock(lock_path)
+    artifacts = sorted(
+        (
+            artifact
+            for artifact in lock["artifacts"]
+            if artifact["collection"] == RAAML_CORPUS
+        ),
+        key=lambda artifact: artifact["filename"],
+    )
+    if len(artifacts) != 17:
+        raise ValueError(
+            f"expected 17 locked RAAML artifacts, got {len(artifacts)}"
+        )
+
+    constraint_count = 0
+    opaque_expression_count = 0
+    language_counts: Counter[str] = Counter()
+    shape_counts: Counter[tuple[int, int]] = Counter()
+    allowed_remote_documents = _allowed_remote_documents(lock)
+    for artifact in artifacts:
+        path = source_dir / artifact["filename"]
+        preflight_xml(
+            path,
+            allowed_remote_documents=allowed_remote_documents,
+        )
+        root = ET.parse(path).getroot()
+        for element in root.iter():
+            if (
+                _local_name(element.tag) != "ownedRule"
+                or element.get(XMI_2013_TYPE) != "uml:Constraint"
+            ):
+                continue
+            constraint_count += 1
+            specification = next(
+                (
+                    child
+                    for child in element
+                    if _local_name(child.tag) == "specification"
+                ),
+                None,
+            )
+            if (
+                specification is None
+                or specification.get(XMI_2013_TYPE) != "uml:OpaqueExpression"
+            ):
+                raise ValueError(
+                    f"{artifact['filename']}: constraint does not own an "
+                    "OpaqueExpression specification"
+                )
+            opaque_expression_count += 1
+            languages = [
+                child.text or ""
+                for child in specification
+                if _local_name(child.tag) == "language"
+            ]
+            bodies = [
+                child.text or ""
+                for child in specification
+                if _local_name(child.tag) == "body"
+            ]
+            shape_counts[(len(languages), len(bodies))] += 1
+            if languages:
+                language_counts.update(languages)
+            else:
+                language_counts["<absent>"] += 1
+
+    if constraint_count != 60 or opaque_expression_count != 60:
+        raise ValueError(
+            "expected 60 Constraints with 60 OpaqueExpressions, got "
+            f"{constraint_count} and {opaque_expression_count}"
+        )
+    if shape_counts != Counter({(1, 1): 59, (0, 1): 1}):
+        raise ValueError(
+            f"unexpected OpaqueExpression shapes: {dict(shape_counts)}"
+        )
+    return {
+        "schemaVersion": "0.1.0",
+        "documentKind": "constraint-transformation-surface",
+        "corpus": RAAML_CORPUS,
+        "constraintCount": constraint_count,
+        "opaqueExpressionCount": opaque_expression_count,
+        "languageCounts": [
+            {"language": language, "count": count}
+            for language, count in sorted(language_counts.items())
+        ],
+        "categories": [
+            {
+                "id": "opaque-expression-labeled",
+                "count": shape_counts[(1, 1)],
+                "officialTarget": (
+                    "CalculationUsage with language/body specification"
+                ),
+                "machineRuleIds": [
+                    "Mappings-UML4SysML-Values-OpaqueExpression_Mapping",
+                    "Mappings-UML4SysML-Values-OpaqueExpressionSpecification_Mapping",
+                ],
+            },
+            {
+                "id": "opaque-expression-unlabeled",
+                "count": shape_counts[(0, 1)],
+                "officialTarget": (
+                    "CalculationUsage; the official TextualRepresentation "
+                    "language rule evaluates invalid"
+                ),
+                "machineRuleIds": [
+                    "Mappings-UML4SysML-Values-OpaqueExpression_Mapping",
+                    "Mappings-UML4SysML-Values-OpaqueExpressionSpecification_Mapping",
+                ],
+            },
+        ],
+    }
+
+
 def _allowed_remote_documents(lock: dict[str, Any]) -> set[str]:
     authoritative_urls = {
         artifact["authoritativeUrl"] for artifact in lock["artifacts"]
@@ -503,6 +631,11 @@ def audit_transformation_matrix(
             _check_property_surface(
                 matrix,
                 analyze_property_transformation_surface(repository_root),
+                diagnostics,
+            )
+            _check_constraint_surface(
+                matrix,
+                analyze_constraint_transformation_surface(repository_root),
                 diagnostics,
             )
     except (
@@ -623,6 +756,11 @@ def _check_corpus_surface_counts(
         "binding-connector": stereotypes["BindingConnector"]["count"],
         "block": block_kinds.get("uml:Class", 0),
         "constraint-block": stereotypes["ConstraintBlock"]["count"],
+        "library-class": (
+            143
+            - block_kinds.get("uml:Class", 0)
+            - stereotypes["ConstraintBlock"]["count"]
+        ),
         "nested-connector-end": stereotypes["NestedConnectorEnd"]["count"],
         "value-type-enumeration": stereotypes["ValueType"]["count"],
     }
@@ -700,6 +838,85 @@ def _check_property_surface(
                 {
                     "severity": "error",
                     "code": "TRANSFORMATION_PROPERTY_RULE_MISMATCH",
+                    "message": (
+                        f"{category['id']}: matrix rule IDs do not match "
+                        "the classified source surface"
+                    ),
+                }
+            )
+
+
+def _check_constraint_surface(
+    matrix: dict[str, Any],
+    surface: dict[str, Any],
+    diagnostics: list[dict[str, str]],
+) -> None:
+    rows = {row["id"]: row for row in matrix["rows"]}
+    constraint = rows.get("constraint")
+    if constraint is None:
+        diagnostics.append(
+            {
+                "severity": "error",
+                "code": "TRANSFORMATION_CONSTRAINT_ROW_MISSING",
+                "message": "matrix is missing Constraint row",
+            }
+        )
+    elif constraint["corpusCount"] != surface["constraintCount"]:
+        diagnostics.append(
+            {
+                "severity": "error",
+                "code": "TRANSFORMATION_CONSTRAINT_COUNT_MISMATCH",
+                "message": (
+                    f"constraint: matrix count {constraint['corpusCount']} "
+                    "does not match source count "
+                    f"{surface['constraintCount']}"
+                ),
+            }
+        )
+
+    for category in surface["categories"]:
+        row = rows.get(category["id"])
+        if row is None:
+            diagnostics.append(
+                {
+                    "severity": "error",
+                    "code": "TRANSFORMATION_EXPRESSION_ROW_MISSING",
+                    "message": (
+                        "matrix is missing OpaqueExpression category "
+                        f"{category['id']}"
+                    ),
+                }
+            )
+            continue
+        if row["corpusCount"] != category["count"]:
+            diagnostics.append(
+                {
+                    "severity": "error",
+                    "code": "TRANSFORMATION_EXPRESSION_COUNT_MISMATCH",
+                    "message": (
+                        f"{category['id']}: matrix count "
+                        f"{row['corpusCount']} does not match source count "
+                        f"{category['count']}"
+                    ),
+                }
+            )
+        if row["officialTarget"] != category["officialTarget"]:
+            diagnostics.append(
+                {
+                    "severity": "error",
+                    "code": "TRANSFORMATION_EXPRESSION_TARGET_MISMATCH",
+                    "message": (
+                        f"{category['id']}: matrix target "
+                        f"{row['officialTarget']!r} does not match "
+                        f"{category['officialTarget']!r}"
+                    ),
+                }
+            )
+        if row["machineRuleIds"] != category["machineRuleIds"]:
+            diagnostics.append(
+                {
+                    "severity": "error",
+                    "code": "TRANSFORMATION_EXPRESSION_RULE_MISMATCH",
                     "message": (
                         f"{category['id']}: matrix rule IDs do not match "
                         "the classified source surface"

@@ -26,6 +26,7 @@ from .oracle import EXPECTED_TOTALS, audit_corpus
 from .ocl_validation import validate_ocl_corpus
 from .sources import LockError, fetch_sources, verify_sources
 from .transformation import (
+    analyze_constraint_transformation_surface,
     analyze_corpus_transformation_surface,
     analyze_property_transformation_surface,
     audit_transformation_matrix,
@@ -580,6 +581,23 @@ def _transformation_properties(args: argparse.Namespace) -> int:
     return 0
 
 
+def _transformation_constraints(args: argparse.Namespace) -> int:
+    try:
+        report = analyze_constraint_transformation_surface(REPOSITORY_ROOT)
+    except (OSError, ValueError) as error:
+        print(
+            f"TRANSFORMATION_CONSTRAINTS_INVALID: {error}",
+            file=sys.stderr,
+        )
+        return 1
+    _write_json_atomic(args.output, report)
+    print(
+        f"Classified {report['opaqueExpressionCount']} constraint "
+        f"OpaqueExpressions; report: {args.output}"
+    )
+    return 0
+
+
 def _validate_ocl_command(args: argparse.Namespace) -> int:
     if args.all:
         if args.input is not None:
@@ -827,6 +845,21 @@ def build_parser() -> argparse.ArgumentParser:
     )
     transformation_properties.set_defaults(
         handler=_transformation_properties
+    )
+    transformation_constraints = transformation_commands.add_parser(
+        "constraints",
+        help="classify constraint expressions against the official rules",
+    )
+    transformation_constraints.add_argument(
+        "--output",
+        type=_path,
+        default=REPOSITORY_ROOT
+        / "reports"
+        / "transformation"
+        / "constraint-surface.json",
+    )
+    transformation_constraints.set_defaults(
+        handler=_transformation_constraints
     )
 
     tests = commands.add_parser("tests", help="run project tests")

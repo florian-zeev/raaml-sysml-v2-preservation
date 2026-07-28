@@ -1,6 +1,6 @@
 # Milestone 2 transformation analysis
 
-**Status:** In progress
+**Status:** Resolved locally; clean Linux/container run pending
 
 **Date started:** 2026-07-28
 
@@ -78,7 +78,7 @@ one of these categories is outside the v0.1 corpus claim.
 - **Deviate:** Deliberately choose a different v2 target or behavior.
 - **Open:** The evidence is not yet sufficient to classify the row.
 
-## Initial rule matrix
+## Resolved rule matrix
 
 The machine-rule identifiers below are XMI IDs in the pinned
 `SysMLv1Tov2.xmi`.
@@ -88,18 +88,18 @@ The machine-rule identifiers below are XMI IDs in the pinned
 | UML Profile | Package | 7.7.9.3.21; `Mappings-UML4SysML-Packages-Profile_Mapping` | Supplement | Reuse the Package target; retain profile identity, URI, comments, and namespace-prefix facts needed for reversal. |
 | UML Package | Package, including URI metadata when present | 7.7.9.3.11; `Mappings-UML4SysML-Packages-Package_Mapping` | Supplement | Reuse package nesting and URI mapping; retain source presence and artifact identity. |
 | UML PackageImport | NamespaceImport | 7.7.9.3.12; `Mappings-UML4SysML-Packages-PackageImport_Mapping` | Supplement | Reuse the import; retain the exact source reference form and target identity. |
-| UML MetamodelReference | Underlying PackageImport behavior | 7.7.9.3.12 plus the source stereotype | Open | Determine whether the official stereotype-processing rules preserve the distinction or whether the manifest must do so alone. |
+| UML MetamodelReference | Underlying PackageImport behavior | 7.7.9.3.12 plus the source stereotype | Supplement | Reuse NamespaceImport and retain an explicit MetamodelReference discriminator because no official MetamodelReference-specific rule exists. |
 | UML ProfileApplication | Not mapped | 7.7.9.1-7.7.9.2, Tables 12-13 | Supplement | Preserve each profile application and target in the manifest so it can be reconstructed. |
 | UML Stereotype | MetadataDefinition | 7.7.9.3.24; `Mappings-UML4SysML-Packages-StereotypeMetadataDefinition_Mapping` | Supplement | The MetadataDefinition is the normative v2 carrier. Retain source bases, extension details, generalizations, properties, icons, constraints, and comments for reversal. |
 | UML Extension / ExtensionEnd | Handled in the Stereotype mapping context | 7.7.9.1-7.7.9.2, Tables 12-13; stereotype occurrence rules 7.7.9.3.26-34 | Supplement | Reuse the official annotation-target machinery; retain exact base-property ownership, multiplicity, ExtensionEnd name, and href spelling. |
 | UML Generalization | Subclassification | 7.7.4.2.12; `Mappings-UML4SysML-Classification-Generalization_Mapping` | Supplement | Reuse Subclassification; retain local-versus-external reference form and exact target identity. |
-| UML Class in a RAAML library | OccurrenceDefinition | 7.7.12.2.10; `Mappings-UML4SysML-StructuredClassifiers-Class_Mapping` | Open - likely reuse | The current proposal's generic `Definition`/`def` carrier conflicts with the official rule and does not yet identify executable generic textual syntax. Resolve before the vertical slice. |
+| Plain UML Class in a RAAML library | OccurrenceDefinition | 7.7.12.2.10; `Mappings-UML4SysML-StructuredClassifiers-Class_Mapping` | Supplement | Reuse OccurrenceDefinition for the 100 plain Classes and retain exact source Class facts. Seven other Classes select Block_Mapping and 36 select ConstraintBlock_Mapping. |
 | SysML v1 Block on a UML Class | PartDefinition | 7.8.4.3.3; `Mappings-SysMLv1-Blocks-Block_Mapping` | Supplement | Seven FTA library Classes select the Block rule. Preserve the applied Block for reversal; do not infer it only from a RAAML stereotype's inheritance graph. |
 | SysML v1 ConstraintBlock on a UML Class | ConstraintDefinition | 7.8.5.2.1; `Mappings-SysMLv1-ConstraintBlocks-ConstraintBlock_Mapping` | Supplement | All 36 ConstraintBlocks need the native target plus source Class, application, parameter, and constraint facts. |
 | SysML v1 Block on a UML AssociationClass | ConnectionDefinition | 7.8.4.3.1; `Mappings-SysMLv1-Blocks-AssociationBlock_Mapping` | Supplement | STPA `RiskRealization` selects AssociationBlock_Mapping, not Block_Mapping. Preserve both the AssociationClass kind and Block application. |
 | UML Enumeration | EnumerationDefinition | 7.7.10.2.11; `Mappings-UML4SysML-SimpleClassifiers-Enumeration_Mapping` | Supplement | Reuse the definition; retain literal order and exact source ownership. |
 | UML EnumerationLiteral | EnumerationUsage | 7.7.10.2.12; `Mappings-UML4SysML-SimpleClassifiers-EnumerationLiteral_Mapping` | Supplement | Reuse the usage and preserve ordered membership. |
-| UML Enumeration with SysML v1 ValueType | AttributeDefinition | 7.8.4.3.15; `Mappings-SysMLv1-Blocks-ValueType_Mapping` | Open | Four Enumerations have ValueType applied. Resolve the overlap with Enumeration_Mapping without losing their 15 ordered literals. |
+| UML Enumeration with SysML v1 ValueType | Overlapping AttributeDefinition and EnumerationDefinition rules | 7.7.10.2.11-13 and 7.8.4.3.15 | Deviate | The official model does not state precedence for this overlap. Use EnumerationDefinition to retain native enumeration structure and preserve the ValueType application for reversal. |
 | UML AssociationClass | ConnectionDefinition | 7.7.12.2.1; `Mappings-UML4SysML-StructuredClassifiers-AssociationClass_Mapping` | Supplement | Reuse the connection target; retain the Class facet, parent kinds, owned-end facts, and an explicit AssociationClass discriminator. |
 | UML Association | ConnectionDefinition | 7.7.12.2.2 and 7.7.12.2.20; `AssociationCommon_Mapping`, `ConnectorType_Mapping` | Supplement | Reuse the connection target; retain association ownership, ordered member ends, navigability, multiplicity presence, and an Association discriminator. |
 | UML Property | Metadata/extension handling, AttributeUsage, OccurrenceUsage, Feature, or dual classifier/association views depending on the official filters | 7.7.4.2.35-38; 7.7.9.3.24-34; 7.7.10.2.1-5; 7.7.12.2.23-35; 7.8.5.2.2 | Supplement | The complete 267-Property decision table is reproduced in `analysis/property-transformation-surface-v0.1.json`. Preserve source ownership and exact Property facts around each native target. |
@@ -109,26 +109,28 @@ The machine-rule identifiers below are XMI IDs in the pinned
 | SysML v1 BindingConnector | BindingConnectorAsUsage | 7.8.4.3.2; `Mappings-SysMLv1-Blocks-BindingConnector_Mapping` | Supplement | Ninety of 94 Connectors select this specialized rule. Preserve the application so four ordinary Connectors remain distinguishable. |
 | SysML v1 NestedConnectorEnd with propertyPath | Feature with ordered FeatureChaining | 7.7.12.2.18 and 7.8.4.2; `ConnectorEndToSubsettedFeature_Mapping` | Supplement | The standard creates no separate stereotype target, but 125 ConnectorEnds use its ordered property path to select the feature-chain rule. |
 | UML Comment | Comment plus Annotation | 7.7.6.2.2-4; `Comment_Mapping`, `CommentAnnotation_Mapping`, `CommentOwnership_Mapping` | Supplement | Reuse Comment/Annotation; retain exact body, owner, and all annotated-element references. |
-| UML Constraint | ConstraintDefinition plus AssertConstraintUsage | 7.7.6.2.5-8; `Constraint_Mapping`, `ConstraintUsage_Mapping` | Open - likely supplement | Generate the official v2 view, but keep the original constraint store authoritative for reversal until behavioral equivalence is demonstrated. |
-| UML OpaqueExpression used by a constraint | CalculationUsage and language/body specification | 7.7.14.3.18 and 7.7.14.3.31; `OpaqueExpression_Mapping`, `OpaqueExpressionSpecification_Mapping` | Open - likely supplement | Check whether the official output retains every language/body line and ordering fact. Preserve the source expression regardless. |
+| UML Constraint | ConstraintDefinition plus AssertConstraintUsage | 7.7.6.2.5-8; `Constraint_Mapping`, `ConstraintUsage_Mapping` | Supplement | Generate the official structural view and keep the original constraint record authoritative for reversal and behavioral claims. |
+| UML OpaqueExpression with one language and body | CalculationUsage and TextualRepresentation | 7.7.14.3.18 and 7.7.14.3.31; `OpaqueExpression_Mapping`, `OpaqueExpressionSpecification_Mapping` | Supplement | All 59 labeled expressions fit the official get(0) rules; retain exact source arrays as well. |
+| UML OpaqueExpression with a body but no language | CalculationUsage; TextualRepresentation language is invalid | 7.7.14.3.18 and 7.7.14.3.31 | Deviate | Do not invent a language for FMEALib `RPNCalculation`; preserve the body and report that a faithful native textual representation was not emitted. |
 | UML Image | Not mapped; mapping not specified | 7.7.9.1-7.7.9.2, Tables 12-13 | Supplement | Store format, location, encoding, and content in the preservation representation. Do not invent a normative native-v2 icon mapping. |
-| RAAML stereotype application in a library | Official arbitrary-stereotype processing is partly implementation-specific | 7.2.2 Helper `getAppliedStereotypes`; stereotype occurrence rules 7.7.9.3.26-34 | Open | Determine the exact official target for the 108 applications and whether tagged values survive. The manifest remains required until this is proven. |
+| RAAML stereotype application in a library | No complete official application-instance mapping | 7.2.2 Helper `getAppliedStereotypes`; stereotype occurrence rules 7.7.9.3.26-34 | Supplement | Preserve all 108 application targets and tagged values. The occurrence rules take a Stereotype definition as input and do not map an application instance, target binding, or tagged values. |
 | Namespace prefix / MagicDraw `mofext:Tag` | No direct rule identified | No machine rule identified | Supplement | Preserve as artifact metadata; do not present it as native SysML v2 semantics. |
 | Exact URL spelling, XMI ownership, explicit-default presence, icon bytes, and source IDs | Not preservation goals of the general semantic transformation | Cross-cutting | Supplement | Keep only the facts included by the v0.1 preservation contract. Original MagicDraw XMI IDs remain excluded. |
 
 ## First material findings
 
-### 1. The proposal's generic library `Definition` is not yet defensible
+### 1. Plain library Classes map to OccurrenceDefinition
 
 The official `Class_Mapping` target is `OccurrenceDefinition`. The current
 proposal says a UML library Class becomes a generic `Definition` or textual
 `def`, but it does not identify a concrete generic SysML v2 textual production
 that has been validated by the pinned parser.
 
-The likely correction is to reuse `OccurrenceDefinition` for plain UML
-Classes, then apply more specific official SysML v1 rules when the actual
-source element meets their filters. This decision remains open until its
-effect on RAAML library properties and associations is checked.
+The resolved rule reuses `OccurrenceDefinition` for the 100 plain UML
+Classes. Seven Classes with Block applied become PartDefinitions, and 36 with
+ConstraintBlock applied become ConstraintDefinitions. Source Class identity,
+properties, inheritance, connectors, and applications remain preservation
+facts.
 
 ### 2. A RAAML stereotype is first a MetadataDefinition
 
@@ -158,10 +160,16 @@ The official transformation maps a UML Constraint and its OpaqueExpression to
 native v2 constraint/calculation elements. The proposal currently retains OCL
 in a sidecar and treats a native v2 constraint as optional.
 
-Milestone 2 must decide whether the forward mapper always emits the official
-native view while also retaining the exact source constraint. Emitting both
-would follow the official transformation without claiming that the native
-constraint behaves identically to the original OCL.
+The forward mapper emits the official native structural view while also
+retaining the exact source constraint. Emitting both follows the official
+transformation without claiming that the native constraint behaves
+identically to the original OCL or JavaScript.
+
+The source has 60 constraint OpaqueExpressions, not 59. Fifty-nine have
+exactly one language and one body: 33 OCL2.0 and 26 JavaScript. The remaining
+FMEALib expression has a body but no language. The official textual
+representation rule calls `language.get(0)`, so v0.1 preserves that expression
+without guessing a language and reports the missing native view.
 
 ### 5. Specialized SysML applications are part of the mapping surface
 
@@ -210,7 +218,8 @@ After acquiring the locked inputs:
 ./raaml sources verify
 ./raaml transformation surface
 ./raaml transformation properties
-./raaml transformation audit
+./raaml transformation constraints
+./raaml transformation audit --require-resolved
 pdftotext -layout \
   sources/cache/SysML-2.0-Transformation.pdf \
   tmp/pdfs/SysML-2.0-Transformation.txt
@@ -220,15 +229,10 @@ Relevant machine rules can be located by XMI ID in
 `sources/cache/SysMLv1Tov2.xmi`. The final Milestone 2 gate will automate that
 check and fail if a cited rule is absent from the pinned model.
 
-## Work remaining
+## Resolution status
 
-1. Resolve the Enumeration-plus-ValueType overlap using the official mapping
-   dispatch semantics and a focused fixture.
-2. Resolve how the official transformation represents arbitrary RAAML
-   stereotype applications and tagged values.
-3. Resolve MetamodelReference and namespace-prefix treatment.
-4. Decide the Class carrier and remove generic shorthand that cannot be
-   validated as SysML v2 text.
-5. Decide whether the native Constraint/Calculation view is mandatory.
-6. Update the community proposal and normative encoding only after no row
-   remains `Open`.
+The matrix contains no `Open` rows. The remaining Milestone 2 work is to
+incorporate these decisions into the community proposal and normative
+encoding, validate the selected textual forms with the pinned SysML v2
+implementation, and freeze the version 0.1 mapping tables before the vertical
+slice.

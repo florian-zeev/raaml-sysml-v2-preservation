@@ -39,7 +39,9 @@ jobs:
         run: |
           ./raaml transformation surface
           ./raaml transformation properties
-          ./raaml transformation audit
+          ./raaml transformation constraints
+          ./raaml transformation audit --require-resolved
+          ./raaml validate-v2 fixtures/milestone-2/resolved-carriers.sysml
 
       - name: Run dependency-free unit tests
         run: ./raaml tests unit
@@ -95,7 +97,11 @@ jobs:
                 --output /evidence/corpus-transformation-surface.json
               ./raaml transformation properties \
                 --output /evidence/property-transformation-surface.json
-              ./raaml transformation audit
+              ./raaml transformation constraints \
+                --output /evidence/constraint-transformation-surface.json
+              ./raaml transformation audit --require-resolved
+              ./raaml validate-v2 \
+                fixtures/milestone-2/resolved-carriers.sysml
               ./raaml tests unit
               ./raaml tests milestone-0
               ./raaml facts extract \
@@ -125,6 +131,9 @@ jobs:
           cmp \
             reports/transformation/property-surface.json \
             container-evidence/property-transformation-surface.json
+          cmp \
+            reports/transformation/constraint-surface.json \
+            container-evidence/constraint-transformation-surface.json
           canonical_sha="$(
             sha256sum reports/facts/canonical-raaml-facts.json |
             cut -d ' ' -f 1
