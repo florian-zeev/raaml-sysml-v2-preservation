@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import ast
 import copy
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -226,6 +227,32 @@ class FactExtractionTests(unittest.TestCase):
             if item["name"] == external["property"]
         )
         self.assertEqual(property_record["type"]["target"], external["target"])
+        self.assertEqual(
+            _representative_projection(self.canonical),
+            golden["representativeRecords"],
+        )
+
+    def test_representative_record_mutations_change_the_golden_projection(
+        self,
+    ) -> None:
+        expected = load_baseline()["goldenFacts"]["representativeRecords"]
+        mutations = (
+            _mutate_port,
+            _mutate_connector_order,
+            _mutate_icon,
+            _mutate_comment,
+            _mutate_machinery,
+            _mutate_application,
+            _mutate_association_order,
+        )
+        for mutate in mutations:
+            with self.subTest(mutation=mutate.__name__):
+                changed = copy.deepcopy(self.canonical)
+                mutate(changed)
+                self.assertNotEqual(
+                    _representative_projection(changed),
+                    expected,
+                )
 
     def test_oracle_does_not_import_the_production_extractor(self) -> None:
         source = (
@@ -320,6 +347,165 @@ class ReportFileTests(unittest.TestCase):
                 json.loads(path.read_text(encoding="utf-8")),
                 {"ok": True},
             )
+
+
+def _artifact(canonical: dict[str, object], filename: str) -> dict[str, object]:
+    return next(
+        artifact
+        for artifact in canonical["artifacts"]
+        if artifact["filename"] == filename
+    )
+
+
+def _declaration(
+    canonical: dict[str, object],
+    filename: str,
+    name: str,
+) -> dict[str, object]:
+    return next(
+        declaration
+        for declaration in _artifact(canonical, filename)["declarations"]
+        if declaration["name"] == name
+    )
+
+
+def _representative_projection(
+    canonical: dict[str, object],
+) -> dict[str, object]:
+    rpn = _declaration(canonical, "FMEALib.xmi", "RPNCalculation")
+    port = next(item for item in rpn["properties"] if item["name"] == "DET")
+    fmea_item = _declaration(canonical, "FMEALib.xmi", "FMEAItem")
+    connector = fmea_item["connectors"][0]
+    undeveloped = _declaration(canonical, "GeneralRAAML.xmi", "Undeveloped")
+    icon = undeveloped["icons"][0]
+    situation = _declaration(canonical, "CoreRAAML.xmi", "Situation")
+    comment = situation["comments"][0]
+    core = _artifact(canonical, "CoreRAAML.xmi")
+    application = _artifact(canonical, "FMEALib.xmi")["applications"][0]
+    association = next(
+        item
+        for item in _artifact(canonical, "CoreRAAMLLib.xmi")["declarations"]
+        if item["kind"] == "Association" and item["name"] == "Causality"
+    )
+    return {
+        "port": {
+            "artifact": "FMEALib.xmi",
+            "owner": "RPNCalculation",
+            "name": port["name"],
+            "type": port["type"]["target"],
+        },
+        "connector": {
+            "artifact": "FMEALib.xmi",
+            "owner": "FMEAItem",
+            "roleTargets": [end["role"]["target"] for end in connector["ends"]],
+            "partWithPortTargets": [
+                (
+                    end["partWithPort"]["target"]
+                    if end["partWithPort"] is not None
+                    else None
+                )
+                for end in connector["ends"]
+            ],
+        },
+        "icon": {
+            "artifact": "GeneralRAAML.xmi",
+            "owner": "Undeveloped",
+            "format": icon["format"]["value"],
+            "location": icon["location"]["value"],
+            "contentSha256": hashlib.sha256(
+                icon["content"].encode("utf-8")
+            ).hexdigest(),
+        },
+        "comment": {
+            "artifact": "CoreRAAML.xmi",
+            "owner": "Situation",
+            "body": comment["body"],
+            "annotatedElement": comment["annotatedElements"][0]["target"],
+        },
+        "machinery": {
+            "artifact": "CoreRAAML.xmi",
+            "kinds": [item["kind"] for item in core["machinery"]],
+            "targets": [
+                item["targets"][0]["target"]
+                for item in core["machinery"]
+            ],
+        },
+        "application": {
+            "artifact": "FMEALib.xmi",
+            "stereotypeName": application["stereotypeName"],
+            "stereotypeNamespace": application["stereotypeNamespace"],
+            "targetProperty": application["targetProperty"],
+            "target": application["target"]["target"],
+        },
+        "ordinaryAssociation": {
+            "artifact": "CoreRAAMLLib.xmi",
+            "name": association["name"],
+            "memberEndTargets": [
+                item["target"]
+                for item in association["memberEnds"]
+            ],
+        },
+    }
+
+
+def _mutate_port(canonical: dict[str, object]) -> None:
+    rpn = _declaration(canonical, "FMEALib.xmi", "RPNCalculation")
+    next(item for item in rpn["properties"] if item["name"] == "DET")[
+        "type"
+    ][
+        "target"
+    ] = "changed"
+
+
+def _mutate_connector_order(canonical: dict[str, object]) -> None:
+    connector = _declaration(
+        canonical,
+        "FMEALib.xmi",
+        "FMEAItem",
+    )["connectors"][0]
+    connector["ends"].reverse()
+
+
+def _mutate_icon(canonical: dict[str, object]) -> None:
+    _declaration(
+        canonical,
+        "GeneralRAAML.xmi",
+        "Undeveloped",
+    )["icons"][0]["content"] += "changed"
+
+
+def _mutate_comment(canonical: dict[str, object]) -> None:
+    _declaration(
+        canonical,
+        "CoreRAAML.xmi",
+        "Situation",
+    )["comments"][0]["body"] = "changed"
+
+
+def _mutate_machinery(canonical: dict[str, object]) -> None:
+    _artifact(
+        canonical,
+        "CoreRAAML.xmi",
+    )["machinery"][0]["targets"][0]["target"] = "changed"
+
+
+def _mutate_application(canonical: dict[str, object]) -> None:
+    _artifact(
+        canonical,
+        "FMEALib.xmi",
+    )["applications"][0]["target"]["target"] = "changed"
+
+
+def _mutate_association_order(canonical: dict[str, object]) -> None:
+    association = next(
+        item
+        for item in _artifact(
+            canonical,
+            "CoreRAAMLLib.xmi",
+        )["declarations"]
+        if item["kind"] == "Association" and item["name"] == "Causality"
+    )
+    association["memberEnds"].reverse()
 
 
 def _remove_one_category_fact(

@@ -97,6 +97,65 @@
       "owner": "CumulativeDistributionFunction",
       "property": "time",
       "target": "external::http://www.omg.org/spec/SysML/20181001/ISO80000.xmi::ISO-80000_dataType.time"
+    },
+    "representativeRecords": {
+      "port": {
+        "artifact": "FMEALib.xmi",
+        "owner": "RPNCalculation",
+        "name": "DET",
+        "type": "external::http://www.omg.org/spec/UML/20161101/PrimitiveTypes.xmi::Real"
+      },
+      "connector": {
+        "artifact": "FMEALib.xmi",
+        "owner": "FMEAItem",
+        "roleTargets": [
+          "raaml-1.1-general-library::General Concepts Library::Class::FailureMode::Property::detectability",
+          "raaml-1.1-fmea-library::FMEA Library::Class::RPNCalculation::Port::DET"
+        ],
+        "partWithPortTargets": [
+          null,
+          "raaml-1.1-fmea-library::FMEA Library::Class::FMEAItem::Property::calculation"
+        ]
+      },
+      "icon": {
+        "artifact": "GeneralRAAML.xmi",
+        "owner": "Undeveloped",
+        "format": "SVG",
+        "location": "C:\\Users\\andarm\\Documents\\Trainings and Consultations\\2018-09-24 OMG TC Ottawa\\FTA\\FTA icons\\undeveloped-event-node-96.svg",
+        "contentSha256": "ae993c656e4b4bf95c43753a7da1b40a0ff45c572bee96725361c5c25b2d6fa2"
+      },
+      "comment": {
+        "artifact": "CoreRAAML.xmi",
+        "owner": "Situation",
+        "body": "A situation is a SysML v1.6 Block. The situation reuses the following functionality from the Block concept: Generalizations, Parts, Value properties, and Parametrics. The situation stereotype is only needed to distinguish situations from other types of blocks. See AnySituation for the definition of a situation concept.",
+        "annotatedElement": "raaml-1.1-core-profile::Core Profile::Stereotype::Situation"
+      },
+      "machinery": {
+        "artifact": "CoreRAAML.xmi",
+        "kinds": [
+          "MetamodelReference",
+          "PackageImport"
+        ],
+        "targets": [
+          "external::https://www.omg.org/spec/UML/20161101/UML.xmi::Package::UML",
+          "external::http://www.omg.org/spec/SysML/20181001/SysML.xmi::SysML"
+        ]
+      },
+      "application": {
+        "artifact": "FMEALib.xmi",
+        "stereotypeName": "FMEAItem",
+        "stereotypeNamespace": "https://www.omg.org/spec/RAAML/20240219/FMEA",
+        "targetProperty": "base_Class",
+        "target": "raaml-1.1-fmea-library::FMEA Library::Class::AbstractFMEAItem"
+      },
+      "ordinaryAssociation": {
+        "artifact": "CoreRAAMLLib.xmi",
+        "name": "Causality",
+        "memberEndTargets": [
+          "raaml-1.1-core-library::Core Library::Class::AnySituation::Property::to",
+          "raaml-1.1-core-library::Core Library::Class::AnySituation::Property::from"
+        ]
+      }
     }
   }
 }
