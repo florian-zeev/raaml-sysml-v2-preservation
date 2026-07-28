@@ -2,9 +2,13 @@ from __future__ import annotations
 
 import ast
 import copy
+import json
+import os
 from pathlib import Path
+import tempfile
 import unittest
 
+from raaml_preservation.cli import _write_json_atomic
 from raaml_preservation.facts import (
     FactExtractionError,
     canonicalize_facts,
@@ -304,6 +308,18 @@ class OclReferenceValidationTests(unittest.TestCase):
             diagnostics[0]["message"],
             "constraint-2: invalid expression",
         )
+
+
+class ReportFileTests(unittest.TestCase):
+    def test_atomic_json_reports_are_world_readable(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "report.json"
+            _write_json_atomic(path, {"ok": True})
+            self.assertEqual(os.stat(path).st_mode & 0o777, 0o644)
+            self.assertEqual(
+                json.loads(path.read_text(encoding="utf-8")),
+                {"ok": True},
+            )
 
 
 def _remove_one_category_fact(

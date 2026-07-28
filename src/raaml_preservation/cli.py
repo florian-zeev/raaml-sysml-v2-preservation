@@ -45,6 +45,7 @@ def _write_json_atomic(path: Path, value: dict[str, Any]) -> None:
         text=True,
     )
     try:
+        os.fchmod(descriptor, 0o644)
         with os.fdopen(descriptor, "w", encoding="utf-8", newline="\n") as handle:
             handle.write(serialized)
             handle.flush()
