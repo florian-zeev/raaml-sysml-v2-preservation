@@ -10,7 +10,9 @@ from raaml_preservation.schemas import validate_instance_against_schema
 from raaml_preservation.transformation import (
     _check_corpus_surface_counts,
     _check_machine_rules,
+    _check_property_surface,
     analyze_corpus_transformation_surface,
+    analyze_property_transformation_surface,
     audit_transformation_matrix,
 )
 
@@ -31,6 +33,11 @@ SURFACE_PATH = (
     REPOSITORY_ROOT
     / "analysis"
     / "corpus-transformation-surface-v0.1.json"
+)
+PROPERTY_SURFACE_PATH = (
+    REPOSITORY_ROOT
+    / "analysis"
+    / "property-transformation-surface-v0.1.json"
 )
 
 
@@ -138,4 +145,50 @@ class TransformationMatrixTests(unittest.TestCase):
         self.assertEqual(
             [item["code"] for item in diagnostics],
             ["TRANSFORMATION_SURFACE_COUNT_MISMATCH"],
+        )
+
+    def test_property_transformation_surface_is_reproducible(self) -> None:
+        expected = json.loads(
+            PROPERTY_SURFACE_PATH.read_text(encoding="utf-8")
+        )
+        actual = analyze_property_transformation_surface(REPOSITORY_ROOT)
+        self.assertEqual(actual, expected)
+
+    def test_property_transformation_surface_is_schema_valid(self) -> None:
+        surface = json.loads(
+            PROPERTY_SURFACE_PATH.read_text(encoding="utf-8")
+        )
+        validate_instance_against_schema(
+            surface,
+            REPOSITORY_ROOT
+            / "schemas"
+            / "property-transformation-surface.schema.json",
+        )
+
+    def test_property_categories_are_total_and_mutually_exclusive(self) -> None:
+        surface = json.loads(
+            PROPERTY_SURFACE_PATH.read_text(encoding="utf-8")
+        )
+        self.assertEqual(
+            sum(row["count"] for row in surface["categories"]),
+            surface["propertyCount"],
+        )
+        self.assertEqual(surface["propertyCount"], 267)
+
+    def test_property_matrix_count_must_match_source_surface(self) -> None:
+        changed = copy.deepcopy(self.matrix)
+        attribute = next(
+            row
+            for row in changed["rows"]
+            if row["id"] == "attribute-property"
+        )
+        attribute["corpusCount"] = 44
+        surface = json.loads(
+            PROPERTY_SURFACE_PATH.read_text(encoding="utf-8")
+        )
+        diagnostics: list[dict[str, str]] = []
+        _check_property_surface(changed, surface, diagnostics)
+        self.assertEqual(
+            [item["code"] for item in diagnostics],
+            ["TRANSFORMATION_PROPERTY_COUNT_MISMATCH"],
         )

@@ -102,7 +102,7 @@ The machine-rule identifiers below are XMI IDs in the pinned
 | UML Enumeration with SysML v1 ValueType | AttributeDefinition | 7.8.4.3.15; `Mappings-SysMLv1-Blocks-ValueType_Mapping` | Open | Four Enumerations have ValueType applied. Resolve the overlap with Enumeration_Mapping without losing their 15 ordered literals. |
 | UML AssociationClass | ConnectionDefinition | 7.7.12.2.1; `Mappings-UML4SysML-StructuredClassifiers-AssociationClass_Mapping` | Supplement | Reuse the connection target; retain the Class facet, parent kinds, owned-end facts, and an explicit AssociationClass discriminator. |
 | UML Association | ConnectionDefinition | 7.7.12.2.2 and 7.7.12.2.20; `AssociationCommon_Mapping`, `ConnectorType_Mapping` | Supplement | Reuse the connection target; retain association ownership, ordered member ends, navigability, multiplicity presence, and an Association discriminator. |
-| UML Property | AttributeUsage, OccurrenceUsage, Feature, or association-end Feature depending on source shape | 7.7.4.2.35-38; 7.7.10.2.1-5; 7.7.12.2.30-35 | Open | Build a corpus decision table from type, aggregation, association ownership, and redefinition/subsetting. Do not use the proposal's shorter three-row table until it is checked against every official filter. |
+| UML Property | Metadata/extension handling, AttributeUsage, OccurrenceUsage, Feature, or dual classifier/association views depending on the official filters | 7.7.4.2.35-38; 7.7.9.3.24-34; 7.7.10.2.1-5; 7.7.12.2.23-35; 7.8.5.2.2 | Supplement | The complete 267-Property decision table is reproduced in `analysis/property-transformation-surface-v0.1.json`. Preserve source ownership and exact Property facts around each native target. |
 | UML Port | PortUsage | 7.7.12.2.36-37; `Port_Mapping`, `PortUntyped_Mapping` | Supplement | All 51 typed and 14 untyped corpus Ports have an official target. Retain original type reference, multiplicity presence, and Port-versus-Property identity. |
 | UML Connector | ConnectionUsage | 7.7.12.2.14; `Mappings-UML4SysML-StructuredClassifiers-Connector_Mapping` | Supplement | Reuse ConnectionUsage; retain ordered ends, role, `partWithPort`, visibility, and source ownership. |
 | UML ConnectorEnd | Feature-based connector-end mappings | 7.7.12.2.15-19 | Supplement | Reuse the official end representation; preserve the exact ordered source-end records for reversal. |
@@ -176,6 +176,32 @@ from the pinned source XMI. This does not change the Milestone 1 definition of
 a RAAML application fact; it prevents Milestone 2 from applying a generic rule
 where an official specialized rule has been selected.
 
+### 6. Property aggregation does not choose the v2 kind
+
+The official filters classify all 267 UML Properties without using
+aggregation as the primary kind selector:
+
+| Mutually exclusive category | Count | Official result |
+| --- | ---: | --- |
+| Stereotype `base_*` Property | 84 | Handled with metadata/extension semantics |
+| Association-owned end | 42 | Feature |
+| Classifier-owned, non-owned Association end | 41 | OccurrenceUsage plus association-end Feature |
+| ConstraintBlock parameter | 17 | AttributeUsage |
+| DataType-typed Property | 45 | AttributeUsage |
+| Class/Interface-typed Property | 27 | OccurrenceUsage |
+| Untyped Property | 11 | Feature |
+| Property typed by an applied Block | 0 | PartUsage |
+
+This corrects the proposal's shorter aggregation-based table. In particular,
+`composite` does not by itself mean `PartUsage`: none of the in-scope
+Properties meets the official PartProperty filter. A source type must actually
+have SysML v1 Block applied.
+
+The 41 non-owned Association ends also expose a subtle dual role. The original
+Property remains owned by its classifier and is mapped as a typed
+OccurrenceUsage, while the Association receives a separate end Feature.
+Reversal must not collapse those two views into an Association-owned Property.
+
 ## Reproduction commands
 
 After acquiring the locked inputs:
@@ -183,6 +209,7 @@ After acquiring the locked inputs:
 ```text
 ./raaml sources verify
 ./raaml transformation surface
+./raaml transformation properties
 ./raaml transformation audit
 pdftotext -layout \
   sources/cache/SysML-2.0-Transformation.pdf \
@@ -197,13 +224,11 @@ check and fail if a cited rule is absent from the pinned model.
 
 1. Resolve the Enumeration-plus-ValueType overlap using the official mapping
    dispatch semantics and a focused fixture.
-2. Derive the complete Property decision table from the official filters and
-   classify every one of the 332 Property/Port records.
-3. Resolve how the official transformation represents arbitrary RAAML
+2. Resolve how the official transformation represents arbitrary RAAML
    stereotype applications and tagged values.
-4. Resolve MetamodelReference and namespace-prefix treatment.
-5. Decide the Class carrier and remove generic shorthand that cannot be
+3. Resolve MetamodelReference and namespace-prefix treatment.
+4. Decide the Class carrier and remove generic shorthand that cannot be
    validated as SysML v2 text.
-6. Decide whether the native Constraint/Calculation view is mandatory.
-7. Update the community proposal and normative encoding only after no row
+5. Decide whether the native Constraint/Calculation view is mandatory.
+6. Update the community proposal and normative encoding only after no row
    remains `Open`.

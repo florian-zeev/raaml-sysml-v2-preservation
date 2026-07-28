@@ -9,6 +9,8 @@ All schemas use JSON Schema draft 2020-12 and reject undeclared fields.
 - `standards-lock.schema.json` defines the pinned source/tool lock.
 - `corpus-transformation-surface.schema.json` defines the SysML v1
   applications that select specialized official transformation rules.
+- `property-transformation-surface.schema.json` defines the total,
+  mutually exclusive official-rule classification of all corpus Properties.
 - `transformation-matrix.schema.json` defines the reproducible Milestone 2
   comparison with the official SysML v1-to-v2 transformation.
 

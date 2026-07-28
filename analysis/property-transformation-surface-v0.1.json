@@ -1,0 +1,73 @@
+{
+  "categories": [
+    {
+      "count": 84,
+      "id": "stereotype-base-property",
+      "machineRuleIds": [
+        "Mappings-UML4SysML-Packages-StereotypeMetadataDefinition_Mapping"
+      ],
+      "officialTarget": "Handled by Stereotype metadata and extension mappings"
+    },
+    {
+      "count": 42,
+      "id": "association-owned-end",
+      "machineRuleIds": [
+        "Mappings-UML4SysML-StructuredClassifiers-OwnedEnd_Mapping"
+      ],
+      "officialTarget": "Feature"
+    },
+    {
+      "count": 41,
+      "id": "association-non-owned-end",
+      "machineRuleIds": [
+        "Mappings-UML4SysML-Classification-PropertyTypedByClassInterface_Mapping",
+        "Mappings-UML4SysML-StructuredClassifiers-NonOwnedEnd_Mapping"
+      ],
+      "officialTarget": "OccurrenceUsage plus association-end Feature"
+    },
+    {
+      "count": 17,
+      "id": "constraint-parameter",
+      "machineRuleIds": [
+        "Mappings-SysMLv1-ConstraintBlocks-ConstraintParameter_Mapping"
+      ],
+      "officialTarget": "AttributeUsage"
+    },
+    {
+      "count": 45,
+      "id": "attribute-property",
+      "machineRuleIds": [
+        "Mappings-UML4SysML-SimpleClassifiers-Attribute_Mapping"
+      ],
+      "officialTarget": "AttributeUsage"
+    },
+    {
+      "count": 27,
+      "id": "occurrence-property",
+      "machineRuleIds": [
+        "Mappings-UML4SysML-Classification-PropertyTypedByClassInterface_Mapping"
+      ],
+      "officialTarget": "OccurrenceUsage"
+    },
+    {
+      "count": 11,
+      "id": "untyped-property",
+      "machineRuleIds": [
+        "Mappings-UML4SysML-Classification-PropertyUntyped_Mapping"
+      ],
+      "officialTarget": "Feature"
+    },
+    {
+      "count": 0,
+      "id": "part-property",
+      "machineRuleIds": [
+        "Mappings-SysMLv1-Blocks-PartProperty_Mapping"
+      ],
+      "officialTarget": "PartUsage"
+    }
+  ],
+  "corpus": "raaml-1.1-definitions",
+  "documentKind": "property-transformation-surface",
+  "propertyCount": 267,
+  "schemaVersion": "0.1.0"
+}

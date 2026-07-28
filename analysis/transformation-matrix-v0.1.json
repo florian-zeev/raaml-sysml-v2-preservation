@@ -321,29 +321,158 @@
       ]
     },
     {
-      "id": "property",
-      "sourceConstruct": "UML Property",
-      "corpusCount": 267,
-      "officialTarget": "AttributeUsage, OccurrenceUsage, Feature, or association-end Feature",
+      "id": "stereotype-base-property",
+      "sourceConstruct": "UML Property named base_* on a Stereotype",
+      "corpusCount": 84,
+      "officialTarget": "Handled by Stereotype metadata and extension mappings",
       "officialClauses": [
-        "7.7.4.2.35-38",
-        "7.7.10.2.1-5",
-        "7.7.12.2.30-35"
+        "7.7.9.3.24-34"
       ],
       "machineRuleIds": [
-        "Mappings-UML4SysML-Classification-PropertyCommon_Mapping",
-        "Mappings-UML4SysML-Classification-PropertyTypedByClassInterface_Mapping",
-        "Mappings-UML4SysML-Classification-PropertyUntyped_Mapping",
-        "Mappings-UML4SysML-SimpleClassifiers-Attribute_Mapping",
-        "Mappings-UML4SysML-StructuredClassifiers-NonOwnedEnd_Mapping",
+        "Mappings-UML4SysML-Packages-StereotypeMetadataDefinition_Mapping"
+      ],
+      "classification": "supplement",
+      "proposalRule": "Do not emit a standalone domain property; preserve the exact base Property and Extension facts alongside the MetadataDefinition.",
+      "rationale": "All 84 base_* Properties are structural parts of UML profile extension semantics and are excluded by the ordinary typed-Property filter.",
+      "testObligations": [
+        "All 84 base Properties remain paired with their Extensions and ExtensionEnds.",
+        "Reversal restores exact base names, types, multiplicities, and ownership."
+      ]
+    },
+    {
+      "id": "association-owned-end",
+      "sourceConstruct": "UML Property owned by an Association",
+      "corpusCount": 42,
+      "officialTarget": "Feature",
+      "officialClauses": [
+        "7.7.12.2.23-24",
+        "7.7.12.2.34-35"
+      ],
+      "machineRuleIds": [
         "Mappings-UML4SysML-StructuredClassifiers-OwnedEnd_Mapping"
       ],
-      "classification": "open",
-      "proposalRule": "Derive a total decision table from the official filters for all corpus Properties.",
-      "rationale": "The proposal's current aggregation-and-type table is shorter than the official filter set.",
+      "classification": "supplement",
+      "proposalRule": "Reuse the owned-end Feature and retain exact Association ownership, member-end order, navigability, and Property facts.",
+      "rationale": "The official Feature represents the connection end, but source ownership and ordered association membership are required for reversal.",
       "testObligations": [
-        "Every Property selects exactly one applicable official main mapping.",
-        "Absent versus explicit multiplicity and default facts survive reversal."
+        "All 42 owned ends select OwnedEnd_Mapping.",
+        "Owned ends reconstruct under the correct Association in source order."
+      ]
+    },
+    {
+      "id": "association-non-owned-end",
+      "sourceConstruct": "Typed UML Property referenced as a non-owned Association end",
+      "corpusCount": 41,
+      "officialTarget": "OccurrenceUsage plus association-end Feature",
+      "officialClauses": [
+        "7.7.4.2.37",
+        "7.7.12.2.23-33"
+      ],
+      "machineRuleIds": [
+        "Mappings-UML4SysML-Classification-PropertyTypedByClassInterface_Mapping",
+        "Mappings-UML4SysML-StructuredClassifiers-NonOwnedEnd_Mapping"
+      ],
+      "classification": "supplement",
+      "proposalRule": "Reuse both official views and preserve that the original Property is classifier-owned but referenced by an Association.",
+      "rationale": "Each of these 41 Properties is both a typed classifier feature and a non-owned association end; collapsing the two roles loses ownership semantics.",
+      "testObligations": [
+        "All 41 Properties produce both required official views.",
+        "Reversal does not turn a non-owned end into an Association-owned Property."
+      ]
+    },
+    {
+      "id": "constraint-parameter",
+      "sourceConstruct": "Typed UML Property owned by a SysML v1 ConstraintBlock",
+      "corpusCount": 17,
+      "officialTarget": "AttributeUsage",
+      "officialClauses": [
+        "7.8.5.2.2"
+      ],
+      "machineRuleIds": [
+        "Mappings-SysMLv1-ConstraintBlocks-ConstraintParameter_Mapping"
+      ],
+      "classification": "supplement",
+      "proposalRule": "Reuse AttributeUsage and retain the source Property facts and ConstraintBlock ownership.",
+      "rationale": "The specialized rule takes precedence even when the parameter is typed by a UML Class.",
+      "testObligations": [
+        "All 17 typed constraint parameters select ConstraintParameter_Mapping.",
+        "No constraint parameter is misclassified as an OccurrenceUsage."
+      ]
+    },
+    {
+      "id": "attribute-property",
+      "sourceConstruct": "Non-association UML Property typed by a DataType",
+      "corpusCount": 45,
+      "officialTarget": "AttributeUsage",
+      "officialClauses": [
+        "7.7.10.2.1-5"
+      ],
+      "machineRuleIds": [
+        "Mappings-UML4SysML-SimpleClassifiers-Attribute_Mapping"
+      ],
+      "classification": "supplement",
+      "proposalRule": "Reuse AttributeUsage and retain the exact source type reference, aggregation, multiplicity presence, default, modifiers, and subset/redefine relationships.",
+      "rationale": "The native target is direct, while the source-level distinctions remain necessary for exact reversal.",
+      "testObligations": [
+        "All 45 DataType-typed Properties select Attribute_Mapping.",
+        "Absent and explicit values remain distinguishable after reversal."
+      ]
+    },
+    {
+      "id": "occurrence-property",
+      "sourceConstruct": "Non-association UML Property typed by a Class or Interface",
+      "corpusCount": 27,
+      "officialTarget": "OccurrenceUsage",
+      "officialClauses": [
+        "7.7.4.2.37"
+      ],
+      "machineRuleIds": [
+        "Mappings-UML4SysML-Classification-PropertyTypedByClassInterface_Mapping"
+      ],
+      "classification": "supplement",
+      "proposalRule": "Reuse OccurrenceUsage and retain the exact source Property facts.",
+      "rationale": "No Property in this category is typed by a source element with Block applied, so PartProperty_Mapping does not supersede it.",
+      "testObligations": [
+        "All 27 Class-typed Properties select OccurrenceUsage.",
+        "No corpus Property in this category selects PartUsage."
+      ]
+    },
+    {
+      "id": "untyped-property",
+      "sourceConstruct": "Untyped UML Property outside a ConstraintBlock",
+      "corpusCount": 11,
+      "officialTarget": "Feature",
+      "officialClauses": [
+        "7.7.4.2.38"
+      ],
+      "machineRuleIds": [
+        "Mappings-UML4SysML-Classification-PropertyUntyped_Mapping"
+      ],
+      "classification": "supplement",
+      "proposalRule": "Reuse Feature and preserve that the source type was absent rather than inferred.",
+      "rationale": "Type absence is a source fact; assigning a convenient v2 type would change the source model.",
+      "testObligations": [
+        "All 11 untyped Properties select PropertyUntyped_Mapping.",
+        "Reversal restores an absent type."
+      ]
+    },
+    {
+      "id": "part-property",
+      "sourceConstruct": "UML Property typed by a Class with SysML v1 Block applied",
+      "corpusCount": 0,
+      "officialTarget": "PartUsage",
+      "officialClauses": [
+        "7.8.4.3.13"
+      ],
+      "machineRuleIds": [
+        "Mappings-SysMLv1-Blocks-PartProperty_Mapping"
+      ],
+      "classification": "reuse",
+      "proposalRule": "Use PartUsage only when the source type actually has Block applied.",
+      "rationale": "No in-scope Property meets this filter; aggregation alone must not select PartUsage.",
+      "testObligations": [
+        "The corpus classifier reports zero PartProperty matches.",
+        "A focused fixture proves that Block application, not aggregation alone, selects PartUsage."
       ]
     },
     {

@@ -27,6 +27,7 @@ from .ocl_validation import validate_ocl_corpus
 from .sources import LockError, fetch_sources, verify_sources
 from .transformation import (
     analyze_corpus_transformation_surface,
+    analyze_property_transformation_surface,
     audit_transformation_matrix,
 )
 from .schemas import (
@@ -543,6 +544,23 @@ def _transformation_surface(args: argparse.Namespace) -> int:
     return 0
 
 
+def _transformation_properties(args: argparse.Namespace) -> int:
+    try:
+        report = analyze_property_transformation_surface(REPOSITORY_ROOT)
+    except (OSError, ValueError) as error:
+        print(
+            f"TRANSFORMATION_PROPERTIES_INVALID: {error}",
+            file=sys.stderr,
+        )
+        return 1
+    _write_json_atomic(args.output, report)
+    print(
+        f"Classified {report['propertyCount']} UML Properties; "
+        f"report: {args.output}"
+    )
+    return 0
+
+
 def _validate_ocl_command(args: argparse.Namespace) -> int:
     if args.all:
         if args.input is not None:
@@ -776,6 +794,21 @@ def build_parser() -> argparse.ArgumentParser:
         / "corpus-surface.json",
     )
     transformation_surface.set_defaults(handler=_transformation_surface)
+    transformation_properties = transformation_commands.add_parser(
+        "properties",
+        help="classify corpus Properties using the official rule filters",
+    )
+    transformation_properties.add_argument(
+        "--output",
+        type=_path,
+        default=REPOSITORY_ROOT
+        / "reports"
+        / "transformation"
+        / "property-surface.json",
+    )
+    transformation_properties.set_defaults(
+        handler=_transformation_properties
+    )
 
     tests = commands.add_parser("tests", help="run project tests")
     test_commands = tests.add_subparsers(dest="tests_command", required=True)

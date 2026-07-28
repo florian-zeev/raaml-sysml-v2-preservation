@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raaml-sysml-v2-preservation.example/schema/property-transformation-surface-v0.1.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "documentKind",
+    "corpus",
+    "propertyCount",
+    "categories"
+  ],
+  "properties": {
+    "schemaVersion": {"const": "0.1.0"},
+    "documentKind": {"const": "property-transformation-surface"},
+    "corpus": {"const": "raaml-1.1-definitions"},
+    "propertyCount": {"const": 267},
+    "categories": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/category"}
+    }
+  },
+  "$defs": {
+    "category": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "count",
+        "officialTarget",
+        "machineRuleIds"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9-]+$"
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "officialTarget": {
+          "type": "string",
+          "minLength": 1
+        },
+        "machineRuleIds": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}
