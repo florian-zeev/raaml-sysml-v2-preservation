@@ -1,17 +1,44 @@
 from __future__ import annotations
 
 import hashlib
+from io import StringIO
 import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
+from urllib.error import HTTPError
 
+from raaml_preservation.cli import main
 from raaml_preservation.sources import (
     LockError,
     fetch_sources,
     load_lock,
     verify_sources,
 )
+
+
+class FakeResponse:
+    def __init__(self, payload: bytes, url: str) -> None:
+        self.payload = payload
+        self.url = url
+        self.consumed = False
+
+    def __enter__(self) -> FakeResponse:
+        return self
+
+    def __exit__(self, *args: object) -> None:
+        return None
+
+    def geturl(self) -> str:
+        return self.url
+
+    def read(self, size: int) -> bytes:
+        del size
+        if self.consumed:
+            return b""
+        self.consumed = True
+        return self.payload
 
 
 def make_artifact(filename: str, payload: bytes) -> dict[str, object]:
@@ -216,6 +243,122 @@ class SourceVerificationTests(unittest.TestCase):
             self.assertEqual(
                 report["diagnostics"][0]["code"],
                 "SOURCE_EXISTS_UNVERIFIED",
+            )
+
+    def test_fetch_retries_a_transient_server_failure(self) -> None:
+        payload = b"<fixture/>"
+        url = "https://example.invalid/fixture.xmi"
+        transient_error = HTTPError(url, 503, "Unavailable", {}, None)
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            cache = root / "cache"
+            lock = write_lock(root, make_artifact("fixture.xmi", payload))
+
+            with (
+                patch(
+                    "raaml_preservation.sources.urlopen",
+                    side_effect=[
+                        transient_error,
+                        FakeResponse(payload, url),
+                    ],
+                ) as opener,
+                patch("raaml_preservation.sources.sleep") as retry_sleep,
+            ):
+                report = fetch_sources(lock_path=lock, source_dir=cache)
+
+            self.assertTrue(report["ok"])
+            self.assertEqual(report["summary"]["fetched"], 1)
+            self.assertEqual(opener.call_count, 2)
+            retry_sleep.assert_called_once_with(1)
+            self.assertEqual((cache / "fixture.xmi").read_bytes(), payload)
+
+    def test_fetch_does_not_retry_an_integrity_failure(self) -> None:
+        payload = b"<fixture/>"
+        changed = b"<fiXture/>"
+        url = "https://example.invalid/fixture.xmi"
+        self.assertEqual(len(payload), len(changed))
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            cache = root / "cache"
+            lock = write_lock(root, make_artifact("fixture.xmi", payload))
+
+            with (
+                patch(
+                    "raaml_preservation.sources.urlopen",
+                    return_value=FakeResponse(changed, url),
+                ) as opener,
+                patch("raaml_preservation.sources.sleep") as retry_sleep,
+            ):
+                with self.assertRaisesRegex(
+                    LockError,
+                    "downloaded SHA-256 does not match",
+                ):
+                    fetch_sources(lock_path=lock, source_dir=cache)
+
+            opener.assert_called_once()
+            retry_sleep.assert_not_called()
+
+    def test_fetch_reports_the_artifact_after_transient_retries_are_exhausted(
+        self,
+    ) -> None:
+        payload = b"<fixture/>"
+        url = "https://example.invalid/fixture.xmi"
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            cache = root / "cache"
+            lock = write_lock(root, make_artifact("fixture.xmi", payload))
+
+            with (
+                patch(
+                    "raaml_preservation.sources.urlopen",
+                    side_effect=[
+                        HTTPError(url, 503, "Unavailable", {}, None),
+                        HTTPError(url, 503, "Unavailable", {}, None),
+                        HTTPError(url, 503, "Unavailable", {}, None),
+                    ],
+                ) as opener,
+                patch("raaml_preservation.sources.sleep") as retry_sleep,
+            ):
+                with self.assertRaisesRegex(
+                    LockError,
+                    "fixture: failed to download .* after 3 attempts",
+                ):
+                    fetch_sources(lock_path=lock, source_dir=cache)
+
+            self.assertEqual(opener.call_count, 3)
+            self.assertEqual(
+                [call.args for call in retry_sleep.call_args_list],
+                [(1,), (2,)],
+            )
+
+    def test_fetch_cli_prints_the_failure_diagnostic(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            diagnostics = root / "fetch.json"
+            stderr = StringIO()
+
+            with (
+                patch(
+                    "raaml_preservation.cli.fetch_sources",
+                    side_effect=OSError("network unavailable"),
+                ),
+                patch("sys.stderr", stderr),
+            ):
+                result = main(
+                    [
+                        "sources",
+                        "fetch",
+                        "--diagnostics",
+                        str(diagnostics),
+                    ]
+                )
+
+            self.assertEqual(result, 1)
+            self.assertIn("SOURCE_FETCH_FAILED: network unavailable", stderr.getvalue())
+            report = json.loads(diagnostics.read_text(encoding="utf-8"))
+            self.assertEqual(
+                report["diagnostics"][0]["message"],
+                "network unavailable",
             )
 
 

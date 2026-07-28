@@ -130,7 +130,26 @@ def _sources_fetch(args: argparse.Namespace) -> int:
             ],
         }
     _write_json_atomic(args.diagnostics, report)
-    return 0 if report["ok"] else 1
+    summary = report["summary"]
+    if report["ok"]:
+        print(
+            f"Fetched {summary['fetched']} of {summary['checked']} locked "
+            f"source artifact(s); diagnostics: {args.diagnostics}"
+        )
+        return 0
+
+    print(
+        f"Source fetch failed: {summary['failed']} error(s); "
+        f"diagnostics: {args.diagnostics}",
+        file=sys.stderr,
+    )
+    for diagnostic in report["diagnostics"]:
+        if diagnostic["severity"] == "error":
+            print(
+                f"{diagnostic['code']}: {diagnostic['message']}",
+                file=sys.stderr,
+            )
+    return 1
 
 
 def _path(value: str) -> Path:

@@ -5,15 +5,20 @@ import json
 import os
 from pathlib import Path
 import re
+import ssl
 import stat
 import tempfile
+from time import sleep
 from typing import Any
+from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
 from urllib.request import Request, urlopen
 
 
 LOCK_SCHEMA_VERSION = "0.1.0"
 MAX_LOCK_BYTES = 5 * 1024 * 1024
+MAX_FETCH_ATTEMPTS = 3
+FETCH_RETRY_DELAYS_SECONDS = (1, 2)
 SHA256_PATTERN = re.compile(r"^[0-9a-f]{64}$")
 REQUIRED_ARTIFACT_FIELDS = {
     "id",
@@ -33,6 +38,77 @@ REQUIRED_ARTIFACT_FIELDS = {
 
 class LockError(ValueError):
     pass
+
+
+def _is_transient_fetch_error(error: BaseException) -> bool:
+    if isinstance(error, HTTPError):
+        return error.code in {408, 425, 429} or 500 <= error.code <= 599
+    if isinstance(error, TimeoutError):
+        return True
+    if not isinstance(error, URLError):
+        return False
+
+    reason = error.reason
+    if isinstance(reason, ssl.SSLCertVerificationError):
+        return False
+    return isinstance(reason, (TimeoutError, ConnectionError, OSError))
+
+
+def _download_source_once(
+    *,
+    artifact: dict[str, Any],
+    source_dir: Path,
+    acquisition_url: str,
+) -> None:
+    descriptor, temporary_name = tempfile.mkstemp(
+        dir=source_dir,
+        prefix=f".{artifact['filename']}.",
+        suffix=".download",
+    )
+    try:
+        digest = hashlib.sha256()
+        downloaded = 0
+        request = Request(
+            acquisition_url,
+            headers={"User-Agent": "raaml-sysml-v2-preservation/0.1"},
+        )
+        with (
+            os.fdopen(descriptor, "wb") as output,
+            urlopen(request, timeout=30) as response,
+        ):
+            final_url = urlparse(response.geturl())
+            if final_url.scheme != "https":
+                raise LockError(
+                    f"{artifact['id']}: download redirected away from HTTPS"
+                )
+            while block := response.read(1024 * 1024):
+                downloaded += len(block)
+                if downloaded > artifact["byteSize"]:
+                    raise LockError(
+                        f"{artifact['id']}: download exceeds locked byte size"
+                    )
+                digest.update(block)
+                output.write(block)
+            output.flush()
+            os.fsync(output.fileno())
+        if downloaded != artifact["byteSize"]:
+            raise LockError(
+                f"{artifact['id']}: expected {artifact['byteSize']} bytes, "
+                f"downloaded {downloaded}"
+            )
+        if digest.hexdigest() != artifact["sha256"]:
+            raise LockError(f"{artifact['id']}: downloaded SHA-256 does not match")
+        os.replace(temporary_name, source_dir / artifact["filename"])
+    except BaseException:
+        try:
+            os.close(descriptor)
+        except OSError:
+            pass
+        try:
+            os.unlink(temporary_name)
+        except FileNotFoundError:
+            pass
+        raise
 
 
 def _require_nonempty_string(value: Any, field: str, artifact_id: str) -> str:
@@ -335,56 +411,28 @@ def fetch_sources(*, lock_path: Path, source_dir: Path) -> dict[str, Any]:
             )
             continue
 
-        descriptor, temporary_name = tempfile.mkstemp(
-            dir=source_dir,
-            prefix=f".{artifact['filename']}.",
-            suffix=".download",
+        acquisition_url = artifact.get(
+            "acquisitionUrl",
+            artifact["authoritativeUrl"],
         )
-        try:
-            digest = hashlib.sha256()
-            downloaded = 0
-            request = Request(
-                artifact.get("acquisitionUrl", artifact["authoritativeUrl"]),
-                headers={"User-Agent": "raaml-sysml-v2-preservation/0.1"},
-            )
-            with (
-                os.fdopen(descriptor, "wb") as output,
-                urlopen(request, timeout=30) as response,
-            ):
-                final_url = urlparse(response.geturl())
-                if final_url.scheme != "https":
-                    raise LockError(
-                        f"{artifact['id']}: download redirected away from HTTPS"
-                    )
-                while block := response.read(1024 * 1024):
-                    downloaded += len(block)
-                    if downloaded > artifact["byteSize"]:
-                        raise LockError(
-                            f"{artifact['id']}: download exceeds locked byte size"
-                        )
-                    digest.update(block)
-                    output.write(block)
-                output.flush()
-                os.fsync(output.fileno())
-            if downloaded != artifact["byteSize"]:
-                raise LockError(
-                    f"{artifact['id']}: expected {artifact['byteSize']} bytes, "
-                    f"downloaded {downloaded}"
+        for attempt in range(1, MAX_FETCH_ATTEMPTS + 1):
+            try:
+                _download_source_once(
+                    artifact=artifact,
+                    source_dir=source_dir,
+                    acquisition_url=acquisition_url,
                 )
-            if digest.hexdigest() != artifact["sha256"]:
-                raise LockError(f"{artifact['id']}: downloaded SHA-256 does not match")
-            os.replace(temporary_name, destination)
-            fetched += 1
-        except BaseException:
-            try:
-                os.close(descriptor)
-            except OSError:
-                pass
-            try:
-                os.unlink(temporary_name)
-            except FileNotFoundError:
-                pass
-            raise
+                fetched += 1
+                break
+            except BaseException as error:
+                if not _is_transient_fetch_error(error):
+                    raise
+                if attempt == MAX_FETCH_ATTEMPTS:
+                    raise LockError(
+                        f"{artifact['id']}: failed to download "
+                        f"{acquisition_url} after {attempt} attempts: {error}"
+                    ) from error
+                sleep(FETCH_RETRY_DELAYS_SECONDS[attempt - 1])
 
     failed = sum(item["severity"] == "error" for item in diagnostics)
     return {
