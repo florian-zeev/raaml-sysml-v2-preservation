@@ -24,7 +24,15 @@ positive/negative SysML v2 fixtures. The clean Linux and offline,
 digest-pinned-container gates passed for commit `77cfaff`. This is toolchain
 evidence, not transformation evidence.
 
-## Milestone 0 quick start
+Milestone 1 passed on 2026-07-28. The repository now has versioned raw and
+canonical fact schemas, deterministic extraction from all 17 official
+definition files, an independent corpus audit, concrete golden records and
+mutation tests, and full-corpus OCL parsing and source-name resolution. The
+Linux host and offline container produced byte-identical canonical facts at
+commit `cc7714d`. This establishes the source baseline; it still does not
+demonstrate a SysML v2 round trip.
+
+## Foundation and fact-baseline quick start
 
 Python 3.14.4 is the tested orchestration runtime. On macOS Apple silicon:
 
@@ -34,6 +42,10 @@ Python 3.14.4 is the tested orchestration runtime. On macOS Apple silicon:
 ./raaml tooling bootstrap
 ./raaml tests unit
 ./raaml tests milestone-0
+./raaml facts extract --all --check-determinism
+./raaml oracle audit --all
+./raaml validate-ocl --all
+./raaml tests milestone-1
 ./raaml validate-v2 fixtures/milestone-0/minimal-valid.sysml
 ./raaml validate-v1 sources/cache/CoreRAAML.xmi
 ./raaml validate-v1 sources/cache/CoreRAAMLLib.xmi
@@ -52,6 +64,8 @@ remain ignored. See the ADRs for exact versions and known limitations.
 | [`docs/executive-summary.md`](docs/executive-summary.md) | Higher-level explanation |
 | [`docs/reference-implementation-plan.md`](docs/reference-implementation-plan.md) | Evidence plan, milestones, and release gates |
 | [`docs/milestone-0-evidence.md`](docs/milestone-0-evidence.md) | Frozen foundation evidence and claim boundary |
+| [`docs/milestone-1-evidence.md`](docs/milestone-1-evidence.md) | Frozen source-fact baseline and reproducibility evidence |
+| [`docs/milestone-1-coverage.md`](docs/milestone-1-coverage.md) | Fact-category coverage, golden examples, and negative cases |
 
 ## Repository boundary
 

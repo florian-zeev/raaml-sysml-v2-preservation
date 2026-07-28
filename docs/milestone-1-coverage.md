@@ -1,6 +1,8 @@
 # Milestone 1 coverage matrix
 
-**Status:** Milestone 1 implementation complete; clean-environment evidence pending
+**Status:** Passed
+
+Frozen evidence: [Milestone 1 evidence](milestone-1-evidence.md)
 
 The frozen expected values live in
 [`oracle/corpus-baseline-v0.1.json`](../oracle/corpus-baseline-v0.1.json).
@@ -68,8 +70,11 @@ for an unresolved type, ambiguous type, unresolved property, and parser
 diagnostic. The Milestone 0 invalid fixture separately proves malformed OCL is
 rejected.
 
-## Remaining publication evidence
+## Published evidence
 
-The implementation gate is complete locally. Milestone 1 evidence is published
-only after the same commit passes CI in the pinned Linux container and the
-canonical output produced there is byte-identical to the host-runner output.
+Commit `cc7714d2f06acaa990ee880a6e6cf52ea2fa2f73` passed the complete
+clean-environment gate in GitHub Actions run
+[`30360860939`](https://github.com/florian-zeev/raaml-sysml-v2-preservation/actions/runs/30360860939).
+The Linux host and offline-container canonical outputs were byte-identical,
+with SHA-256
+`5203f5704cf086e43605a36c10f4a00182e6d2c75a2584031a3d701514a33967`.
