@@ -7,6 +7,8 @@ All schemas use JSON Schema draft 2020-12 and reject undeclared fields.
   surface after identity construction and reference resolution.
 - `diagnostics.schema.json` defines command diagnostics.
 - `standards-lock.schema.json` defines the pinned source/tool lock.
+- `transformation-matrix.schema.json` defines the reproducible Milestone 2
+  comparison with the official SysML v1-to-v2 transformation.
 
 The fact schemas implement
 [`docs/milestone-1-fact-contract.md`](../docs/milestone-1-fact-contract.md).

@@ -46,6 +46,7 @@ Python 3.14.4 is the tested orchestration runtime. On macOS Apple silicon:
 ./raaml oracle audit --all
 ./raaml validate-ocl --all
 ./raaml tests milestone-1
+./raaml transformation audit
 ./raaml validate-v2 fixtures/milestone-0/minimal-valid.sysml
 ./raaml validate-v1 sources/cache/CoreRAAML.xmi
 ./raaml validate-v1 sources/cache/CoreRAAMLLib.xmi
@@ -66,6 +67,8 @@ remain ignored. See the ADRs for exact versions and known limitations.
 | [`docs/milestone-0-evidence.md`](docs/milestone-0-evidence.md) | Frozen foundation evidence and claim boundary |
 | [`docs/milestone-1-evidence.md`](docs/milestone-1-evidence.md) | Frozen source-fact baseline and reproducibility evidence |
 | [`docs/milestone-1-coverage.md`](docs/milestone-1-coverage.md) | Fact-category coverage, golden examples, and negative cases |
+| [`docs/milestone-2-transformation-analysis.md`](docs/milestone-2-transformation-analysis.md) | In-progress comparison with the official SysML v1-to-v2 transformation |
+| [`analysis/transformation-matrix-v0.1.json`](analysis/transformation-matrix-v0.1.json) | Machine-checkable rule classifications, citations, and test obligations |
 
 ## Repository boundary
 

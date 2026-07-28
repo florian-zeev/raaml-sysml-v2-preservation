@@ -1,0 +1,445 @@
+{
+  "schemaVersion": "0.1.0",
+  "matrixVersion": "0.1.0",
+  "normativeSources": {
+    "document": {
+      "lockId": "sysml-2.0-transformation-specification",
+      "omgFileId": "formal/26-03-03",
+      "sha256": "64366027dfef1ab630f741884695a68471939fcf68c3c7d874790d2c86ea518c"
+    },
+    "machineModel": {
+      "lockId": "sysml-2.0-v1-to-v2-transformation-model",
+      "omgFileId": "ptc/25-04-10",
+      "sha256": "093359439fb62cb3a9b1e89fd850ac4ac0b4bbe135b4b54f7861492722cc8459"
+    }
+  },
+  "rows": [
+    {
+      "id": "profile",
+      "sourceConstruct": "UML Profile",
+      "corpusCount": 9,
+      "officialTarget": "Package",
+      "officialClauses": [
+        "7.7.9.3.21"
+      ],
+      "machineRuleIds": [
+        "Mappings-UML4SysML-Packages-Profile_Mapping"
+      ],
+      "classification": "supplement",
+      "proposalRule": "Reuse Package and retain the profile identity, URI, comments, and namespace-prefix facts.",
+      "rationale": "The official target is suitable, but it does not retain every source fact required by the reverse contract.",
+      "testObligations": [
+        "The generated Package passes the pinned v2 validator.",
+        "The reverse mapper restores the Profile rather than an ordinary Package."
+      ]
+    },
+    {
+      "id": "package",
+      "sourceConstruct": "UML Package",
+      "corpusCount": 15,
+      "officialTarget": "Package with URI metadata when present",
+      "officialClauses": [
+        "7.7.9.3.11",
+        "7.7.9.3.13-20"
+      ],
+      "machineRuleIds": [
+        "Mappings-UML4SysML-Packages-Package_Mapping",
+        "Mappings-UML4SysML-Packages-PackageURIMetadataUsage_Mapping"
+      ],
+      "classification": "supplement",
+      "proposalRule": "Reuse Package nesting and URI metadata and retain exact source identity and presence.",
+      "rationale": "The official rule supplies the semantic target; the manifest supplies reverse-reconstruction details.",
+      "testObligations": [
+        "Nested package paths and URI presence survive the round trip."
+      ]
+    },
+    {
+      "id": "package-import",
+      "sourceConstruct": "UML PackageImport",
+      "corpusCount": 9,
+      "officialTarget": "NamespaceImport",
+      "officialClauses": [
+        "7.7.9.3.12"
+      ],
+      "machineRuleIds": [
+        "Mappings-UML4SysML-Packages-PackageImport_Mapping"
+      ],
+      "classification": "supplement",
+      "proposalRule": "Reuse NamespaceImport and retain source-form and target identity.",
+      "rationale": "Exact href versus local-reference form is part of the preservation contract but not the semantic target.",
+      "testObligations": [
+        "Every imported target resolves offline.",
+        "The reverse mapper restores the recorded reference form."
+      ]
+    },
+    {
+      "id": "metamodel-reference",
+      "sourceConstruct": "UML MetamodelReference",
+      "corpusCount": 9,
+      "officialTarget": "Underlying PackageImport behavior",
+      "officialClauses": [
+        "7.7.9.3.12"
+      ],
+      "machineRuleIds": [
+        "Mappings-UML4SysML-Packages-PackageImport_Mapping"
+      ],
+      "classification": "open",
+      "proposalRule": "Determine whether the official stereotype processing preserves the MetamodelReference distinction.",
+      "rationale": "The official PackageImport target is known, but the exact treatment of this applied standard-profile stereotype is not yet resolved.",
+      "testObligations": [
+        "A fixture distinguishes MetamodelReference from an ordinary PackageImport after reversal."
+      ]
+    },
+    {
+      "id": "profile-application",
+      "sourceConstruct": "UML ProfileApplication",
+      "corpusCount": 8,
+      "officialTarget": "Not mapped",
+      "officialClauses": [
+        "7.7.9.1 Table 12",
+        "7.7.9.2 Table 13"
+      ],
+      "machineRuleIds": [],
+      "classification": "supplement",
+      "proposalRule": "Retain each applied Profile and owner in the preservation manifest.",
+      "rationale": "The official transformation explicitly leaves ProfileApplication unmapped.",
+      "testObligations": [
+        "All eight applications are reconstructed with resolved Profile targets."
+      ]
+    },
+    {
+      "id": "stereotype",
+      "sourceConstruct": "UML Stereotype",
+      "corpusCount": 94,
+      "officialTarget": "MetadataDefinition",
+      "officialClauses": [
+        "7.7.9.3.24-34"
+      ],
+      "machineRuleIds": [
+        "Mappings-UML4SysML-Packages-StereotypeMetadataDefinition_Mapping",
+        "Mappings-UML4SysML-Packages-StereotypeOccurenceUsage_Mapping"
+      ],
+      "classification": "supplement",
+      "proposalRule": "Use MetadataDefinition as the primary v2 carrier and retain all source-profile facts needed for reversal.",
+      "rationale": "The official target is appropriate; source extensions, icons, constraints, and XMI distinctions require preservation data.",
+      "testObligations": [
+        "All 94 MetadataDefinitions validate.",
+        "Every Stereotype reconstructs with the same owned bases and generalizations."
+      ]
+    },
+    {
+      "id": "extension",
+      "sourceConstruct": "UML Extension and ExtensionEnd",
+      "corpusCount": 84,
+      "officialTarget": "Handled in the Stereotype mapping context",
+      "officialClauses": [
+        "7.7.9.1 Table 12",
+        "7.7.9.2 Table 13",
+        "7.7.9.3.26-34"
+      ],
+      "machineRuleIds": [
+        "Mappings-UML4SysML-Packages-StereotypeOccurenceUsage_Mapping",
+        "Mappings-UML4SysML-Packages-StereotypeOccurenceUsageMultiplicityRange_Mapping"
+      ],
+      "classification": "supplement",
+      "proposalRule": "Reuse official annotation-target machinery and retain exact base-property, multiplicity, name, and href facts.",
+      "rationale": "The official mapping represents applicability but not every source representation detail in the round-trip contract.",
+      "testObligations": [
+        "All 84 Extensions and ExtensionEnds reconstruct without inferred names or multiplicities."
+      ]
+    },
+    {
+      "id": "generalization",
+      "sourceConstruct": "UML Generalization",
+      "corpusCount": 219,
+      "officialTarget": "Subclassification",
+      "officialClauses": [
+        "7.7.4.2.12"
+      ],
+      "machineRuleIds": [
+        "Mappings-UML4SysML-Classification-Generalization_Mapping"
+      ],
+      "classification": "supplement",
+      "proposalRule": "Reuse Subclassification and retain source reference form and exact target identity.",
+      "rationale": "The semantic relationship is direct, but local versus external representation is needed for exact reconstruction.",
+      "testObligations": [
+        "All 219 targets resolve before and after reversal.",
+        "Ordered multi-parent examples remain distinguishable."
+      ]
+    },
+    {
+      "id": "library-class",
+      "sourceConstruct": "UML Class in a RAAML library",
+      "corpusCount": 143,
+      "officialTarget": "OccurrenceDefinition",
+      "officialClauses": [
+        "7.7.12.2.10"
+      ],
+      "machineRuleIds": [
+        "Mappings-UML4SysML-StructuredClassifiers-Class_Mapping"
+      ],
+      "classification": "open",
+      "proposalRule": "Replace or justify the proposal's generic Definition carrier.",
+      "rationale": "The current proposal differs from the official rule and has not identified validated generic def syntax.",
+      "testObligations": [
+        "The selected concrete definition kind validates as SysML v2.",
+        "Class properties, inheritance, connectors, and stereotype applications survive reversal."
+      ]
+    },
+    {
+      "id": "block",
+      "sourceConstruct": "UML Class with SysML v1 Block applied",
+      "corpusCount": 0,
+      "officialTarget": "PartDefinition",
+      "officialClauses": [
+        "7.8.4.3.3"
+      ],
+      "machineRuleIds": [
+        "Mappings-SysMLv1-Blocks-Block_Mapping"
+      ],
+      "classification": "specialize",
+      "proposalRule": "Use PartDefinition only when the actual source Class meets the official Block filter.",
+      "rationale": "A RAAML Stereotype generalizing the Block Stereotype is not itself a source Class with Block applied.",
+      "testObligations": [
+        "A focused fixture distinguishes stereotype inheritance from Block application."
+      ]
+    },
+    {
+      "id": "enumeration",
+      "sourceConstruct": "UML Enumeration and EnumerationLiteral",
+      "corpusCount": 40,
+      "officialTarget": "EnumerationDefinition and ordered EnumerationUsage members",
+      "officialClauses": [
+        "7.7.10.2.11-13"
+      ],
+      "machineRuleIds": [
+        "Mappings-UML4SysML-SimpleClassifiers-Enumeration_Mapping",
+        "Mappings-UML4SysML-SimpleClassifiers-EnumerationLiteral_Mapping",
+        "Mappings-UML4SysML-SimpleClassifiers-EnumerationVariantMembership_Mapping"
+      ],
+      "classification": "supplement",
+      "proposalRule": "Reuse the official targets and retain exact literal order and source ownership.",
+      "rationale": "The native target is suitable, while deterministic reversal requires the frozen source order.",
+      "testObligations": [
+        "All five enumerations and 35 literals reconstruct in source order."
+      ]
+    },
+    {
+      "id": "association-class",
+      "sourceConstruct": "UML AssociationClass",
+      "corpusCount": 1,
+      "officialTarget": "ConnectionDefinition",
+      "officialClauses": [
+        "7.7.12.2.1"
+      ],
+      "machineRuleIds": [
+        "Mappings-UML4SysML-StructuredClassifiers-AssociationClass_Mapping"
+      ],
+      "classification": "supplement",
+      "proposalRule": "Reuse ConnectionDefinition and retain an AssociationClass discriminator and Class-facet facts.",
+      "rationale": "The reverse mapper must distinguish the sole AssociationClass from ordinary Associations.",
+      "testObligations": [
+        "RiskRealization reconstructs as AssociationClass with both parents and ordered ends."
+      ]
+    },
+    {
+      "id": "association",
+      "sourceConstruct": "UML Association",
+      "corpusCount": 40,
+      "officialTarget": "ConnectionDefinition",
+      "officialClauses": [
+        "7.7.12.2.2",
+        "7.7.12.2.20"
+      ],
+      "machineRuleIds": [
+        "Mappings-UML4SysML-StructuredClassifiers-AssociationCommon_Mapping",
+        "Mappings-UML4SysML-StructuredClassifiers-ConnectorType_Mapping"
+      ],
+      "classification": "supplement",
+      "proposalRule": "Reuse ConnectionDefinition and retain exact association and end facts.",
+      "rationale": "Ownership, navigability, ordered references, and explicit-value presence are required for reversal.",
+      "testObligations": [
+        "All 40 Associations remain distinct and reconstruct with correct end ownership."
+      ]
+    },
+    {
+      "id": "property",
+      "sourceConstruct": "UML Property",
+      "corpusCount": 267,
+      "officialTarget": "AttributeUsage, OccurrenceUsage, Feature, or association-end Feature",
+      "officialClauses": [
+        "7.7.4.2.35-38",
+        "7.7.10.2.1-5",
+        "7.7.12.2.30-35"
+      ],
+      "machineRuleIds": [
+        "Mappings-UML4SysML-Classification-PropertyCommon_Mapping",
+        "Mappings-UML4SysML-Classification-PropertyTypedByClassInterface_Mapping",
+        "Mappings-UML4SysML-Classification-PropertyUntyped_Mapping",
+        "Mappings-UML4SysML-SimpleClassifiers-Attribute_Mapping",
+        "Mappings-UML4SysML-StructuredClassifiers-NonOwnedEnd_Mapping",
+        "Mappings-UML4SysML-StructuredClassifiers-OwnedEnd_Mapping"
+      ],
+      "classification": "open",
+      "proposalRule": "Derive a total decision table from the official filters for all corpus Properties.",
+      "rationale": "The proposal's current aggregation-and-type table is shorter than the official filter set.",
+      "testObligations": [
+        "Every Property selects exactly one applicable official main mapping.",
+        "Absent versus explicit multiplicity and default facts survive reversal."
+      ]
+    },
+    {
+      "id": "port",
+      "sourceConstruct": "UML Port",
+      "corpusCount": 65,
+      "officialTarget": "PortUsage",
+      "officialClauses": [
+        "7.7.12.2.36-37"
+      ],
+      "machineRuleIds": [
+        "Mappings-UML4SysML-StructuredClassifiers-Port_Mapping",
+        "Mappings-UML4SysML-StructuredClassifiers-PortUntyped_Mapping"
+      ],
+      "classification": "supplement",
+      "proposalRule": "Reuse PortUsage and retain original type, multiplicity, and Port identity.",
+      "rationale": "The corpus contains 51 typed and 14 untyped Ports, both covered by official rules.",
+      "testObligations": [
+        "All typed and untyped Ports validate and reconstruct as Ports rather than Properties."
+      ]
+    },
+    {
+      "id": "connector",
+      "sourceConstruct": "UML Connector and ConnectorEnd",
+      "corpusCount": 94,
+      "officialTarget": "ConnectionUsage with feature-based ends",
+      "officialClauses": [
+        "7.7.12.2.14-19"
+      ],
+      "machineRuleIds": [
+        "Mappings-UML4SysML-StructuredClassifiers-Connector_Mapping",
+        "Mappings-UML4SysML-StructuredClassifiers-ConnectorEndToFeatureCommon_Mapping",
+        "Mappings-UML4SysML-StructuredClassifiers-ConnectorEndToOwnedFeature_Mapping"
+      ],
+      "classification": "supplement",
+      "proposalRule": "Reuse ConnectionUsage and preserve ordered role and partWithPort records.",
+      "rationale": "The official semantic target is usable; exact source-end records are still required for reversal.",
+      "testObligations": [
+        "All 94 connectors retain ordered end role and partWithPort targets."
+      ]
+    },
+    {
+      "id": "comment",
+      "sourceConstruct": "UML Comment",
+      "corpusCount": 431,
+      "officialTarget": "Comment and Annotation",
+      "officialClauses": [
+        "7.7.6.2.2-4"
+      ],
+      "machineRuleIds": [
+        "Mappings-UML4SysML-CommonStructure-Comment_Mapping",
+        "Mappings-UML4SysML-CommonStructure-CommentAnnotation_Mapping",
+        "Mappings-UML4SysML-CommonStructure-CommentOwnership_Mapping"
+      ],
+      "classification": "supplement",
+      "proposalRule": "Reuse Comment and Annotation and retain exact owner, body, and annotated targets.",
+      "rationale": "Source anchoring and multi-target reconstruction require explicit preservation records.",
+      "testObligations": [
+        "All comment bodies and annotated-element targets compare equal after reversal."
+      ]
+    },
+    {
+      "id": "constraint",
+      "sourceConstruct": "UML Constraint",
+      "corpusCount": 60,
+      "officialTarget": "ConstraintDefinition and AssertConstraintUsage",
+      "officialClauses": [
+        "7.7.6.2.5-8"
+      ],
+      "machineRuleIds": [
+        "Mappings-UML4SysML-CommonStructure-Constraint_Mapping",
+        "Mappings-UML4SysML-CommonStructure-ConstraintUsage_Mapping"
+      ],
+      "classification": "open",
+      "proposalRule": "Decide whether the official native view is mandatory in addition to the authoritative source constraint store.",
+      "rationale": "The native mapping should not be treated as behavioral equivalence with the original OCL.",
+      "testObligations": [
+        "All 60 source Constraints retain identity, owner, constrained elements, and source expression.",
+        "Any generated native view passes the pinned v2 validator."
+      ]
+    },
+    {
+      "id": "opaque-expression",
+      "sourceConstruct": "UML OpaqueExpression used by a Constraint",
+      "corpusCount": 59,
+      "officialTarget": "CalculationUsage with language/body specification",
+      "officialClauses": [
+        "7.7.14.3.18",
+        "7.7.14.3.31"
+      ],
+      "machineRuleIds": [
+        "Mappings-UML4SysML-Values-OpaqueExpression_Mapping",
+        "Mappings-UML4SysML-Values-OpaqueExpressionSpecification_Mapping"
+      ],
+      "classification": "open",
+      "proposalRule": "Check official output fidelity and preserve the original language/body arrays regardless.",
+      "rationale": "The corpus contains 33 OCL and 26 JavaScript bodies whose exact source representation is in scope.",
+      "testObligations": [
+        "Language/body order and exact text survive reversal.",
+        "All 33 OCL bodies continue to parse and resolve source names."
+      ]
+    },
+    {
+      "id": "image",
+      "sourceConstruct": "UML Image",
+      "corpusCount": 22,
+      "officialTarget": "Not mapped",
+      "officialClauses": [
+        "7.7.9.1 Table 12",
+        "7.7.9.2 Table 13"
+      ],
+      "machineRuleIds": [],
+      "classification": "supplement",
+      "proposalRule": "Preserve format, location, encoding, and content without inventing native v2 icon semantics.",
+      "rationale": "The official transformation states that Image mapping is not specified.",
+      "testObligations": [
+        "All 22 image records compare exactly after reversal."
+      ]
+    },
+    {
+      "id": "raaml-application",
+      "sourceConstruct": "RAAML stereotype application",
+      "corpusCount": 108,
+      "officialTarget": "Arbitrary-stereotype handling uses implementation-specific applied-stereotype discovery",
+      "officialClauses": [
+        "7.2.2 Helper getAppliedStereotypes",
+        "7.7.9.3.26-34"
+      ],
+      "machineRuleIds": [
+        "Mappings-UML4SysML-Packages-StereotypeOccurenceUsage_Mapping"
+      ],
+      "classification": "open",
+      "proposalRule": "Resolve the exact official target and tagged-value handling; retain the manifest record until proven.",
+      "rationale": "The helper is explicitly implementation-specific, and the 108 applications are normative source facts.",
+      "testObligations": [
+        "Every application target and tagged value reconstructs exactly.",
+        "The official mapping behavior is demonstrated with a focused fixture."
+      ]
+    },
+    {
+      "id": "namespace-prefix",
+      "sourceConstruct": "MagicDraw mofext namespace-prefix Tag",
+      "corpusCount": 1,
+      "officialTarget": "No direct rule identified",
+      "officialClauses": [
+        "Cross-cutting preservation supplement"
+      ],
+      "machineRuleIds": [],
+      "classification": "supplement",
+      "proposalRule": "Preserve the prefix as artifact metadata without assigning native v2 semantics.",
+      "rationale": "The prefix is a source/interchange fact rather than a UML or SysML semantic element.",
+      "testObligations": [
+        "The Core profile RAAMLC prefix reconstructs exactly."
+      ]
+    }
+  ]
+}

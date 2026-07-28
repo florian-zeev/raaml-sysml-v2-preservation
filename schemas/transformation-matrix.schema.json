@@ -1,0 +1,142 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raaml-sysml-v2-preservation.example/schema/transformation-matrix-v0.1.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "matrixVersion",
+    "normativeSources",
+    "rows"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "0.1.0"
+    },
+    "matrixVersion": {
+      "const": "0.1.0"
+    },
+    "normativeSources": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "document",
+        "machineModel"
+      ],
+      "properties": {
+        "document": {
+          "$ref": "#/$defs/source"
+        },
+        "machineModel": {
+          "$ref": "#/$defs/source"
+        }
+      }
+    },
+    "rows": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/row"
+      }
+    }
+  },
+  "$defs": {
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "lockId",
+        "omgFileId",
+        "sha256"
+      ],
+      "properties": {
+        "lockId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "omgFileId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "row": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "sourceConstruct",
+        "corpusCount",
+        "officialTarget",
+        "officialClauses",
+        "machineRuleIds",
+        "classification",
+        "proposalRule",
+        "rationale",
+        "testObligations"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9-]+$"
+        },
+        "sourceConstruct": {
+          "type": "string",
+          "minLength": 1
+        },
+        "corpusCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "officialTarget": {
+          "type": "string",
+          "minLength": 1
+        },
+        "officialClauses": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "machineRuleIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "classification": {
+          "enum": [
+            "reuse",
+            "specialize",
+            "supplement",
+            "deviate",
+            "open"
+          ]
+        },
+        "proposalRule": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1
+        },
+        "testObligations": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

@@ -25,6 +25,7 @@ from .facts import (
 from .oracle import EXPECTED_TOTALS, audit_corpus
 from .ocl_validation import validate_ocl_corpus
 from .sources import LockError, fetch_sources, verify_sources
+from .transformation import audit_transformation_matrix
 from .schemas import (
     SchemaValidationError,
     validate_instance_against_schema,
@@ -498,6 +499,29 @@ def _oracle_audit(args: argparse.Namespace) -> int:
     return 1
 
 
+def _transformation_audit(args: argparse.Namespace) -> int:
+    report = audit_transformation_matrix(
+        REPOSITORY_ROOT,
+        matrix_path=args.matrix,
+        require_resolved=args.require_resolved,
+    )
+    _write_json_atomic(args.output, report)
+    for diagnostic in report["diagnostics"]:
+        if diagnostic["severity"] == "error":
+            print(
+                f"{diagnostic['code']}: {diagnostic['message']}",
+                file=sys.stderr,
+            )
+    if report["ok"]:
+        summary = report["summary"]
+        print(
+            f"Audited {summary['checked']} transformation row(s); "
+            f"{summary['open']} open; report: {args.output}"
+        )
+        return 0
+    return 1
+
+
 def _validate_ocl_command(args: argparse.Namespace) -> int:
     if args.all:
         if args.input is not None:
@@ -684,6 +708,40 @@ def build_parser() -> argparse.ArgumentParser:
         default=REPOSITORY_ROOT / "reports" / "oracle" / "corpus-audit.json",
     )
     audit.set_defaults(handler=_oracle_audit)
+
+    transformation = commands.add_parser(
+        "transformation",
+        help="audit the comparison with the official v1-to-v2 transformation",
+    )
+    transformation_commands = transformation.add_subparsers(
+        dest="transformation_command",
+        required=True,
+    )
+    transformation_audit = transformation_commands.add_parser(
+        "audit",
+        help="validate matrix citations against the pinned transformation model",
+    )
+    transformation_audit.add_argument(
+        "--matrix",
+        type=_path,
+        default=REPOSITORY_ROOT
+        / "analysis"
+        / "transformation-matrix-v0.1.json",
+    )
+    transformation_audit.add_argument(
+        "--require-resolved",
+        action="store_true",
+        help="fail when any matrix row remains classified open",
+    )
+    transformation_audit.add_argument(
+        "--output",
+        type=_path,
+        default=REPOSITORY_ROOT
+        / "reports"
+        / "transformation"
+        / "matrix-audit.json",
+    )
+    transformation_audit.set_defaults(handler=_transformation_audit)
 
     tests = commands.add_parser("tests", help="run project tests")
     test_commands = tests.add_subparsers(dest="tests_command", required=True)

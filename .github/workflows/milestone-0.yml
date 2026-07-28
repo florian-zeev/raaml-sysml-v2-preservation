@@ -35,6 +35,9 @@ jobs:
       - name: Validate repository schemas
         run: ./raaml schemas validate
 
+      - name: Audit official transformation citations
+        run: ./raaml transformation audit
+
       - name: Run dependency-free unit tests
         run: ./raaml tests unit
 
@@ -85,6 +88,7 @@ jobs:
               ./raaml sources verify
               ./raaml tooling bootstrap
               ./raaml schemas validate
+              ./raaml transformation audit
               ./raaml tests unit
               ./raaml tests milestone-0
               ./raaml facts extract \
