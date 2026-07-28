@@ -25,7 +25,10 @@ from .facts import (
 from .oracle import EXPECTED_TOTALS, audit_corpus
 from .ocl_validation import validate_ocl_corpus
 from .sources import LockError, fetch_sources, verify_sources
-from .transformation import audit_transformation_matrix
+from .transformation import (
+    analyze_corpus_transformation_surface,
+    audit_transformation_matrix,
+)
 from .schemas import (
     SchemaValidationError,
     validate_instance_against_schema,
@@ -522,6 +525,24 @@ def _transformation_audit(args: argparse.Namespace) -> int:
     return 1
 
 
+def _transformation_surface(args: argparse.Namespace) -> int:
+    try:
+        report = analyze_corpus_transformation_surface(REPOSITORY_ROOT)
+    except (OSError, ValueError) as error:
+        print(
+            f"TRANSFORMATION_SURFACE_INVALID: {error}",
+            file=sys.stderr,
+        )
+        return 1
+    _write_json_atomic(args.output, report)
+    print(
+        "Inventoried "
+        f"{report['rootSysmlApplicationCount']} root-level SysML "
+        f"application(s); report: {args.output}"
+    )
+    return 0
+
+
 def _validate_ocl_command(args: argparse.Namespace) -> int:
     if args.all:
         if args.input is not None:
@@ -742,6 +763,19 @@ def build_parser() -> argparse.ArgumentParser:
         / "matrix-audit.json",
     )
     transformation_audit.set_defaults(handler=_transformation_audit)
+    transformation_surface = transformation_commands.add_parser(
+        "surface",
+        help="inventory specialized SysML v1 mappings selected by the corpus",
+    )
+    transformation_surface.add_argument(
+        "--output",
+        type=_path,
+        default=REPOSITORY_ROOT
+        / "reports"
+        / "transformation"
+        / "corpus-surface.json",
+    )
+    transformation_surface.set_defaults(handler=_transformation_surface)
 
     tests = commands.add_parser("tests", help="run project tests")
     test_commands = tests.add_subparsers(dest="tests_command", required=True)

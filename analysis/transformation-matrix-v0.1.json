@@ -189,7 +189,7 @@
     {
       "id": "block",
       "sourceConstruct": "UML Class with SysML v1 Block applied",
-      "corpusCount": 0,
+      "corpusCount": 7,
       "officialTarget": "PartDefinition",
       "officialClauses": [
         "7.8.4.3.3"
@@ -197,11 +197,50 @@
       "machineRuleIds": [
         "Mappings-SysMLv1-Blocks-Block_Mapping"
       ],
-      "classification": "specialize",
-      "proposalRule": "Use PartDefinition only when the actual source Class meets the official Block filter.",
-      "rationale": "A RAAML Stereotype generalizing the Block Stereotype is not itself a source Class with Block applied.",
+      "classification": "supplement",
+      "proposalRule": "Reuse PartDefinition and preserve the applied Block identity needed to reconstruct the source Class.",
+      "rationale": "Seven FTA library Classes have Block applied. A RAAML Stereotype generalizing Block is not itself a source Class with Block applied.",
       "testObligations": [
+        "All seven Block applications select PartDefinition.",
         "A focused fixture distinguishes stereotype inheritance from Block application."
+      ]
+    },
+    {
+      "id": "constraint-block",
+      "sourceConstruct": "UML Class with SysML v1 ConstraintBlock applied",
+      "corpusCount": 36,
+      "officialTarget": "ConstraintDefinition",
+      "officialClauses": [
+        "7.8.5.2.1"
+      ],
+      "machineRuleIds": [
+        "Mappings-SysMLv1-ConstraintBlocks-ConstraintBlock_Mapping"
+      ],
+      "classification": "supplement",
+      "proposalRule": "Reuse ConstraintDefinition and preserve the source Class, applied ConstraintBlock identity, parameters, and constraints.",
+      "rationale": "The corpus contains 36 ConstraintBlocks across the FTA and RBD libraries; the applied stereotype is required for exact reversal.",
+      "testObligations": [
+        "All 36 ConstraintBlocks select ConstraintDefinition.",
+        "Constraint parameters and owned constraint expressions reconstruct under the original Class."
+      ]
+    },
+    {
+      "id": "association-block",
+      "sourceConstruct": "UML AssociationClass with SysML v1 Block applied",
+      "corpusCount": 1,
+      "officialTarget": "ConnectionDefinition",
+      "officialClauses": [
+        "7.8.4.3.1"
+      ],
+      "machineRuleIds": [
+        "Mappings-SysMLv1-Blocks-AssociationBlock_Mapping"
+      ],
+      "classification": "supplement",
+      "proposalRule": "Reuse ConnectionDefinition and preserve both the AssociationClass source kind and applied Block identity.",
+      "rationale": "STPA RiskRealization is the sole AssociationClass and has Block applied, so it selects AssociationBlock_Mapping rather than Block_Mapping.",
+      "testObligations": [
+        "RiskRealization selects AssociationBlock_Mapping.",
+        "Reversal restores AssociationClass, Block application, both parents, and ordered ends."
       ]
     },
     {
@@ -222,6 +261,25 @@
       "rationale": "The native target is suitable, while deterministic reversal requires the frozen source order.",
       "testObligations": [
         "All five enumerations and 35 literals reconstruct in source order."
+      ]
+    },
+    {
+      "id": "value-type-enumeration",
+      "sourceConstruct": "UML Enumeration with SysML v1 ValueType applied",
+      "corpusCount": 4,
+      "officialTarget": "AttributeDefinition",
+      "officialClauses": [
+        "7.8.4.3.15"
+      ],
+      "machineRuleIds": [
+        "Mappings-SysMLv1-Blocks-ValueType_Mapping"
+      ],
+      "classification": "open",
+      "proposalRule": "Resolve the overlap between ValueType_Mapping and Enumeration_Mapping without losing literal identity or order.",
+      "rationale": "HouseEventProbability, Exposure, Severity, and Controllability are Enumerations with ValueType applied. The official ValueType target is AttributeDefinition, while the generic Enumeration target is EnumerationDefinition.",
+      "testObligations": [
+        "A focused fixture determines which official main mapping is selected for an Enumeration with ValueType applied.",
+        "All 15 literals across the four ValueTypes remain reconstructable in source order."
       ]
     },
     {
@@ -325,6 +383,45 @@
       "rationale": "The official semantic target is usable; exact source-end records are still required for reversal.",
       "testObligations": [
         "All 94 connectors retain ordered end role and partWithPort targets."
+      ]
+    },
+    {
+      "id": "binding-connector",
+      "sourceConstruct": "UML Connector with SysML v1 BindingConnector applied",
+      "corpusCount": 90,
+      "officialTarget": "BindingConnectorAsUsage",
+      "officialClauses": [
+        "7.8.4.3.2"
+      ],
+      "machineRuleIds": [
+        "Mappings-SysMLv1-Blocks-BindingConnector_Mapping"
+      ],
+      "classification": "supplement",
+      "proposalRule": "Reuse BindingConnectorAsUsage and preserve the source Connector identity and applied BindingConnector.",
+      "rationale": "Ninety of the corpus's 94 Connectors select the specialized official binding mapping.",
+      "testObligations": [
+        "Exactly 90 Connectors select BindingConnector_Mapping.",
+        "The four ordinary Connectors remain distinguishable from binding Connectors during reversal."
+      ]
+    },
+    {
+      "id": "nested-connector-end",
+      "sourceConstruct": "UML ConnectorEnd with SysML v1 NestedConnectorEnd propertyPath",
+      "corpusCount": 125,
+      "officialTarget": "Feature with ordered FeatureChaining relationships",
+      "officialClauses": [
+        "7.7.12.2.18",
+        "7.8.4.2"
+      ],
+      "machineRuleIds": [
+        "Mappings-UML4SysML-StructuredClassifiers-ConnectorEndToSubsettedFeature_Mapping"
+      ],
+      "classification": "supplement",
+      "proposalRule": "Reuse the official feature-chain mapping and preserve the applied NestedConnectorEnd and exact ordered propertyPath.",
+      "rationale": "The standard requires no separate target for the stereotype, but its propertyPath selects a different ConnectorEnd mapping and is required for reversal.",
+      "testObligations": [
+        "Exactly 125 ConnectorEnds select the feature-chain rule.",
+        "Every propertyPath and final role reconstruct in source order."
       ]
     },
     {

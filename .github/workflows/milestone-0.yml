@@ -36,7 +36,9 @@ jobs:
         run: ./raaml schemas validate
 
       - name: Audit official transformation citations
-        run: ./raaml transformation audit
+        run: |
+          ./raaml transformation surface
+          ./raaml transformation audit
 
       - name: Run dependency-free unit tests
         run: ./raaml tests unit
@@ -88,6 +90,8 @@ jobs:
               ./raaml sources verify
               ./raaml tooling bootstrap
               ./raaml schemas validate
+              ./raaml transformation surface \
+                --output /evidence/corpus-transformation-surface.json
               ./raaml transformation audit
               ./raaml tests unit
               ./raaml tests milestone-0
@@ -112,6 +116,9 @@ jobs:
           cmp \
             reports/facts/canonical-raaml-facts.json \
             container-evidence/canonical-raaml-facts.json
+          cmp \
+            reports/transformation/corpus-surface.json \
+            container-evidence/corpus-transformation-surface.json
           canonical_sha="$(
             sha256sum reports/facts/canonical-raaml-facts.json |
             cut -d ' ' -f 1

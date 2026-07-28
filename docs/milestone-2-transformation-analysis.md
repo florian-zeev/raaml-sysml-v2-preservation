@@ -50,8 +50,23 @@ The frozen Milestone 1 baseline contains:
 | Metamodel references / package imports / profile applications | 9 / 9 / 8 |
 | Normative RAAML stereotype applications | 108 |
 
-This list is the minimum transformation surface. A mapping decision that is
-not exercised by one of these categories is outside the v0.1 corpus claim.
+The source also contains 263 root-level SysML v1 stereotype applications.
+Milestone 1 intentionally excluded them from the RAAML application comparison,
+but they select specialized official transformation rules and therefore belong
+in this analysis:
+
+| SysML v1 application | Count | Applied to |
+| --- | ---: | --- |
+| BindingConnector | 90 | Connector |
+| Block | 8 | 7 Classes and 1 AssociationClass |
+| ConstraintBlock | 36 | Class |
+| NestedConnectorEnd | 125 | ConnectorEnd |
+| ValueType | 4 | Enumeration |
+
+The deterministic inventory is
+`analysis/corpus-transformation-surface-v0.1.json`. This combined list is the
+minimum transformation surface. A mapping decision that is not exercised by
+one of these categories is outside the v0.1 corpus claim.
 
 ## Classification meanings
 
@@ -79,15 +94,20 @@ The machine-rule identifiers below are XMI IDs in the pinned
 | UML Extension / ExtensionEnd | Handled in the Stereotype mapping context | 7.7.9.1-7.7.9.2, Tables 12-13; stereotype occurrence rules 7.7.9.3.26-34 | Supplement | Reuse the official annotation-target machinery; retain exact base-property ownership, multiplicity, ExtensionEnd name, and href spelling. |
 | UML Generalization | Subclassification | 7.7.4.2.12; `Mappings-UML4SysML-Classification-Generalization_Mapping` | Supplement | Reuse Subclassification; retain local-versus-external reference form and exact target identity. |
 | UML Class in a RAAML library | OccurrenceDefinition | 7.7.12.2.10; `Mappings-UML4SysML-StructuredClassifiers-Class_Mapping` | Open - likely reuse | The current proposal's generic `Definition`/`def` carrier conflicts with the official rule and does not yet identify executable generic textual syntax. Resolve before the vertical slice. |
-| SysML v1 Block application | PartDefinition | 7.8.4.3.3; `Mappings-SysMLv1-Blocks-Block_Mapping` | Specialize | Use the Block rule when the actual source Class has Block applied. Do not infer Block application only from a RAAML stereotype's inheritance graph. |
+| SysML v1 Block on a UML Class | PartDefinition | 7.8.4.3.3; `Mappings-SysMLv1-Blocks-Block_Mapping` | Supplement | Seven FTA library Classes select the Block rule. Preserve the applied Block for reversal; do not infer it only from a RAAML stereotype's inheritance graph. |
+| SysML v1 ConstraintBlock on a UML Class | ConstraintDefinition | 7.8.5.2.1; `Mappings-SysMLv1-ConstraintBlocks-ConstraintBlock_Mapping` | Supplement | All 36 ConstraintBlocks need the native target plus source Class, application, parameter, and constraint facts. |
+| SysML v1 Block on a UML AssociationClass | ConnectionDefinition | 7.8.4.3.1; `Mappings-SysMLv1-Blocks-AssociationBlock_Mapping` | Supplement | STPA `RiskRealization` selects AssociationBlock_Mapping, not Block_Mapping. Preserve both the AssociationClass kind and Block application. |
 | UML Enumeration | EnumerationDefinition | 7.7.10.2.11; `Mappings-UML4SysML-SimpleClassifiers-Enumeration_Mapping` | Supplement | Reuse the definition; retain literal order and exact source ownership. |
 | UML EnumerationLiteral | EnumerationUsage | 7.7.10.2.12; `Mappings-UML4SysML-SimpleClassifiers-EnumerationLiteral_Mapping` | Supplement | Reuse the usage and preserve ordered membership. |
+| UML Enumeration with SysML v1 ValueType | AttributeDefinition | 7.8.4.3.15; `Mappings-SysMLv1-Blocks-ValueType_Mapping` | Open | Four Enumerations have ValueType applied. Resolve the overlap with Enumeration_Mapping without losing their 15 ordered literals. |
 | UML AssociationClass | ConnectionDefinition | 7.7.12.2.1; `Mappings-UML4SysML-StructuredClassifiers-AssociationClass_Mapping` | Supplement | Reuse the connection target; retain the Class facet, parent kinds, owned-end facts, and an explicit AssociationClass discriminator. |
 | UML Association | ConnectionDefinition | 7.7.12.2.2 and 7.7.12.2.20; `AssociationCommon_Mapping`, `ConnectorType_Mapping` | Supplement | Reuse the connection target; retain association ownership, ordered member ends, navigability, multiplicity presence, and an Association discriminator. |
 | UML Property | AttributeUsage, OccurrenceUsage, Feature, or association-end Feature depending on source shape | 7.7.4.2.35-38; 7.7.10.2.1-5; 7.7.12.2.30-35 | Open | Build a corpus decision table from type, aggregation, association ownership, and redefinition/subsetting. Do not use the proposal's shorter three-row table until it is checked against every official filter. |
 | UML Port | PortUsage | 7.7.12.2.36-37; `Port_Mapping`, `PortUntyped_Mapping` | Supplement | All 51 typed and 14 untyped corpus Ports have an official target. Retain original type reference, multiplicity presence, and Port-versus-Property identity. |
 | UML Connector | ConnectionUsage | 7.7.12.2.14; `Mappings-UML4SysML-StructuredClassifiers-Connector_Mapping` | Supplement | Reuse ConnectionUsage; retain ordered ends, role, `partWithPort`, visibility, and source ownership. |
 | UML ConnectorEnd | Feature-based connector-end mappings | 7.7.12.2.15-19 | Supplement | Reuse the official end representation; preserve the exact ordered source-end records for reversal. |
+| SysML v1 BindingConnector | BindingConnectorAsUsage | 7.8.4.3.2; `Mappings-SysMLv1-Blocks-BindingConnector_Mapping` | Supplement | Ninety of 94 Connectors select this specialized rule. Preserve the application so four ordinary Connectors remain distinguishable. |
+| SysML v1 NestedConnectorEnd with propertyPath | Feature with ordered FeatureChaining | 7.7.12.2.18 and 7.8.4.2; `ConnectorEndToSubsettedFeature_Mapping` | Supplement | The standard creates no separate stereotype target, but 125 ConnectorEnds use its ordered property path to select the feature-chain rule. |
 | UML Comment | Comment plus Annotation | 7.7.6.2.2-4; `Comment_Mapping`, `CommentAnnotation_Mapping`, `CommentOwnership_Mapping` | Supplement | Reuse Comment/Annotation; retain exact body, owner, and all annotated-element references. |
 | UML Constraint | ConstraintDefinition plus AssertConstraintUsage | 7.7.6.2.5-8; `Constraint_Mapping`, `ConstraintUsage_Mapping` | Open - likely supplement | Generate the official v2 view, but keep the original constraint store authoritative for reversal until behavioral equivalence is demonstrated. |
 | UML OpaqueExpression used by a constraint | CalculationUsage and language/body specification | 7.7.14.3.18 and 7.7.14.3.31; `OpaqueExpression_Mapping`, `OpaqueExpressionSpecification_Mapping` | Open - likely supplement | Check whether the official output retains every language/body line and ordering fact. Preserve the source expression regardless. |
@@ -143,12 +163,27 @@ native view while also retaining the exact source constraint. Emitting both
 would follow the official transformation without claiming that the native
 constraint behaves identically to the original OCL.
 
+### 5. Specialized SysML applications are part of the mapping surface
+
+The first matrix used only the Milestone 1 canonical RAAML application count
+and incorrectly reported zero actual Block applications. The source corpus
+does contain transformation-relevant SysML applications. In particular,
+`RiskRealization` is an AssociationClass with Block applied, and four
+ValueTypes are also UML Enumerations.
+
+The analysis now inventories all 263 root-level SysML applications directly
+from the pinned source XMI. This does not change the Milestone 1 definition of
+a RAAML application fact; it prevents Milestone 2 from applying a generic rule
+where an official specialized rule has been selected.
+
 ## Reproduction commands
 
 After acquiring the locked inputs:
 
 ```text
 ./raaml sources verify
+./raaml transformation surface
+./raaml transformation audit
 pdftotext -layout \
   sources/cache/SysML-2.0-Transformation.pdf \
   tmp/pdfs/SysML-2.0-Transformation.txt
@@ -160,15 +195,15 @@ check and fail if a cited rule is absent from the pinned model.
 
 ## Work remaining
 
-1. Derive the complete Property decision table from the official filters and
+1. Resolve the Enumeration-plus-ValueType overlap using the official mapping
+   dispatch semantics and a focused fixture.
+2. Derive the complete Property decision table from the official filters and
    classify every one of the 332 Property/Port records.
-2. Resolve how the official transformation represents arbitrary RAAML
+3. Resolve how the official transformation represents arbitrary RAAML
    stereotype applications and tagged values.
-3. Resolve MetamodelReference and namespace-prefix treatment.
-4. Decide the Class carrier and remove generic shorthand that cannot be
+4. Resolve MetamodelReference and namespace-prefix treatment.
+5. Decide the Class carrier and remove generic shorthand that cannot be
    validated as SysML v2 text.
-5. Decide whether the native Constraint/Calculation view is mandatory.
-6. Turn this matrix into a machine-readable artifact whose rule IDs are checked
-   against the pinned XMI.
+6. Decide whether the native Constraint/Calculation view is mandatory.
 7. Update the community proposal and normative encoding only after no row
    remains `Open`.

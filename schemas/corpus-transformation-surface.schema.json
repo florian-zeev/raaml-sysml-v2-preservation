@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raaml-sysml-v2-preservation.example/schema/corpus-transformation-surface-v0.1.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "documentKind",
+    "corpus",
+    "artifactCount",
+    "rootSysmlApplicationCount",
+    "namespaces",
+    "stereotypes"
+  ],
+  "properties": {
+    "schemaVersion": {"const": "0.1.0"},
+    "documentKind": {"const": "corpus-transformation-surface"},
+    "corpus": {"const": "raaml-1.1-definitions"},
+    "artifactCount": {"type": "integer", "minimum": 1},
+    "rootSysmlApplicationCount": {"type": "integer", "minimum": 0},
+    "namespaces": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/namespaceCount"}
+    },
+    "stereotypes": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/stereotype"}
+    }
+  },
+  "$defs": {
+    "namespaceCount": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["namespace", "count"],
+      "properties": {
+        "namespace": {"type": "string", "minLength": 1},
+        "count": {"type": "integer", "minimum": 1}
+      }
+    },
+    "targetKind": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "count"],
+      "properties": {
+        "kind": {"type": "string", "minLength": 1},
+        "count": {"type": "integer", "minimum": 1}
+      }
+    },
+    "stereotype": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "count", "targetRoles", "targetKinds"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "count": {"type": "integer", "minimum": 1},
+        "targetRoles": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "targetKinds": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/targetKind"}
+        }
+      }
+    }
+  }
+}

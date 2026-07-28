@@ -8,7 +8,9 @@ import xml.etree.ElementTree as ET
 
 from raaml_preservation.schemas import validate_instance_against_schema
 from raaml_preservation.transformation import (
+    _check_corpus_surface_counts,
     _check_machine_rules,
+    analyze_corpus_transformation_surface,
     audit_transformation_matrix,
 )
 
@@ -24,6 +26,11 @@ MODEL_PATH = (
     / "sources"
     / "cache"
     / "SysMLv1Tov2.xmi"
+)
+SURFACE_PATH = (
+    REPOSITORY_ROOT
+    / "analysis"
+    / "corpus-transformation-surface-v0.1.json"
 )
 
 
@@ -87,4 +94,48 @@ class TransformationMatrixTests(unittest.TestCase):
         self.assertEqual(
             [item["code"] for item in diagnostics],
             ["TRANSFORMATION_RULE_WRONG_KIND"],
+        )
+
+    def test_corpus_transformation_surface_is_reproducible(self) -> None:
+        expected = json.loads(SURFACE_PATH.read_text(encoding="utf-8"))
+        actual = analyze_corpus_transformation_surface(REPOSITORY_ROOT)
+        self.assertEqual(actual, expected)
+
+    def test_corpus_transformation_surface_is_schema_valid(self) -> None:
+        surface = json.loads(SURFACE_PATH.read_text(encoding="utf-8"))
+        validate_instance_against_schema(
+            surface,
+            REPOSITORY_ROOT
+            / "schemas"
+            / "corpus-transformation-surface.schema.json",
+        )
+
+    def test_specialized_sysml_application_counts_cover_the_corpus(self) -> None:
+        surface = json.loads(SURFACE_PATH.read_text(encoding="utf-8"))
+        counts = {
+            row["name"]: row["count"]
+            for row in surface["stereotypes"]
+        }
+        self.assertEqual(
+            counts,
+            {
+                "BindingConnector": 90,
+                "Block": 8,
+                "ConstraintBlock": 36,
+                "NestedConnectorEnd": 125,
+                "ValueType": 4,
+            },
+        )
+        self.assertEqual(sum(counts.values()), 263)
+
+    def test_specialized_matrix_count_must_match_source_surface(self) -> None:
+        changed = copy.deepcopy(self.matrix)
+        block = next(row for row in changed["rows"] if row["id"] == "block")
+        block["corpusCount"] = 0
+        surface = json.loads(SURFACE_PATH.read_text(encoding="utf-8"))
+        diagnostics: list[dict[str, str]] = []
+        _check_corpus_surface_counts(changed, surface, diagnostics)
+        self.assertEqual(
+            [item["code"] for item in diagnostics],
+            ["TRANSFORMATION_SURFACE_COUNT_MISMATCH"],
         )

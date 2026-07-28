@@ -1,0 +1,88 @@
+{
+  "artifactCount": 17,
+  "corpus": "raaml-1.1-definitions",
+  "documentKind": "corpus-transformation-surface",
+  "namespaces": [
+    {
+      "count": 71,
+      "namespace": "http://www.omg.org/spec/SysML/20150709/SysML"
+    },
+    {
+      "count": 192,
+      "namespace": "http://www.omg.org/spec/SysML/20181001/SysML"
+    }
+  ],
+  "rootSysmlApplicationCount": 263,
+  "schemaVersion": "0.1.0",
+  "stereotypes": [
+    {
+      "count": 90,
+      "name": "BindingConnector",
+      "targetKinds": [
+        {
+          "count": 90,
+          "kind": "uml:Connector"
+        }
+      ],
+      "targetRoles": [
+        "base_Connector"
+      ]
+    },
+    {
+      "count": 8,
+      "name": "Block",
+      "targetKinds": [
+        {
+          "count": 1,
+          "kind": "uml:AssociationClass"
+        },
+        {
+          "count": 7,
+          "kind": "uml:Class"
+        }
+      ],
+      "targetRoles": [
+        "base_Class"
+      ]
+    },
+    {
+      "count": 36,
+      "name": "ConstraintBlock",
+      "targetKinds": [
+        {
+          "count": 36,
+          "kind": "uml:Class"
+        }
+      ],
+      "targetRoles": [
+        "base_Class"
+      ]
+    },
+    {
+      "count": 125,
+      "name": "NestedConnectorEnd",
+      "targetKinds": [
+        {
+          "count": 125,
+          "kind": "uml:ConnectorEnd"
+        }
+      ],
+      "targetRoles": [
+        "base_ConnectorEnd"
+      ]
+    },
+    {
+      "count": 4,
+      "name": "ValueType",
+      "targetKinds": [
+        {
+          "count": 4,
+          "kind": "uml:Enumeration"
+        }
+      ],
+      "targetRoles": [
+        "base_DataType"
+      ]
+    }
+  ]
+}
