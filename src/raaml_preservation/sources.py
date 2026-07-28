@@ -78,6 +78,18 @@ def _validate_artifact(artifact: Any, index: int) -> dict[str, Any]:
     parsed_url = urlparse(authoritative_url)
     if parsed_url.scheme != "https" or not parsed_url.netloc:
         raise LockError(f"{artifact_id}: authoritativeUrl must be an HTTPS URL")
+    if "acquisitionUrl" in artifact:
+        acquisition_url = _require_nonempty_string(
+            artifact["acquisitionUrl"],
+            "acquisitionUrl",
+            artifact_id,
+        )
+        parsed_acquisition_url = urlparse(acquisition_url)
+        if (
+            parsed_acquisition_url.scheme != "https"
+            or not parsed_acquisition_url.netloc
+        ):
+            raise LockError(f"{artifact_id}: acquisitionUrl must be an HTTPS URL")
 
     _validate_filename(artifact["filename"], artifact_id)
 
@@ -332,7 +344,7 @@ def fetch_sources(*, lock_path: Path, source_dir: Path) -> dict[str, Any]:
             digest = hashlib.sha256()
             downloaded = 0
             request = Request(
-                artifact["authoritativeUrl"],
+                artifact.get("acquisitionUrl", artifact["authoritativeUrl"]),
                 headers={"User-Agent": "raaml-sysml-v2-preservation/0.1"},
             )
             with (

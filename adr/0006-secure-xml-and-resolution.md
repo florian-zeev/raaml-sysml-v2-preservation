@@ -26,6 +26,14 @@ official files or their authoritative `https` spelling. Both resolve only to
 verified local bytes. Values such as `uml:Image@location` remain data and are
 not dereferenced.
 
+When an authoritative URL no longer serves its published bytes, a lock entry
+may include a separate HTTPS `acquisitionUrl`. The authoritative URL remains
+the model identity and the acquisition URL is only a byte-retrieval location.
+The retrieved bytes must still match the locked size and SHA-256 digest. The
+SysML 1.6 ISO 80000 library uses an immutable Internet Archive snapshot for
+this reason; the OMG machine-readable-file index identifies the source as
+`ptc/18-10-06`.
+
 The Java loader receives only the preflighted file and preloaded local catalog.
 Network fetching is never a validation fallback.
 

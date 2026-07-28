@@ -378,6 +378,24 @@
       }
     },
     {
+      "id": "sysml-1.6-iso-80000-library",
+      "collection": "v1-reference-models",
+      "standard": "SysML",
+      "standardVersion": "1.6",
+      "kind": "xmi",
+      "normativeStatus": "informative-machine-readable",
+      "omgFileId": "ptc/18-10-06",
+      "authoritativeUrl": "https://www.omg.org/spec/SysML/20181001/ISO80000.xmi",
+      "acquisitionUrl": "https://web.archive.org/web/20200115012433id_/https://www.omg.org/spec/SysML/20181001/ISO80000.xmi",
+      "filename": "ISO80000.xmi",
+      "byteSize": 34111411,
+      "sha256": "b687eb2eb141ed5a715e4df1e5655eae362945fda623c7f32cb9f434b9926a09",
+      "redistribution": {
+        "status": "unreviewed",
+        "committed": false
+      }
+    },
+    {
       "id": "sysml-v2-pilot-2026-04-distribution",
       "collection": "milestone-0-toolchain",
       "standard": "SysML v2 Pilot Implementation",

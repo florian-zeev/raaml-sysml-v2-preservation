@@ -325,7 +325,7 @@ def run_adapter(
                 ],
             }
         arguments.append(str(repository_root / "sources" / "cache"))
-    elif mode != "ocl":
+    elif mode not in {"ocl", "ocl-corpus"}:
         raise AdapterError(f"unknown adapter mode: {mode}")
 
     process = subprocess.run(

@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -21,10 +22,12 @@ import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EClassifier;
+import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EcoreFactory;
+import org.eclipse.emf.ecore.EcorePackage;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
@@ -65,12 +68,15 @@ public final class ToolAdapter {
         int exitCode;
         try {
             if (args.length < 1) {
-                throw new IllegalArgumentException("expected adapter mode: v2, v1, or ocl");
+                throw new IllegalArgumentException(
+                    "expected adapter mode: v2, v1, ocl, or ocl-corpus"
+                );
             }
             report = switch (args[0]) {
                 case "v2" -> validateV2(args);
                 case "v1" -> validateV1(args);
                 case "ocl" -> parseOcl(args);
+                case "ocl-corpus" -> parseOclCorpus(args);
                 default -> throw new IllegalArgumentException("unknown adapter mode: " + args[0]);
             };
             exitCode = Boolean.TRUE.equals(report.get("ok")) ? 0 : 1;
@@ -379,6 +385,217 @@ public final class ToolAdapter {
         report.put("diagnostics", diagnostics);
         finalizeReport(report);
         return report;
+    }
+
+    private static Map<String, Object> parseOclCorpus(String[] args) throws IOException {
+        if (args.length != 2) {
+            throw new IllegalArgumentException("usage: ocl-corpus CATALOG_FILE");
+        }
+        Path catalogFile = existingRegularFile(args[1]);
+        Set<String> typeNames = new LinkedHashSet<>();
+        Set<String> propertyNames = new LinkedHashSet<>();
+        List<String[]> constraints = new ArrayList<>();
+        Base64.Decoder decoder = Base64.getDecoder();
+        for (String line : Files.readAllLines(catalogFile, StandardCharsets.UTF_8)) {
+            if (line.isEmpty()) {
+                continue;
+            }
+            String[] fields = line.split("\\t", -1);
+            switch (fields[0]) {
+                case "TYPE" -> {
+                    requireFieldCount(fields, 2, "TYPE");
+                    typeNames.add(decodeField(decoder, fields[1]));
+                }
+                case "PROPERTY" -> {
+                    requireFieldCount(fields, 2, "PROPERTY");
+                    propertyNames.add(decodeField(decoder, fields[1]));
+                }
+                case "CONSTRAINT" -> {
+                    requireFieldCount(fields, 4, "CONSTRAINT");
+                    constraints.add(new String[] {
+                        decodeField(decoder, fields[1]),
+                        decodeField(decoder, fields[2]),
+                        decodeField(decoder, fields[3])
+                    });
+                }
+                default -> throw new IllegalArgumentException(
+                    "unknown OCL catalog record: " + fields[0]
+                );
+            }
+        }
+        if (constraints.isEmpty()) {
+            throw new IllegalArgumentException("OCL catalog has no constraints");
+        }
+
+        EcoreFactory factory = EcoreFactory.eINSTANCE;
+        EPackage scope = factory.createEPackage();
+        scope.setName("raamlCorpus");
+        scope.setNsPrefix("raamlCorpus");
+        scope.setNsURI("urn:raaml:corpus");
+        EClass any = factory.createEClass();
+        any.setName("RaamlAny");
+        scope.getEClassifiers().add(any);
+        for (String propertyName : propertyNames) {
+            if ("name".equals(propertyName)) {
+                EAttribute attribute = factory.createEAttribute();
+                attribute.setName(propertyName);
+                attribute.setEType(EcorePackage.Literals.ESTRING);
+                attribute.setUpperBound(-1);
+                any.getEStructuralFeatures().add(attribute);
+            } else {
+                EReference reference = factory.createEReference();
+                reference.setName(propertyName);
+                reference.setEType(any);
+                reference.setUpperBound(-1);
+                any.getEStructuralFeatures().add(reference);
+            }
+        }
+        Map<String, EClass> classes = new LinkedHashMap<>();
+        for (String typeName : typeNames) {
+            EClass classifier = factory.createEClass();
+            classifier.setName(typeName);
+            classifier.getESuperTypes().add(any);
+            scope.getEClassifiers().add(classifier);
+            classes.put(typeName, classifier);
+        }
+
+        List<Map<String, Object>> diagnostics = new ArrayList<>();
+        List<Map<String, Object>> results = new ArrayList<>();
+        OCL ocl = OCL.newInstance();
+        try {
+            for (String[] constraint : constraints) {
+                String key = constraint[0];
+                String owner = constraint[1];
+                String text = constraint[2];
+                Map<String, Object> result = new LinkedHashMap<>();
+                result.put("key", key);
+                result.put("owner", owner);
+                List<Map<String, Object>> itemDiagnostics = new ArrayList<>();
+                Set<String> referencedTypes = new LinkedHashSet<>();
+                Set<String> referencedProperties = new LinkedHashSet<>();
+                Set<String> referencedOperations = new LinkedHashSet<>();
+                Set<String> referencedIterators = new LinkedHashSet<>();
+                EClass context = classes.get(owner);
+                if (context == null) {
+                    itemDiagnostics.add(diagnostic(
+                        "error",
+                        "OCL_CONTEXT_UNRESOLVED",
+                        "context type is not in the catalog: " + owner
+                    ));
+                } else {
+                    try {
+                        OCL.Helper helper = ocl.createOCLHelper();
+                        helper.setContext(context);
+                        OCLExpression expression = helper.createQuery(text);
+                        collectOclReferences(
+                            expression,
+                            referencedTypes,
+                            referencedProperties,
+                            referencedOperations,
+                            referencedIterators
+                        );
+                        TreeIterator<EObject> nodes = expression.eAllContents();
+                        while (nodes.hasNext()) {
+                            collectOclReferences(
+                                nodes.next(),
+                                referencedTypes,
+                                referencedProperties,
+                                referencedOperations,
+                                referencedIterators
+                            );
+                        }
+                    } catch (ParserException error) {
+                        itemDiagnostics.add(diagnostic(
+                            "error",
+                            "OCL_PARSE_ERROR",
+                            safeMessage(error)
+                        ));
+                    }
+                }
+                sortInto(result, "referencedTypes", referencedTypes);
+                sortInto(result, "referencedProperties", referencedProperties);
+                sortInto(result, "referencedOperations", referencedOperations);
+                sortInto(result, "referencedIterators", referencedIterators);
+                result.put("diagnostics", itemDiagnostics);
+                result.put("ok", itemDiagnostics.isEmpty());
+                results.add(result);
+                for (Map<String, Object> item : itemDiagnostics) {
+                    Map<String, Object> aggregate = new LinkedHashMap<>(item);
+                    aggregate.put(
+                        "message",
+                        key + ": " + String.valueOf(item.get("message"))
+                    );
+                    diagnostics.add(aggregate);
+                }
+            }
+        } finally {
+            ocl.dispose();
+        }
+
+        Map<String, Object> report = baseReport("ocl-corpus");
+        report.put("ok", diagnostics.isEmpty());
+        report.put("input", catalogFile.getFileName().toString());
+        report.put("results", results);
+        report.put("diagnostics", diagnostics);
+        finalizeReport(report);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> summary = (Map<String, Object>) report.get("summary");
+        summary.put("checked", results.size());
+        return report;
+    }
+
+    private static void requireFieldCount(
+        String[] fields,
+        int expected,
+        String record
+    ) {
+        if (fields.length != expected) {
+            throw new IllegalArgumentException(
+                record + " record has " + fields.length
+                    + " fields; expected " + expected
+            );
+        }
+    }
+
+    private static String decodeField(Base64.Decoder decoder, String value) {
+        return new String(decoder.decode(value), StandardCharsets.UTF_8);
+    }
+
+    private static void sortInto(
+        Map<String, Object> target,
+        String field,
+        Set<String> values
+    ) {
+        List<String> sorted = new ArrayList<>(values);
+        sorted.sort(Comparator.naturalOrder());
+        target.put(field, sorted);
+    }
+
+    private static void collectOclReferences(
+        EObject node,
+        Set<String> types,
+        Set<String> properties,
+        Set<String> operations,
+        Set<String> iterators
+    ) {
+        if (node instanceof TypeExp typeExpression) {
+            EClassifier type = typeExpression.getReferredType();
+            if (type != null && type.getName() != null) {
+                types.add(type.getName());
+            }
+        } else if (node instanceof PropertyCallExp propertyExpression) {
+            if (propertyExpression.getReferredProperty() != null) {
+                properties.add(propertyExpression.getReferredProperty().getName());
+            }
+        } else if (node instanceof OperationCallExp operationExpression) {
+            if (operationExpression.getReferredOperation() != null) {
+                operations.add(operationExpression.getReferredOperation().getName());
+            }
+        } else if (node instanceof IteratorExp iteratorExpression) {
+            if (iteratorExpression.getName() != null) {
+                iterators.add(iteratorExpression.getName());
+            }
+        }
     }
 
     private static void collectOclName(EObject node, Set<String> names) {

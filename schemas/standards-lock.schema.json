@@ -84,6 +84,11 @@
           "format": "uri",
           "pattern": "^https://"
         },
+        "acquisitionUrl": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://"
+        },
         "filename": {
           "type": "string",
           "minLength": 1,

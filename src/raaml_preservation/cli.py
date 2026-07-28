@@ -16,8 +16,20 @@ from .adapters import (
     build_adapter,
     run_adapter,
 )
+from .facts import (
+    FactExtractionError,
+    count_facts,
+    extract_facts,
+    serialize_facts,
+)
+from .oracle import EXPECTED_TOTALS, audit_corpus
+from .ocl_validation import validate_ocl_corpus
 from .sources import LockError, fetch_sources, verify_sources
-from .schemas import validate_schemas
+from .schemas import (
+    SchemaValidationError,
+    validate_instance_against_schema,
+    validate_schemas,
+)
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
@@ -229,6 +241,85 @@ def _tests_milestone_zero(args: argparse.Namespace) -> int:
     return 0 if report["ok"] else 1
 
 
+def _tests_milestone_one(args: argparse.Namespace) -> int:
+    diagnostics: list[dict[str, str]] = []
+    checked = 0
+    try:
+        raw, canonical = extract_facts(REPOSITORY_ROOT)
+        checked += 17
+        validate_instance_against_schema(
+            raw,
+            REPOSITORY_ROOT / "schemas" / "raw-raaml-facts.schema.json",
+        )
+        validate_instance_against_schema(
+            canonical,
+            REPOSITORY_ROOT / "schemas" / "canonical-raaml-facts.schema.json",
+        )
+        raw_again, canonical_again = extract_facts(REPOSITORY_ROOT)
+        if serialize_facts(raw) != serialize_facts(raw_again):
+            diagnostics.append(
+                {
+                    "severity": "error",
+                    "code": "FACT_RAW_NONDETERMINISTIC",
+                    "message": "two raw extractions are not byte-identical",
+                }
+            )
+        if serialize_facts(canonical) != serialize_facts(canonical_again):
+            diagnostics.append(
+                {
+                    "severity": "error",
+                    "code": "FACT_CANONICAL_NONDETERMINISTIC",
+                    "message": "two canonical extractions are not byte-identical",
+                }
+            )
+        actual_counts = count_facts(canonical)
+        if actual_counts != EXPECTED_TOTALS:
+            diagnostics.append(
+                {
+                    "severity": "error",
+                    "code": "FACT_COUNT_MISMATCH",
+                    "message": (
+                        f"expected {EXPECTED_TOTALS!r}, got {actual_counts!r}"
+                    ),
+                }
+            )
+        oracle_report = audit_corpus(REPOSITORY_ROOT)
+        if not oracle_report["ok"]:
+            diagnostics.extend(oracle_report["diagnostics"])
+        elif oracle_report["counts"] != actual_counts:
+            diagnostics.append(
+                {
+                    "severity": "error",
+                    "code": "FACT_ORACLE_DISAGREEMENT",
+                    "message": "production and independent corpus counts differ",
+                }
+            )
+        ocl_report = validate_ocl_corpus(REPOSITORY_ROOT)
+        checked += ocl_report["summary"]["checked"]
+        if not ocl_report["ok"]:
+            diagnostics.extend(ocl_report["diagnostics"])
+    except (FactExtractionError, SchemaValidationError, OSError) as error:
+        diagnostics.append(
+            {
+                "severity": "error",
+                "code": getattr(error, "code", "MILESTONE_ONE_FAILURE"),
+                "message": str(error),
+            }
+        )
+    report = {
+        "schemaVersion": "0.1.0",
+        "command": "tests milestone-1",
+        "ok": not diagnostics,
+        "summary": {
+            "checked": checked,
+            "failed": len(diagnostics),
+        },
+        "diagnostics": diagnostics,
+    }
+    _write_json_atomic(args.diagnostics, report)
+    return 0 if report["ok"] else 1
+
+
 def _adapter_command(args: argparse.Namespace) -> int:
     try:
         report = run_adapter(REPOSITORY_ROOT, args.mode, args.input)
@@ -305,6 +396,133 @@ def _schemas_validate(args: argparse.Namespace) -> int:
     return 0 if report["ok"] else 1
 
 
+def _facts_extract(args: argparse.Namespace) -> int:
+    diagnostics: list[dict[str, str]] = []
+    try:
+        raw, canonical = extract_facts(
+            REPOSITORY_ROOT,
+            lock_path=args.lock,
+            source_dir=args.source_dir,
+        )
+        validate_instance_against_schema(
+            raw,
+            REPOSITORY_ROOT / "schemas" / "raw-raaml-facts.schema.json",
+        )
+        validate_instance_against_schema(
+            canonical,
+            REPOSITORY_ROOT / "schemas" / "canonical-raaml-facts.schema.json",
+        )
+        if args.check_determinism:
+            raw_again, canonical_again = extract_facts(
+                REPOSITORY_ROOT,
+                lock_path=args.lock,
+                source_dir=args.source_dir,
+            )
+            if serialize_facts(raw) != serialize_facts(raw_again):
+                raise FactExtractionError(
+                    "FACT_RAW_NONDETERMINISTIC",
+                    "two raw extractions are not byte-identical",
+                )
+            if serialize_facts(canonical) != serialize_facts(canonical_again):
+                raise FactExtractionError(
+                    "FACT_CANONICAL_NONDETERMINISTIC",
+                    "two canonical extractions are not byte-identical",
+                )
+        _write_json_atomic(args.raw_output, raw)
+        _write_json_atomic(args.canonical_output, canonical)
+    except FactExtractionError as error:
+        diagnostics.append(
+            {
+                "severity": "error",
+                "code": error.code,
+                "message": str(error),
+            }
+        )
+    except SchemaValidationError as error:
+        diagnostics.append(
+            {
+                "severity": "error",
+                "code": "FACT_SCHEMA_INVALID",
+                "message": str(error),
+            }
+        )
+    except OSError as error:
+        diagnostics.append(
+            {
+                "severity": "error",
+                "code": "FACT_WRITE_FAILED",
+                "message": str(error),
+            }
+        )
+
+    report = {
+        "schemaVersion": "0.1.0",
+        "command": "facts extract",
+        "ok": not diagnostics,
+        "summary": {
+            "checked": 17 if not diagnostics else 0,
+            "failed": len(diagnostics),
+        },
+        "diagnostics": diagnostics,
+    }
+    _write_json_atomic(args.diagnostics, report)
+    if diagnostics:
+        for diagnostic in diagnostics:
+            print(
+                f"{diagnostic['code']}: {diagnostic['message']}",
+                file=sys.stderr,
+            )
+        return 1
+    print(f"Raw facts: {args.raw_output}")
+    print(f"Canonical facts: {args.canonical_output}")
+    return 0
+
+
+def _oracle_audit(args: argparse.Namespace) -> int:
+    report = audit_corpus(
+        REPOSITORY_ROOT,
+        lock_path=args.lock,
+        source_dir=args.source_dir,
+    )
+    _write_json_atomic(args.output, report)
+    if report["ok"]:
+        print(f"Corpus audit: {args.output}")
+        return 0
+    for diagnostic in report["diagnostics"]:
+        if diagnostic["severity"] == "error":
+            print(
+                f"{diagnostic['code']}: {diagnostic['message']}",
+                file=sys.stderr,
+            )
+    return 1
+
+
+def _validate_ocl_command(args: argparse.Namespace) -> int:
+    if args.all:
+        if args.input is not None:
+            args.parser.error("validate-ocl accepts either INPUT or --all, not both")
+        report = validate_ocl_corpus(REPOSITORY_ROOT)
+        _write_json_atomic(args.diagnostics, report)
+        if not report["ok"]:
+            for diagnostic in report["diagnostics"]:
+                if diagnostic["severity"] == "error":
+                    print(
+                        f"{diagnostic['code']}: {diagnostic['message']}",
+                        file=sys.stderr,
+                    )
+            return 1
+        print(
+            f"Validated {report['summary']['checked']} OCL expression(s); "
+            f"diagnostics: {args.diagnostics}"
+        )
+        return 0
+    if args.input is None:
+        args.parser.error("validate-ocl requires INPUT or --all")
+    args.mode = "ocl"
+    args.command_name = "validate-ocl"
+    return _adapter_command(args)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="raaml")
     parser.add_argument("--version", action="version", version=__version__)
@@ -378,6 +596,94 @@ def build_parser() -> argparse.ArgumentParser:
     )
     validate.set_defaults(handler=_schemas_validate)
 
+    facts = commands.add_parser(
+        "facts",
+        help="extract and canonicalize the locked RAAML preservation facts",
+    )
+    fact_commands = facts.add_subparsers(dest="facts_command", required=True)
+    extract = fact_commands.add_parser(
+        "extract",
+        help="extract raw and canonical facts from the locked corpus",
+    )
+    extract.add_argument(
+        "--all",
+        action="store_true",
+        required=True,
+        help="extract all 17 locked RAAML definition artifacts",
+    )
+    extract.add_argument(
+        "--check-determinism",
+        action="store_true",
+        help="extract twice and require byte-identical raw and canonical output",
+    )
+    extract.add_argument(
+        "--lock",
+        type=_path,
+        default=REPOSITORY_ROOT / "standards.lock.json",
+    )
+    extract.add_argument(
+        "--source-dir",
+        type=_path,
+        default=REPOSITORY_ROOT / "sources" / "cache",
+    )
+    extract.add_argument(
+        "--raw-output",
+        type=_path,
+        default=REPOSITORY_ROOT / "reports" / "facts" / "raw-raaml-facts.json",
+    )
+    extract.add_argument(
+        "--canonical-output",
+        type=_path,
+        default=REPOSITORY_ROOT
+        / "reports"
+        / "facts"
+        / "canonical-raaml-facts.json",
+    )
+    extract.add_argument(
+        "--diagnostics",
+        type=_path,
+        default=REPOSITORY_ROOT
+        / "reports"
+        / "diagnostics"
+        / "facts-extract.json",
+    )
+    extract.set_defaults(handler=_facts_extract)
+
+    oracle = commands.add_parser(
+        "oracle",
+        help="audit the corpus independently of production fact extraction",
+    )
+    oracle_commands = oracle.add_subparsers(
+        dest="oracle_command",
+        required=True,
+    )
+    audit = oracle_commands.add_parser(
+        "audit",
+        help="count and check preservation facts directly from XML events",
+    )
+    audit.add_argument(
+        "--all",
+        action="store_true",
+        required=True,
+        help="audit all 17 locked RAAML definition artifacts",
+    )
+    audit.add_argument(
+        "--lock",
+        type=_path,
+        default=REPOSITORY_ROOT / "standards.lock.json",
+    )
+    audit.add_argument(
+        "--source-dir",
+        type=_path,
+        default=REPOSITORY_ROOT / "sources" / "cache",
+    )
+    audit.add_argument(
+        "--output",
+        type=_path,
+        default=REPOSITORY_ROOT / "reports" / "oracle" / "corpus-audit.json",
+    )
+    audit.set_defaults(handler=_oracle_audit)
+
     tests = commands.add_parser("tests", help="run project tests")
     test_commands = tests.add_subparsers(dest="tests_command", required=True)
     unit = test_commands.add_parser("unit", help="run dependency-free unit tests")
@@ -403,6 +709,19 @@ def build_parser() -> argparse.ArgumentParser:
         / "tests-milestone-0.json",
     )
     milestone_zero.set_defaults(handler=_tests_milestone_zero)
+    milestone_one = test_commands.add_parser(
+        "milestone-1",
+        help="run extraction, oracle, determinism, and corpus OCL gates",
+    )
+    milestone_one.add_argument(
+        "--diagnostics",
+        type=_path,
+        default=REPOSITORY_ROOT
+        / "reports"
+        / "diagnostics"
+        / "tests-milestone-1.json",
+    )
+    milestone_one.set_defaults(handler=_tests_milestone_one)
 
     tooling = commands.add_parser("tooling", help="build pinned tool adapters")
     tooling_commands = tooling.add_subparsers(dest="tooling_command", required=True)
@@ -436,7 +755,6 @@ def build_parser() -> argparse.ArgumentParser:
     adapter_specs = (
         ("validate-v2", "v2"),
         ("validate-v1", "v1"),
-        ("validate-ocl", "ocl"),
     )
     for command_name, mode in adapter_specs:
         command = commands.add_parser(command_name)
@@ -454,6 +772,25 @@ def build_parser() -> argparse.ArgumentParser:
             mode=mode,
             command_name=command_name,
         )
+    validate_ocl = commands.add_parser("validate-ocl")
+    validate_ocl.add_argument("input", type=_path, nargs="?")
+    validate_ocl.add_argument(
+        "--all",
+        action="store_true",
+        help="parse and resolve every OCL expression in the locked corpus",
+    )
+    validate_ocl.add_argument(
+        "--diagnostics",
+        type=_path,
+        default=REPOSITORY_ROOT
+        / "reports"
+        / "diagnostics"
+        / "validate-ocl.json",
+    )
+    validate_ocl.set_defaults(
+        handler=_validate_ocl_command,
+        parser=validate_ocl,
+    )
     return parser
 
 

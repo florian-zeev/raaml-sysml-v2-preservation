@@ -1,0 +1,102 @@
+{
+  "schemaVersion": "0.1.0",
+  "corpus": "raaml-1.1-definitions",
+  "expectedTotals": {
+    "associationClasses": 1,
+    "associations": 40,
+    "classes": 143,
+    "comments": 431,
+    "connectors": 94,
+    "constraints": 60,
+    "enumerationLiterals": 35,
+    "enumerations": 5,
+    "extensionEnds": 84,
+    "extensions": 84,
+    "images": 22,
+    "packages": 15,
+    "ports": 65,
+    "profiles": 9,
+    "properties": 267,
+    "raamlApplications": 108,
+    "stereotypes": 94
+  },
+  "expectedAssociationsByLibrary": {
+    "CoreRAAMLLib.xmi": 1,
+    "FMEALib.xmi": 7,
+    "FTALib.xmi": 4,
+    "GeneralRAAMLLib.xmi": 7,
+    "GeneralRAAMLSecurityLib.xmi": 0,
+    "ISO26262Lib.xmi": 12,
+    "RBDLib.xmi": 2,
+    "STPALib.xmi": 7
+  },
+  "goldenFacts": {
+    "clientIsSituationOwners": [
+      "RelevantTo",
+      "Violates"
+    ],
+    "associationClasses": [
+      "STPALib.xmi::RiskRealization"
+    ],
+    "portsByLibrary": {
+      "FMEALib.xmi": 4,
+      "FTALib.xmi": 16,
+      "RBDLib.xmi": 45
+    },
+    "connectorsByLibrary": {
+      "FMEALib.xmi": 4,
+      "FTALib.xmi": 21,
+      "RBDLib.xmi": 69
+    },
+    "coreProfile": {
+      "name": "Core Profile",
+      "uri": "https://www.omg.org/spec/RAAML/20240219/Core",
+      "namespacePrefix": "RAAMLC"
+    },
+    "coreSituation": {
+      "baseProperty": "base_Class",
+      "baseType": "external::http://www.omg.org/spec/UML/20161101/UML.xmi::Class",
+      "general": "external::http://www.omg.org/spec/SysML/20181001/SysML.xmi::SysML.Block",
+      "extensionEnd": "extension_Situation"
+    },
+    "nestedPackage": {
+      "artifact": "ISO26262.xmi",
+      "declaration": "SafetyGoal",
+      "packagePath": [
+        "ISO 26262 Profile",
+        "RequirementManagement"
+      ]
+    },
+    "orderedEnumeration": {
+      "artifact": "ISO26262Lib.xmi",
+      "name": "Exposure",
+      "literals": [
+        "E0",
+        "E1",
+        "E2",
+        "E3",
+        "E4"
+      ]
+    },
+    "riskRealization": {
+      "generalNames": [
+        "Causality",
+        "AbstractRisk"
+      ],
+      "memberEndNames": [
+        "harmPotential",
+        "harm"
+      ],
+      "ownedEndRedefinitionCounts": {
+        "harm": 2,
+        "harmPotential": 2
+      }
+    },
+    "externalSupportType": {
+      "artifact": "RBDLib.xmi",
+      "owner": "CumulativeDistributionFunction",
+      "property": "time",
+      "target": "external::http://www.omg.org/spec/SysML/20181001/ISO80000.xmi::ISO-80000_dataType.time"
+    }
+  }
+}

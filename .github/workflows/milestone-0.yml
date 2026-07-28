@@ -1,4 +1,4 @@
-name: Milestone 0
+name: Milestones 0 and 1
 
 on:
   push:
@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  foundation:
+  foundation-and-facts:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
 
@@ -41,6 +41,13 @@ jobs:
       - name: Run paired Milestone 0 fixtures
         run: ./raaml tests milestone-0
 
+      - name: Extract and audit Milestone 1 facts
+        run: |
+          ./raaml facts extract --all --check-determinism
+          ./raaml oracle audit --all
+          ./raaml validate-ocl --all
+          ./raaml tests milestone-1
+
       - name: Build digest-pinned container
         run: |
           docker build \
@@ -48,14 +55,14 @@ jobs:
             --no-cache \
             --platform linux/amd64 \
             --build-arg VCS_REF="$GITHUB_SHA" \
-            --tag raaml-preservation:milestone-0 \
+            --tag raaml-preservation:milestone-1 \
             .
           image_id="$(docker image inspect \
             --format '{{.Id}}' \
-            raaml-preservation:milestone-0)"
+            raaml-preservation:milestone-1)"
           echo "Container image ID: $image_id"
           {
-            echo "### Milestone 0 container"
+            echo "### Milestone 1 container"
             echo
             echo "- Git commit: \`$GITHUB_SHA\`"
             echo "- Image ID: \`$image_id\`"
@@ -65,16 +72,50 @@ jobs:
       - name: Exercise container offline
         run: |
           chmod -R a+rX sources/cache
+          mkdir -p container-evidence
+          chmod 777 container-evidence
           docker run \
             --rm \
             --network none \
             --platform linux/amd64 \
             --volume "$PWD/sources/cache:/workspace/sources/cache:ro" \
-            raaml-preservation:milestone-0 \
+            --volume "$PWD/container-evidence:/evidence" \
+            raaml-preservation:milestone-1 \
             sh -ec '
               ./raaml sources verify
               ./raaml tooling bootstrap
               ./raaml schemas validate
               ./raaml tests unit
               ./raaml tests milestone-0
+              ./raaml facts extract \
+                --all \
+                --check-determinism \
+                --raw-output /evidence/raw-raaml-facts.json \
+                --canonical-output /evidence/canonical-raaml-facts.json \
+                --diagnostics /evidence/facts-extract.json
+              ./raaml oracle audit \
+                --all \
+                --output /evidence/corpus-audit.json
+              ./raaml validate-ocl \
+                --all \
+                --diagnostics /evidence/validate-ocl.json
+              ./raaml tests milestone-1 \
+                --diagnostics /evidence/tests-milestone-1.json
             '
+
+      - name: Compare host and container canonical facts
+        run: |
+          cmp \
+            reports/facts/canonical-raaml-facts.json \
+            container-evidence/canonical-raaml-facts.json
+          canonical_sha="$(
+            sha256sum reports/facts/canonical-raaml-facts.json |
+            cut -d ' ' -f 1
+          )"
+          {
+            echo "### Milestone 1 canonical facts"
+            echo
+            echo "- Canonical SHA-256: \`$canonical_sha\`"
+            echo "- Host/container byte comparison: identical"
+            echo "- OCL expressions parsed and resolved: 33"
+          } >> "$GITHUB_STEP_SUMMARY"

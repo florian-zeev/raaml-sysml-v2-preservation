@@ -1,0 +1,451 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/florian-zeev/raaml-sysml-v2-preservation/schemas/raw-raaml-facts.schema.json",
+  "title": "Raw RAAML 1.1 preservation facts",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "documentKind", "corpus", "artifacts"],
+  "properties": {
+    "schemaVersion": {"const": "0.1.0"},
+    "documentKind": {"const": "raw-raaml-facts"},
+    "corpus": {"const": "raaml-1.1-definitions"},
+    "artifacts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/artifact"}
+    }
+  },
+  "$defs": {
+    "nonemptyString": {"type": "string", "minLength": 1},
+    "optionalName": {"type": ["string", "null"]},
+    "presenceBoolean": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["present", "value"],
+      "properties": {
+        "present": {"type": "boolean"},
+        "value": {"type": "boolean"}
+      }
+    },
+    "presenceString": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["present", "value"],
+      "properties": {
+        "present": {"type": "boolean"},
+        "value": {"type": ["string", "null"]}
+      }
+    },
+    "sourceReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "form", "sourceValue"],
+      "properties": {
+        "role": {"$ref": "#/$defs/nonemptyString"},
+        "form": {"enum": ["attribute", "idref", "href"]},
+        "sourceValue": {"$ref": "#/$defs/nonemptyString"}
+      }
+    },
+    "comment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["body", "annotatedElements"],
+      "properties": {
+        "body": {"type": "string"},
+        "annotatedElements": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/sourceReference"}
+        }
+      }
+    },
+    "valueLiteral": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["present", "kind", "value"],
+      "properties": {
+        "present": {"type": "boolean"},
+        "kind": {"type": ["string", "null"]},
+        "value": {"type": ["string", "null"]}
+      }
+    },
+    "property": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceHandle",
+        "kind",
+        "name",
+        "isBase",
+        "type",
+        "aggregation",
+        "lower",
+        "upper",
+        "default",
+        "isDerived",
+        "isReadOnly",
+        "isOrdered",
+        "isUnique",
+        "subsettedProperties",
+        "redefinedProperties",
+        "comments"
+      ],
+      "properties": {
+        "sourceHandle": {"$ref": "#/$defs/nonemptyString"},
+        "kind": {"enum": ["Property", "Port", "ExtensionEnd"]},
+        "name": {"$ref": "#/$defs/optionalName"},
+        "isBase": {"type": "boolean"},
+        "type": {
+          "oneOf": [
+            {"type": "null"},
+            {"$ref": "#/$defs/sourceReference"}
+          ]
+        },
+        "aggregation": {"$ref": "#/$defs/presenceString"},
+        "lower": {"$ref": "#/$defs/valueLiteral"},
+        "upper": {"$ref": "#/$defs/valueLiteral"},
+        "default": {"$ref": "#/$defs/valueLiteral"},
+        "isDerived": {"$ref": "#/$defs/presenceBoolean"},
+        "isReadOnly": {"$ref": "#/$defs/presenceBoolean"},
+        "isOrdered": {"$ref": "#/$defs/presenceBoolean"},
+        "isUnique": {"$ref": "#/$defs/presenceBoolean"},
+        "subsettedProperties": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/sourceReference"}
+        },
+        "redefinedProperties": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/sourceReference"}
+        },
+        "comments": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/comment"}
+        }
+      }
+    },
+    "connectorEnd": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "partWithPort"],
+      "properties": {
+        "role": {"$ref": "#/$defs/sourceReference"},
+        "partWithPort": {
+          "oneOf": [
+            {"type": "null"},
+            {"$ref": "#/$defs/sourceReference"}
+          ]
+        }
+      }
+    },
+    "connector": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sourceHandle", "name", "ends", "comments"],
+      "properties": {
+        "sourceHandle": {"$ref": "#/$defs/nonemptyString"},
+        "name": {"$ref": "#/$defs/optionalName"},
+        "ends": {
+          "type": "array",
+          "minItems": 2,
+          "items": {"$ref": "#/$defs/connectorEnd"}
+        },
+        "comments": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/comment"}
+        }
+      }
+    },
+    "constraint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceHandle",
+        "name",
+        "constrainedElements",
+        "languages",
+        "bodyLines",
+        "comments"
+      ],
+      "properties": {
+        "sourceHandle": {"$ref": "#/$defs/nonemptyString"},
+        "name": {"$ref": "#/$defs/optionalName"},
+        "constrainedElements": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/sourceReference"}
+        },
+        "languages": {"type": "array", "items": {"type": "string"}},
+        "bodyLines": {"type": "array", "items": {"type": "string"}},
+        "comments": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/comment"}
+        }
+      }
+    },
+    "extension": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceHandle",
+        "memberEnds",
+        "navigableOwnedEnds",
+        "ownedEnds",
+        "comments"
+      ],
+      "properties": {
+        "sourceHandle": {"$ref": "#/$defs/nonemptyString"},
+        "memberEnds": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/sourceReference"}
+        },
+        "navigableOwnedEnds": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/sourceReference"}
+        },
+        "ownedEnds": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/property"}
+        },
+        "comments": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/comment"}
+        }
+      }
+    },
+    "icon": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["format", "content", "location"],
+      "properties": {
+        "format": {"$ref": "#/$defs/presenceString"},
+        "content": {"type": "string"},
+        "location": {"$ref": "#/$defs/presenceString"}
+      }
+    },
+    "literal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "comments"],
+      "properties": {
+        "name": {"$ref": "#/$defs/nonemptyString"},
+        "comments": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/comment"}
+        }
+      }
+    },
+    "declaration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceHandle",
+        "kind",
+        "packagePath",
+        "name",
+        "isAbstract",
+        "comments",
+        "generalizations",
+        "properties",
+        "extensions",
+        "icons",
+        "constraints",
+        "literals",
+        "connectors",
+        "memberEnds",
+        "ownedEnds",
+        "navigableOwnedEnds"
+      ],
+      "properties": {
+        "sourceHandle": {"$ref": "#/$defs/nonemptyString"},
+        "kind": {
+          "enum": [
+            "Stereotype",
+            "Class",
+            "Enumeration",
+            "Association",
+            "AssociationClass"
+          ]
+        },
+        "packagePath": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/nonemptyString"}
+        },
+        "name": {"$ref": "#/$defs/optionalName"},
+        "isAbstract": {"$ref": "#/$defs/presenceBoolean"},
+        "comments": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/comment"}
+        },
+        "generalizations": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/sourceReference"}
+        },
+        "properties": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/property"}
+        },
+        "extensions": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/extension"}
+        },
+        "icons": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/icon"}
+        },
+        "constraints": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/constraint"}
+        },
+        "literals": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/literal"}
+        },
+        "connectors": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/connector"}
+        },
+        "memberEnds": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/sourceReference"}
+        },
+        "ownedEnds": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/property"}
+        },
+        "navigableOwnedEnds": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/sourceReference"}
+        }
+      }
+    },
+    "package": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sourceHandle", "kind", "packagePath", "name", "uri", "comments"],
+      "properties": {
+        "sourceHandle": {"$ref": "#/$defs/nonemptyString"},
+        "kind": {"enum": ["Profile", "Package"]},
+        "packagePath": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/nonemptyString"}
+        },
+        "name": {"$ref": "#/$defs/nonemptyString"},
+        "uri": {"$ref": "#/$defs/presenceString"},
+        "comments": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/comment"}
+        }
+      }
+    },
+    "machinery": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sourceHandle", "kind", "ownerPath", "targets", "comments"],
+      "properties": {
+        "sourceHandle": {"$ref": "#/$defs/nonemptyString"},
+        "kind": {
+          "enum": [
+            "MetamodelReference",
+            "PackageImport",
+            "ElementImport",
+            "ProfileApplication"
+          ]
+        },
+        "ownerPath": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/nonemptyString"}
+        },
+        "targets": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/sourceReference"}
+        },
+        "comments": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/comment"}
+        }
+      }
+    },
+    "namespace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["prefix", "uri"],
+      "properties": {
+        "prefix": {"$ref": "#/$defs/nonemptyString"},
+        "uri": {"$ref": "#/$defs/nonemptyString"}
+      }
+    },
+    "applicationValue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["property", "values"],
+      "properties": {
+        "property": {"$ref": "#/$defs/nonemptyString"},
+        "values": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "application": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceHandle",
+        "stereotypeNamespace",
+        "stereotypeName",
+        "targetProperty",
+        "target",
+        "values"
+      ],
+      "properties": {
+        "sourceHandle": {"$ref": "#/$defs/nonemptyString"},
+        "stereotypeNamespace": {"$ref": "#/$defs/nonemptyString"},
+        "stereotypeName": {"$ref": "#/$defs/nonemptyString"},
+        "targetProperty": {"$ref": "#/$defs/nonemptyString"},
+        "target": {"$ref": "#/$defs/sourceReference"},
+        "values": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/applicationValue"}
+        }
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifactId",
+        "filename",
+        "sha256",
+        "namespaces",
+        "packages",
+        "declarations",
+        "machinery",
+        "applications"
+      ],
+      "properties": {
+        "artifactId": {"$ref": "#/$defs/nonemptyString"},
+        "filename": {"$ref": "#/$defs/nonemptyString"},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "namespaces": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/namespace"}
+        },
+        "packages": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/package"}
+        },
+        "declarations": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/declaration"}
+        },
+        "machinery": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/machinery"}
+        },
+        "applications": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/application"}
+        }
+      }
+    }
+  }
+}
