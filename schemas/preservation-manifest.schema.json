@@ -18,41 +18,104 @@
       "pattern": "^[0-9a-f]{64}$"
     },
     "payload": {
+      "oneOf": [
+        {"$ref": "#/$defs/milestone3Payload"},
+        {"$ref": "#/$defs/milestone4Payload"}
+      ]
+    }
+  },
+  "$defs": {
+    "nativeTarget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["canonicalId", "carrier", "declaration"],
+      "properties": {
+        "canonicalId": {"type": "string", "minLength": 1},
+        "carrier": {
+          "enum": [
+            "metadata def",
+            "occurrence def",
+            "connection def",
+            "enum def",
+            "constraint def"
+          ]
+        },
+        "declaration": {"type": "string", "minLength": 1}
+      }
+    },
+    "qualifiedNativeTarget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "canonicalId",
+        "carrier",
+        "declaration",
+        "qualifiedName"
+      ],
+      "properties": {
+        "canonicalId": {"type": "string", "minLength": 1},
+        "carrier": {
+          "enum": [
+            "metadata def",
+            "occurrence def",
+            "connection def",
+            "enum def",
+            "constraint def"
+          ]
+        },
+        "declaration": {"type": "string", "minLength": 1},
+        "qualifiedName": {"type": "string", "minLength": 1}
+      }
+    },
+    "milestone3Payload": {
       "type": "object",
       "additionalProperties": false,
       "required": ["sliceId", "v2Sha256", "nativeTargets", "canonicalFacts"],
       "properties": {
-        "sliceId": {
-          "const": "milestone-3-core-general-stpa"
-        },
+        "sliceId": {"const": "milestone-3-core-general-stpa"},
         "v2Sha256": {
           "type": "string",
           "pattern": "^[0-9a-f]{64}$"
         },
-        "canonicalFacts": {
-          "type": "object"
-        },
+        "canonicalFacts": {"type": "object"},
         "nativeTargets": {
           "type": "array",
           "minItems": 1,
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": ["canonicalId", "carrier", "declaration"],
-            "properties": {
-              "canonicalId": {"type": "string", "minLength": 1},
-              "carrier": {
-                "enum": [
-                  "metadata def",
-                  "occurrence def",
-                  "connection def",
-                  "enum def",
-                  "constraint def"
-                ]
-              },
-              "declaration": {"type": "string", "minLength": 1}
-            }
-          }
+          "items": {"$ref": "#/$defs/nativeTarget"}
+        }
+      }
+    },
+    "milestone4Payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scopeId",
+        "artifactId",
+        "sourceFilename",
+        "sourceSha256",
+        "v2Filename",
+        "v2Sha256",
+        "nativeTargets",
+        "canonicalFacts"
+      ],
+      "properties": {
+        "scopeId": {"const": "milestone-4-full-corpus"},
+        "artifactId": {"type": "string", "minLength": 1},
+        "sourceFilename": {"type": "string", "minLength": 1},
+        "sourceSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "v2Filename": {"const": "raaml-full-corpus.sysml"},
+        "v2Sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "canonicalFacts": {"type": "object"},
+        "nativeTargets": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/qualifiedNativeTarget"}
         }
       }
     }

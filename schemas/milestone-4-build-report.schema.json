@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/florian-zeev/raaml-sysml-v2-preservation/schemas/milestone-4-build-report.schema.json",
+  "title": "Milestone 4 full-corpus build report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "documentKind",
+    "implementationVersion",
+    "scopeId",
+    "ok",
+    "sourceDigests",
+    "generatedOutputs",
+    "tools",
+    "interoperability",
+    "summary",
+    "stages"
+  ],
+  "properties": {
+    "schemaVersion": {"const": "0.1.0"},
+    "documentKind": {"const": "milestone-4-build-report"},
+    "implementationVersion": {"type": "string", "minLength": 1},
+    "scopeId": {"const": "milestone-4-full-corpus"},
+    "ok": {"const": true},
+    "sourceDigests": {"type": "object"},
+    "generatedOutputs": {"type": "object"},
+    "tools": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mandatoryV2Validator", "secondV2Parser"],
+      "properties": {
+        "mandatoryV2Validator": {"type": "string", "minLength": 1},
+        "secondV2Parser": {"type": "null"}
+      }
+    },
+    "interoperability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mandatoryValidator", "secondImplementation"],
+      "properties": {
+        "mandatoryValidator": {"const": "passed"},
+        "secondImplementation": {
+          "const": "not tested with a second implementation"
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceArtifacts",
+        "generatedFiles",
+        "preservationManifests",
+        "declarations",
+        "constraintCarriers",
+        "nativeTargets",
+        "v2ValidationErrors"
+      ],
+      "properties": {
+        "sourceArtifacts": {"const": 17},
+        "generatedFiles": {"const": 18},
+        "preservationManifests": {"const": 17},
+        "declarations": {"const": 283},
+        "constraintCarriers": {"const": 60},
+        "nativeTargets": {"const": 343},
+        "v2ValidationErrors": {"const": 0}
+      }
+    },
+    "stages": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["manifests", "v2"],
+      "properties": {
+        "manifests": {
+          "type": "array",
+          "minItems": 17,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "artifactId",
+              "sourceFilename",
+              "sourceSha256",
+              "manifestSha256",
+              "payloadSha256",
+              "nativeTargets"
+            ],
+            "properties": {
+              "artifactId": {"type": "string", "minLength": 1},
+              "sourceFilename": {"type": "string", "minLength": 1},
+              "sourceSha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "manifestSha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "payloadSha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "nativeTargets": {"type": "integer", "minimum": 1}
+            }
+          }
+        },
+        "v2": {"type": "object"}
+      }
+    }
+  }
+}

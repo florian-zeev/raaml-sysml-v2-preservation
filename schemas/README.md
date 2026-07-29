@@ -16,9 +16,12 @@ All schemas use JSON Schema draft 2020-12 and reject undeclared fields.
 - `transformation-matrix.schema.json` defines the reproducible Milestone 2
   comparison with the official SysML v1-to-v2 transformation.
 - `preservation-manifest.schema.json` defines the integrity-protected
-  Milestone 3 source-fact payload carried alongside the native v2 view.
+  Milestone 3 slice payload and the per-source Milestone 4 full-corpus
+  payloads carried alongside the native v2 view.
 - `roundtrip-report.schema.json` defines the machine-readable before/after
   canonical fact comparison.
+- `milestone-4-build-report.schema.json` defines the deterministic
+  full-corpus generation, manifest, validator, and interoperability evidence.
 
 The fact schemas implement
 [`docs/milestone-1-fact-contract.md`](../docs/milestone-1-fact-contract.md).

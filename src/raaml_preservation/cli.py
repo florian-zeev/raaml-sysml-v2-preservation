@@ -25,9 +25,11 @@ from .facts import (
     serialize_facts,
 )
 from .roundtrip import (
+    FULL_CORPUS_ID,
     RoundTripError,
     canonical_json,
     compare_reconstructed,
+    forward_full_corpus,
     forward_slice,
     reverse_slice,
 )
@@ -357,12 +359,28 @@ def _tests_milestone_one(args: argparse.Namespace) -> int:
 
 def _forward_command(args: argparse.Namespace) -> int:
     diagnostics: list[dict[str, str]] = []
+    milestone = "milestone-4" if args.milestone_4 else "milestone-3"
+    output_dir = args.output_dir or (
+        REPOSITORY_ROOT / "generated" / milestone / "forward"
+    )
+    diagnostics_path = args.diagnostics or (
+        REPOSITORY_ROOT
+        / "reports"
+        / "diagnostics"
+        / f"forward-{milestone}.json"
+    )
     try:
-        result = forward_slice(REPOSITORY_ROOT, args.output_dir)
-        validate_instance_against_schema(
-            json.loads(result["manifest"].read_text(encoding="utf-8")),
-            REPOSITORY_ROOT / "schemas" / "preservation-manifest.schema.json",
-        )
+        if args.milestone_4:
+            result = forward_full_corpus(REPOSITORY_ROOT, output_dir)
+            manifest_paths = result["manifests"]
+        else:
+            result = forward_slice(REPOSITORY_ROOT, output_dir)
+            manifest_paths = [result["manifest"]]
+        for manifest_path in manifest_paths:
+            validate_instance_against_schema(
+                json.loads(manifest_path.read_text(encoding="utf-8")),
+                REPOSITORY_ROOT / "schemas" / "preservation-manifest.schema.json",
+            )
         validate_instance_against_schema(
             result["facts"],
             REPOSITORY_ROOT / "schemas" / "canonical-raaml-facts.schema.json",
@@ -382,7 +400,7 @@ def _forward_command(args: argparse.Namespace) -> int:
         "summary": {"checked": 1, "failed": len(diagnostics)},
         "diagnostics": diagnostics,
     }
-    _write_json_atomic(args.diagnostics, report)
+    _write_json_atomic(diagnostics_path, report)
     return 0 if report["ok"] else 1
 
 
@@ -655,6 +673,189 @@ def _tests_milestone_three(args: argparse.Namespace) -> int:
     report = {
         "schemaVersion": "0.1.0",
         "command": "tests milestone-3",
+        "ok": not diagnostics,
+        "summary": {"checked": checked, "failed": len(diagnostics)},
+        "diagnostics": diagnostics,
+    }
+    _write_json_atomic(args.diagnostics, report)
+    return 0 if report["ok"] else 1
+
+
+def _file_digests(root: Path) -> dict[str, str]:
+    return {
+        path.relative_to(root).as_posix(): hashlib.sha256(
+            path.read_bytes()
+        ).hexdigest()
+        for path in sorted(root.rglob("*"))
+        if path.is_file()
+    }
+
+
+def _tests_milestone_four(args: argparse.Namespace) -> int:
+    diagnostics: list[dict[str, str]] = []
+    checked = 0
+    try:
+        with tempfile.TemporaryDirectory(prefix="raaml-m4-") as temporary:
+            root = Path(temporary)
+            first = root / "first"
+            second = root / "second"
+            first_result = forward_full_corpus(REPOSITORY_ROOT, first)
+            second_result = forward_full_corpus(REPOSITORY_ROOT, second)
+            checked += 2
+            first_digests = _file_digests(first)
+            second_digests = _file_digests(second)
+            if first_digests != second_digests:
+                raise RoundTripError(
+                    "FULL_CORPUS_NONDETERMINISTIC",
+                    "two full-corpus generations are not byte-identical",
+                )
+            if len(first_digests) != 18:
+                raise RoundTripError(
+                    "FULL_CORPUS_OUTPUT_COUNT",
+                    f"expected 18 generated files, got {len(first_digests)}",
+                )
+            manifests = []
+            native_target_count = 0
+            for manifest_path in first_result["manifests"]:
+                manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+                validate_instance_against_schema(
+                    manifest,
+                    REPOSITORY_ROOT
+                    / "schemas"
+                    / "preservation-manifest.schema.json",
+                )
+                artifact_facts = manifest["payload"]["canonicalFacts"]
+                validate_instance_against_schema(
+                    artifact_facts,
+                    REPOSITORY_ROOT
+                    / "schemas"
+                    / "canonical-raaml-facts.schema.json",
+                )
+                native_target_count += len(manifest["payload"]["nativeTargets"])
+                manifests.append(
+                    {
+                        "artifactId": manifest["payload"]["artifactId"],
+                        "sourceFilename": manifest["payload"]["sourceFilename"],
+                        "sourceSha256": manifest["payload"]["sourceSha256"],
+                        "manifestSha256": hashlib.sha256(
+                            manifest_path.read_bytes()
+                        ).hexdigest(),
+                        "payloadSha256": manifest["payloadSha256"],
+                        "nativeTargets": len(
+                            manifest["payload"]["nativeTargets"]
+                        ),
+                    }
+                )
+                checked += 1
+            if len(manifests) != 17:
+                raise RoundTripError(
+                    "FULL_CORPUS_MANIFEST_COUNT",
+                    f"expected 17 manifests, got {len(manifests)}",
+                )
+            if native_target_count != 343:
+                raise RoundTripError(
+                    "FULL_CORPUS_NATIVE_TARGET_COUNT",
+                    f"expected 343 native targets, got {native_target_count}",
+                )
+            v2_report = run_adapter(
+                REPOSITORY_ROOT,
+                "v2",
+                first_result["v2"],
+            )
+            stable_v2_report = stable_adapter_report(v2_report)
+            checked += 1
+            if not v2_report["ok"]:
+                raise RoundTripError(
+                    "FULL_CORPUS_V2_INVALID",
+                    "generated full-corpus SysML v2 model is invalid",
+                )
+            if any(v2_report["errorCategories"].values()):
+                raise RoundTripError(
+                    "FULL_CORPUS_V2_CATEGORY",
+                    "a SysML v2 validation category is nonzero",
+                )
+            v2_text = first_result["v2"].read_text(encoding="utf-8")
+            if "private import ScalarValues::*;" not in v2_text:
+                raise RoundTripError(
+                    "FULL_CORPUS_IMPORT_MISSING",
+                    "generated model does not exercise pinned library imports",
+                )
+            declaration_count = sum(
+                len(artifact["declarations"])
+                for artifact in first_result["facts"]["artifacts"]
+            )
+            constraint_count = sum(
+                len(declaration["constraints"])
+                for artifact in first_result["facts"]["artifacts"]
+                for declaration in artifact["declarations"]
+            )
+            published = {
+                "schemaVersion": "0.1.0",
+                "documentKind": "milestone-4-build-report",
+                "implementationVersion": __version__,
+                "scopeId": FULL_CORPUS_ID,
+                "ok": True,
+                "sourceDigests": {
+                    artifact["filename"]: artifact["sha256"]
+                    for artifact in first_result["facts"]["artifacts"]
+                },
+                "generatedOutputs": first_digests,
+                "tools": {
+                    "mandatoryV2Validator": stable_v2_report.get(
+                        "adapterVersion"
+                    ),
+                    "secondV2Parser": None,
+                },
+                "interoperability": {
+                    "mandatoryValidator": "passed",
+                    "secondImplementation": (
+                        "not tested with a second implementation"
+                    ),
+                },
+                "summary": {
+                    "sourceArtifacts": 17,
+                    "generatedFiles": len(first_digests),
+                    "preservationManifests": len(manifests),
+                    "declarations": declaration_count,
+                    "constraintCarriers": constraint_count,
+                    "nativeTargets": native_target_count,
+                    "v2ValidationErrors": sum(
+                        v2_report["errorCategories"].values()
+                    ),
+                },
+                "stages": {
+                    "manifests": sorted(
+                        manifests,
+                        key=lambda item: item["artifactId"],
+                    ),
+                    "v2": stable_v2_report,
+                },
+            }
+            validate_instance_against_schema(
+                published,
+                REPOSITORY_ROOT
+                / "schemas"
+                / "milestone-4-build-report.schema.json",
+            )
+            _write_json_atomic(args.output, published)
+    except (
+        AdapterError,
+        FactExtractionError,
+        RoundTripError,
+        SchemaValidationError,
+        OSError,
+        json.JSONDecodeError,
+    ) as error:
+        diagnostics.append(
+            {
+                "severity": "error",
+                "code": getattr(error, "code", "MILESTONE_FOUR_FAILURE"),
+                "message": str(error),
+            }
+        )
+    report = {
+        "schemaVersion": "0.1.0",
+        "command": "tests milestone-4",
         "ok": not diagnostics,
         "summary": {"checked": checked, "failed": len(diagnostics)},
         "diagnostics": diagnostics,
@@ -1069,26 +1270,28 @@ def build_parser() -> argparse.ArgumentParser:
 
     forward = commands.add_parser(
         "forward",
-        help="map the Milestone 3 RAAML slice to SysML v2 plus a manifest",
+        help="map RAAML facts to SysML v2 plus preservation manifests",
     )
-    forward.add_argument(
+    forward_scope = forward.add_mutually_exclusive_group(required=True)
+    forward_scope.add_argument(
         "--milestone-3",
         action="store_true",
-        required=True,
         help="generate the frozen Milestone 3 vertical slice",
+    )
+    forward_scope.add_argument(
+        "--milestone-4",
+        action="store_true",
+        help="generate the complete 17-file Milestone 4 v2 corpus",
     )
     forward.add_argument(
         "--output-dir",
         type=_path,
-        default=REPOSITORY_ROOT / "generated" / "milestone-3" / "forward",
+        default=None,
     )
     forward.add_argument(
         "--diagnostics",
         type=_path,
-        default=REPOSITORY_ROOT
-        / "reports"
-        / "diagnostics"
-        / "forward-milestone-3.json",
+        default=None,
     )
     forward.set_defaults(handler=_forward_command)
 
@@ -1308,6 +1511,27 @@ def build_parser() -> argparse.ArgumentParser:
         / "tests-milestone-3.json",
     )
     milestone_three.set_defaults(handler=_tests_milestone_three)
+    milestone_four = test_commands.add_parser(
+        "milestone-4",
+        help="generate and validate the complete 17-file SysML v2 corpus",
+    )
+    milestone_four.add_argument(
+        "--output",
+        type=_path,
+        default=REPOSITORY_ROOT
+        / "reports"
+        / "conformance"
+        / "milestone-4.json",
+    )
+    milestone_four.add_argument(
+        "--diagnostics",
+        type=_path,
+        default=REPOSITORY_ROOT
+        / "reports"
+        / "diagnostics"
+        / "tests-milestone-4.json",
+    )
+    milestone_four.set_defaults(handler=_tests_milestone_four)
 
     tooling = commands.add_parser("tooling", help="build pinned tool adapters")
     tooling_commands = tooling.add_subparsers(dest="tooling_command", required=True)

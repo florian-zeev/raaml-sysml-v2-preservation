@@ -102,7 +102,12 @@ official transformation has no MetamodelReference-specific rule. Profile
 applications are also retained in the manifest because the official
 transformation does not map them.
 
-The SysML v2 fragments below show the structure the proposal intends. They have not yet passed a SysML v2 parser. Before release, every generated official definition must be written in accepted v2 syntax and parsed successfully.
+The SysML v2 fragments below are **illustrative pseudocode** that defines the
+intended information shape. They are not accepted concrete syntax unless a
+block is explicitly labeled as validated syntax. The reference
+implementation's generated `.sysml` files are the parser-tested concrete
+encoding. Before release, every generated official definition must be written
+in accepted v2 syntax and parsed successfully.
 
 The base payload, applied to every generated `Raaml_*` metadata def:
 

@@ -15,7 +15,13 @@ The difficulty is that RAAML 1.1 was built for SysML v1, while SysML v2 is built
 
 This paper proposes a conservative way to carry the 17 official RAAML 1.1 definition files—nine profiles and eight libraries—through SysML v2. Each RAAML definition receives a useful v2 form. A separate preservation record keeps the v1 facts that this form does not express clearly enough on its own. Information that belongs to the whole source file, such as imports and OCL constraints, is stored once in a JSON manifest beside the v2 model.
 
-Version 0.1 defines what must be preserved and how to test it. It does not yet claim that the proposed transformation works. It does not cover arbitrary user models, and it does not attempt to design RAAML 2.0. The next step is an open reference implementation that converts the official files to v2, converts them back, and reports every fact that changed or disappeared.
+Version 0.1 defines what must be preserved and how to test it. The open
+reference implementation has demonstrated the complete round trip on a
+six-artifact vertical slice and has generated parser-valid SysML v2 carriers
+for all 17 official definition files. It does not yet claim a fact-preserving
+round trip for the full corpus. It does not cover arbitrary user models, and
+it does not attempt to design RAAML 2.0. The remaining test is to rebuild all
+17 v1 files and report every fact that changed or disappeared.
 
 ## 1. The problem
 

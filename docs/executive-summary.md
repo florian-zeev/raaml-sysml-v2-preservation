@@ -40,7 +40,12 @@ Those facts include:
 - Ports, connectors, connector ends, imports, profile applications, and namespace metadata;
 - stereotype applications that occur inside the official library files.
 
-The proposal does not yet cover RAAML models created by users. It also does not claim that the transformation has already passed the test. Version 0.1 says what must survive; the reference implementation must show whether it does.
+The proposal does not yet cover RAAML models created by users. The reference
+implementation has passed the round-trip test for a six-artifact vertical
+slice and generated parser-valid SysML v2 carriers for the complete official
+definition corpus. It has not yet passed the round-trip test for all 17 files.
+Version 0.1 says what must survive; the remaining implementation milestones
+must show whether it does across the full corpus.
 
 ## Why a simple one-to-one rewrite is not enough
 
@@ -81,7 +86,10 @@ SysML v2 metadata definition
 
 Information that belongs to the whole source file—its profile name, URI, comments, imports, profile applications, namespace values, and OCL records—is stored once in a JSON manifest beside the v2 model. It is not copied onto every definition.
 
-The proposed SysML v2 text has not yet been accepted by a parser. Every generated definition must parse successfully before version 0.1 can be released as an implemented result.
+The generated full-corpus SysML v2 text is accepted by the mandatory pinned
+SysML v2 implementation with zero errors in all five validation categories.
+It has not been tested with a second implementation, and parser acceptance
+does not by itself prove that the v1 facts can all be reconstructed.
 
 ## Choosing one v2 form without discarding the source
 

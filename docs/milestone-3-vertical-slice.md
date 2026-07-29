@@ -1,6 +1,6 @@
 # Milestone 3 thin vertical slice
 
-**Status:** Passes locally; clean Linux/container run pending
+**Status:** Passed
 
 **Date started:** 2026-07-29
 
@@ -94,6 +94,9 @@ The machine-readable report is written to
 `reports/conformance/milestone-3.json`. It identifies every locked input
 digest and the v1/v2 adapter versions. Generated reports remain ignored local
 build output until a release-evidence decision freezes them.
+
+The clean Linux and offline-container gate passed at commit
+`29018cf93e0238e9fb0f31809ad140644e790183`.
 
 ## Claim boundary
 

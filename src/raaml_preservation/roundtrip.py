@@ -14,6 +14,8 @@ from .sources import load_lock
 
 SCHEMA_VERSION = "0.1.0"
 SLICE_ID = "milestone-3-core-general-stpa"
+FULL_CORPUS_ID = "milestone-4-full-corpus"
+FULL_CORPUS_V2_FILENAME = "raaml-full-corpus.sysml"
 FULL_ARTIFACTS = {
     "CoreRAAML.xmi",
     "CoreRAAMLLib.xmi",
@@ -92,6 +94,34 @@ def create_manifest(canonical_slice: dict[str, Any]) -> dict[str, Any]:
         "v2Sha256": hashlib.sha256(v2_bytes).hexdigest(),
         "nativeTargets": _native_targets(canonical_slice),
         "canonicalFacts": canonical_slice,
+    }
+    return {
+        "schemaVersion": SCHEMA_VERSION,
+        "documentKind": "raaml-preservation-manifest",
+        "payloadSha256": hashlib.sha256(canonical_json(payload)).hexdigest(),
+        "payload": payload,
+    }
+
+
+def create_full_corpus_manifest(
+    canonical: dict[str, Any],
+    artifact: dict[str, Any],
+    v2_bytes: bytes,
+) -> dict[str, Any]:
+    artifact_facts = copy.deepcopy(canonical)
+    artifact_facts["artifacts"] = [copy.deepcopy(artifact)]
+    payload = {
+        "scopeId": FULL_CORPUS_ID,
+        "artifactId": artifact["artifactId"],
+        "sourceFilename": artifact["filename"],
+        "sourceSha256": artifact["sha256"],
+        "v2Filename": FULL_CORPUS_V2_FILENAME,
+        "v2Sha256": hashlib.sha256(v2_bytes).hexdigest(),
+        "nativeTargets": _native_targets(
+            artifact_facts,
+            root_package="RaamlFullCorpus",
+        ),
+        "canonicalFacts": artifact_facts,
     }
     return {
         "schemaVersion": SCHEMA_VERSION,
@@ -180,6 +210,35 @@ def forward_slice(repository_root: Path, output_dir: Path) -> dict[str, Any]:
     }
 
 
+def forward_full_corpus(repository_root: Path, output_dir: Path) -> dict[str, Any]:
+    _, canonical = extract_facts(repository_root)
+    _require_full_corpus_coverage(canonical)
+    _require_reference_closure(canonical)
+    v2_text = render_full_corpus_v2(canonical)
+    v2_bytes = v2_text.encode("utf-8")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    v2_path = output_dir / FULL_CORPUS_V2_FILENAME
+    v2_path.write_bytes(v2_bytes)
+    manifest_dir = output_dir / "manifests"
+    manifest_dir.mkdir(parents=True, exist_ok=True)
+    manifest_paths = []
+    for artifact in canonical["artifacts"]:
+        manifest = create_full_corpus_manifest(canonical, artifact, v2_bytes)
+        manifest_path = (
+            manifest_dir
+            / f"{Path(artifact['filename']).stem}.preservation.json"
+        )
+        manifest_path.write_bytes(
+            json.dumps(manifest, indent=2, sort_keys=True).encode("utf-8") + b"\n"
+        )
+        manifest_paths.append(manifest_path)
+    return {
+        "manifests": manifest_paths,
+        "v2": v2_path,
+        "facts": canonical,
+    }
+
+
 def reverse_slice(
     manifest_path: Path,
     v2_path: Path,
@@ -237,10 +296,54 @@ def compare_reconstructed(
 
 
 def render_v2(facts: dict[str, Any]) -> str:
+    return _render_v2_model(
+        facts,
+        root_package="RaamlMilestone3",
+        include_preservation_metadata=False,
+        include_scalar_import=False,
+    )
+
+
+def render_full_corpus_v2(facts: dict[str, Any]) -> str:
+    return _render_v2_model(
+        facts,
+        root_package="RaamlFullCorpus",
+        include_preservation_metadata=True,
+        include_scalar_import=True,
+    )
+
+
+def _render_v2_model(
+    facts: dict[str, Any],
+    *,
+    root_package: str,
+    include_preservation_metadata: bool,
+    include_scalar_import: bool,
+) -> str:
     lines = [
-        "package RaamlMilestone3 {",
-        "    private occurrence def PreservedAssociationEnd;",
+        f"package {root_package} {{",
     ]
+    if include_scalar_import:
+        lines.append("    private import ScalarValues::*;")
+    lines.append("    private occurrence def PreservedAssociationEnd;")
+    if include_preservation_metadata:
+        lines.extend(
+            [
+                "    metadata def Raaml_BaseAnnotation;",
+                (
+                    "    metadata def Raaml_LibraryClass "
+                    ":> Raaml_BaseAnnotation;"
+                ),
+                (
+                    "    metadata def Raaml_AssociationClass "
+                    ":> Raaml_BaseAnnotation;"
+                ),
+                (
+                    "    metadata def Raaml_LibraryAssociation "
+                    ":> Raaml_BaseAnnotation;"
+                ),
+            ]
+        )
     for artifact in facts["artifacts"]:
         package_name = _identifier(Path(artifact["filename"]).stem)
         lines.append(f"    package {package_name} {{")
@@ -248,10 +351,26 @@ def render_v2(facts: dict[str, Any]) -> str:
             name = _identifier(declaration["name"] or declaration["id"])
             kind = declaration["kind"]
             if kind == "Stereotype":
-                lines.append(f"        metadata def {name};")
+                specialization = (
+                    " :> RaamlFullCorpus::Raaml_BaseAnnotation"
+                    if include_preservation_metadata
+                    else ""
+                )
+                lines.append(f"        metadata def {name}{specialization};")
             elif kind == "Class":
+                if include_preservation_metadata:
+                    lines.append(
+                        "        #RaamlFullCorpus::Raaml_LibraryClass"
+                    )
                 lines.append(f"        occurrence def {name};")
             elif kind in {"Association", "AssociationClass"}:
+                if include_preservation_metadata:
+                    marker = (
+                        "Raaml_AssociationClass"
+                        if kind == "AssociationClass"
+                        else "Raaml_LibraryAssociation"
+                    )
+                    lines.append(f"        #RaamlFullCorpus::{marker}")
                 lines.append(f"        connection def {name} {{")
                 for end_name, end_type in _association_ends(
                     facts, artifact, declaration
@@ -273,9 +392,14 @@ def render_v2(facts: dict[str, Any]) -> str:
     return "\n".join(lines) + "\n"
 
 
-def _native_targets(facts: dict[str, Any]) -> list[dict[str, str]]:
+def _native_targets(
+    facts: dict[str, Any],
+    *,
+    root_package: str | None = None,
+) -> list[dict[str, str]]:
     targets = []
     for artifact in facts["artifacts"]:
+        package_name = _identifier(Path(artifact["filename"]).stem)
         for declaration in artifact["declarations"]:
             name = _identifier(declaration["name"] or declaration["id"])
             carrier = {
@@ -286,24 +410,30 @@ def _native_targets(facts: dict[str, Any]) -> list[dict[str, str]]:
                 "Enumeration": "enum def",
             }[declaration["kind"]]
             terminator = " {" if carrier in {"connection def", "enum def"} else ";"
-            targets.append(
-                {
-                    "canonicalId": declaration["id"],
-                    "carrier": carrier,
-                    "declaration": f"{carrier} {name}{terminator}",
-                }
-            )
+            target = {
+                "canonicalId": declaration["id"],
+                "carrier": carrier,
+                "declaration": f"{carrier} {name}{terminator}",
+            }
+            if root_package is not None:
+                target["qualifiedName"] = (
+                    f"{root_package}::{package_name}::{name}"
+                )
+            targets.append(target)
             for constraint in declaration["constraints"]:
                 constraint_name = _identifier(
                     f"{name}_{constraint['name'] or 'Constraint'}"
                 )
-                targets.append(
-                    {
-                        "canonicalId": constraint["id"],
-                        "carrier": "constraint def",
-                        "declaration": f"constraint def {constraint_name};",
-                    }
-                )
+                target = {
+                    "canonicalId": constraint["id"],
+                    "carrier": "constraint def",
+                    "declaration": f"constraint def {constraint_name};",
+                }
+                if root_package is not None:
+                    target["qualifiedName"] = (
+                        f"{root_package}::{package_name}::{constraint_name}"
+                    )
+                targets.append(target)
     return sorted(targets, key=lambda item: item["canonicalId"])
 
 
@@ -774,6 +904,34 @@ def _require_slice_coverage(facts: dict[str, Any]) -> None:
         for application in artifact["applications"]
     ):
         raise RoundTripError("SLICE_APPLICATION", "slice has no Situation application")
+
+
+def _require_full_corpus_coverage(facts: dict[str, Any]) -> None:
+    locked = load_lock(
+        Path(__file__).resolve().parents[2] / "standards.lock.json"
+    )
+    expected = {
+        artifact["filename"]
+        for artifact in locked["artifacts"]
+        if artifact["collection"] == "raaml-1.1-definitions"
+    }
+    actual = {
+        artifact["filename"]
+        for artifact in facts.get("artifacts", [])
+    }
+    if len(expected) != 17 or actual != expected:
+        raise RoundTripError(
+            "FULL_CORPUS_ARTIFACTS",
+            f"expected {sorted(expected)}, got {sorted(actual)}",
+        )
+    declaration_count = sum(
+        len(artifact["declarations"]) for artifact in facts["artifacts"]
+    )
+    if declaration_count != 283:
+        raise RoundTripError(
+            "FULL_CORPUS_DECLARATIONS",
+            f"expected 283 declarations, got {declaration_count}",
+        )
 
 
 def _require_reference_closure(facts: dict[str, Any]) -> None:

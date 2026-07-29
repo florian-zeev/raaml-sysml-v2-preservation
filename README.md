@@ -10,8 +10,9 @@ support for arbitrary user-authored RAAML models.
 
 ## Current status
 
-**Draft Community Proposal v0.1. No fact-preserving transformation has yet
-been demonstrated.**
+**Draft Community Proposal v0.1. A fact-preserving round trip has been
+demonstrated for the Milestone 3 vertical slice, but not yet for the full
+17-file corpus.**
 
 The implementation may claim a fact-preserving round trip only after the
 validation and publication gates in the reference implementation plan pass.
@@ -40,11 +41,18 @@ reproduces the analysis byte for byte on the Linux host and in the offline
 container at commit `5a2bef4`. This closes the transformation design analysis;
 it still does not demonstrate a SysML v2 round trip.
 
-Milestone 3 is implemented locally and awaits the clean Linux/container gate.
-The thin slice covers all Core and General definitions plus selected STPA
-definitions and a normative library application. The local gate generates and
-validates SysML v2, reconstructs and loads six v1 XMI artifacts, and compares
-the source and reconstructed canonical facts exactly.
+Milestone 3 passed on 2026-07-29. The thin slice covers all Core and General
+definitions plus selected STPA definitions and a normative library
+application. The Linux host and offline container generated and validated the
+same SysML v2 view, reconstructed and loaded six v1 XMI artifacts, and found
+zero canonical fact differences at commit `29018cf`.
+
+Milestone 4 is implemented locally and awaits the clean Linux/container gate.
+It generates one parser-valid SysML v2 corpus model containing all 283
+in-scope declarations and 60 constraint carriers, plus one schema-valid
+preservation manifest for each of the 17 source files. Two local generations
+produce 18 byte-identical outputs, and the mandatory validator reports zero
+errors in all five validation categories.
 
 ## Foundation and transformation-analysis quick start
 
@@ -61,6 +69,7 @@ Python 3.14.4 is the tested orchestration runtime. On macOS Apple silicon:
 ./raaml validate-ocl --all
 ./raaml tests milestone-1
 ./raaml tests milestone-3
+./raaml tests milestone-4
 ./raaml transformation surface
 ./raaml transformation properties
 ./raaml transformation constraints
@@ -89,6 +98,7 @@ remain ignored. See the ADRs for exact versions and known limitations.
 | [`docs/milestone-2-evidence.md`](docs/milestone-2-evidence.md) | Frozen transformation-analysis and reproducibility evidence |
 | [`docs/milestone-2-transformation-analysis.md`](docs/milestone-2-transformation-analysis.md) | Resolved comparison with the official SysML v1-to-v2 transformation |
 | [`docs/milestone-3-vertical-slice.md`](docs/milestone-3-vertical-slice.md) | Scope, pipeline, local result, and claim boundary for the thin vertical slice |
+| [`docs/milestone-4-full-corpus.md`](docs/milestone-4-full-corpus.md) | Full-corpus generation, per-source manifests, validation evidence, and claim boundary |
 | [`analysis/corpus-transformation-surface-v0.1.json`](analysis/corpus-transformation-surface-v0.1.json) | Reproducible inventory of SysML v1 applications that select specialized transformation rules |
 | [`analysis/property-transformation-surface-v0.1.json`](analysis/property-transformation-surface-v0.1.json) | Total official-rule classification of all 267 UML Properties |
 | [`analysis/constraint-transformation-surface-v0.1.json`](analysis/constraint-transformation-surface-v0.1.json) | Total split of all 60 constraint OpaqueExpressions by official mapping fidelity |
