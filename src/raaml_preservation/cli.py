@@ -9,6 +9,7 @@ import sys
 import tempfile
 from typing import Any
 import unittest
+import xml.etree.ElementTree as ET
 
 from . import __version__
 from .adapters import (
@@ -31,6 +32,7 @@ from .roundtrip import (
     compare_reconstructed,
     forward_full_corpus,
     forward_slice,
+    reverse_full_corpus,
     reverse_slice,
 )
 from .oracle import EXPECTED_TOTALS, audit_corpus
@@ -408,7 +410,14 @@ def _reverse_command(args: argparse.Namespace) -> int:
     diagnostics: list[dict[str, str]] = []
     checked = 0
     try:
-        paths = reverse_slice(args.manifest, args.v2, args.output_dir)
+        if args.manifest_dir is not None:
+            paths = reverse_full_corpus(
+                args.manifest_dir,
+                args.v2,
+                args.output_dir,
+            )
+        else:
+            paths = reverse_slice(args.manifest, args.v2, args.output_dir)
         checked = len(paths)
     except (RoundTripError, OSError) as error:
         diagnostics.append(
@@ -421,6 +430,180 @@ def _reverse_command(args: argparse.Namespace) -> int:
     report = {
         "schemaVersion": "0.1.0",
         "command": "reverse",
+        "ok": not diagnostics,
+        "summary": {"checked": checked, "failed": len(diagnostics)},
+        "diagnostics": diagnostics,
+    }
+    _write_json_atomic(args.diagnostics, report)
+    return 0 if report["ok"] else 1
+
+
+def _tests_milestone_five(args: argparse.Namespace) -> int:
+    diagnostics: list[dict[str, str]] = []
+    checked = 0
+    try:
+        with tempfile.TemporaryDirectory(prefix="raaml-m5-") as temporary:
+            root = Path(temporary)
+            forward = forward_full_corpus(REPOSITORY_ROOT, root / "forward")
+            first_dir = root / "first"
+            second_dir = root / "second"
+            first = reverse_full_corpus(
+                root / "forward" / "manifests",
+                forward["v2"],
+                first_dir,
+            )
+            second = reverse_full_corpus(
+                root / "forward" / "manifests",
+                forward["v2"],
+                second_dir,
+            )
+            checked += 34
+            first_digests = _file_digests(first_dir)
+            second_digests = _file_digests(second_dir)
+            if first_digests != second_digests:
+                raise RoundTripError(
+                    "FULL_REVERSE_NONDETERMINISTIC",
+                    "two full-corpus reverse runs are not byte-identical",
+                )
+            if len(first) != 17 or len(first_digests) != 17:
+                raise RoundTripError(
+                    "FULL_REVERSE_OUTPUT_COUNT",
+                    f"expected 17 reconstructed artifacts, got {len(first_digests)}",
+                )
+
+            v1_reports = []
+            for path in first:
+                try:
+                    root_element = ET.fromstring(path.read_bytes())
+                except ET.ParseError as error:
+                    raise RoundTripError(
+                        "RECONSTRUCTED_XML_INVALID",
+                        f"{path.name}: {error}",
+                    ) from error
+                generated_ids = [
+                    value
+                    for element in root_element.iter()
+                    if (value := element.get(
+                        "{http://www.omg.org/spec/XMI/20131001}id"
+                    ))
+                ]
+                if len(generated_ids) != len(set(generated_ids)):
+                    raise RoundTripError(
+                        "RECONSTRUCTED_ID_DUPLICATE",
+                        f"{path.name}: duplicate generated xmi:id",
+                    )
+                if not generated_ids or any(
+                    not value.startswith("_raaml_") for value in generated_ids
+                ):
+                    raise RoundTripError(
+                        "RECONSTRUCTED_ID_POLICY",
+                        f"{path.name}: generated IDs do not follow the stable-ID policy",
+                    )
+                result = run_adapter(
+                    REPOSITORY_ROOT,
+                    "v1",
+                    path,
+                    v1_catalog_dir=first_dir,
+                )
+                v1_reports.append(stable_adapter_report(result))
+                checked += 2
+                if not result["ok"]:
+                    raise RoundTripError(
+                        "FULL_REVERSE_V1_INVALID",
+                        f"reconstructed {path.name} is invalid",
+                    )
+
+            collision_output = root / "collision-output"
+            try:
+                reverse_full_corpus(
+                    root / "forward" / "manifests",
+                    forward["v2"],
+                    collision_output,
+                    hash_provider=lambda value: "0" * 64,
+                )
+            except RoundTripError as error:
+                if error.code != "SYNTHETIC_ID_COLLISION":
+                    raise
+                collision_code = error.code
+            else:
+                raise RoundTripError(
+                    "COLLISION_ACCEPTED",
+                    "injected synthetic-ID collision did not stop reconstruction",
+                )
+            if collision_output.exists():
+                raise RoundTripError(
+                    "COLLISION_OUTPUT_WRITTEN",
+                    "collision failure wrote a partial output directory",
+                )
+            checked += 1
+
+            published = {
+                "schemaVersion": "0.1.0",
+                "documentKind": "milestone-5-build-report",
+                "implementationVersion": __version__,
+                "scopeId": "milestone-5-full-corpus-reverse",
+                "ok": True,
+                "sourceDigests": {
+                    artifact["filename"]: artifact["sha256"]
+                    for artifact in forward["facts"]["artifacts"]
+                },
+                "reconstructedOutputs": first_digests,
+                "idPolicy": {
+                    "scheme": "deterministic sha256-derived _raaml_ identifiers",
+                    "originalMagicDrawIdsRequired": False,
+                    "originalMagicDrawIdsClaimedPreserved": False,
+                },
+                "collisionGate": {
+                    "provider": "constant test hash provider",
+                    "diagnosticCode": collision_code,
+                    "partialOutputWritten": False,
+                },
+                "tools": {
+                    "mandatoryV1Validator": (
+                        v1_reports[0].get("adapterVersion")
+                        if v1_reports
+                        else None
+                    )
+                },
+                "summary": {
+                    "sourceArtifacts": 17,
+                    "reconstructedArtifacts": len(first_digests),
+                    "wellFormedXmlArtifacts": len(first_digests),
+                    "v1ValidationErrors": sum(
+                        report["summary"]["failed"] for report in v1_reports
+                    ),
+                    "byteDeterministic": True,
+                    "collisionRejected": True,
+                },
+                "stages": {
+                    "v1": v1_reports,
+                },
+            }
+            validate_instance_against_schema(
+                published,
+                REPOSITORY_ROOT
+                / "schemas"
+                / "milestone-5-build-report.schema.json",
+            )
+            _write_json_atomic(args.output, published)
+    except (
+        AdapterError,
+        FactExtractionError,
+        RoundTripError,
+        SchemaValidationError,
+        OSError,
+        json.JSONDecodeError,
+    ) as error:
+        diagnostics.append(
+            {
+                "severity": "error",
+                "code": getattr(error, "code", "MILESTONE_FIVE_FAILURE"),
+                "message": str(error),
+            }
+        )
+    report = {
+        "schemaVersion": "0.1.0",
+        "command": "tests milestone-5",
         "ok": not diagnostics,
         "summary": {"checked": checked, "failed": len(diagnostics)},
         "diagnostics": diagnostics,
@@ -1299,7 +1482,17 @@ def build_parser() -> argparse.ArgumentParser:
         "reverse",
         help="reconstruct v1 XMI from a preservation manifest",
     )
-    reverse.add_argument("--manifest", type=_path, required=True)
+    reverse_input = reverse.add_mutually_exclusive_group(required=True)
+    reverse_input.add_argument(
+        "--manifest",
+        type=_path,
+        help="Milestone 3 single preservation manifest",
+    )
+    reverse_input.add_argument(
+        "--manifest-dir",
+        type=_path,
+        help="directory containing all 17 Milestone 4 preservation manifests",
+    )
     reverse.add_argument("--v2", type=_path, required=True)
     reverse.add_argument(
         "--output-dir",
@@ -1532,6 +1725,27 @@ def build_parser() -> argparse.ArgumentParser:
         / "tests-milestone-4.json",
     )
     milestone_four.set_defaults(handler=_tests_milestone_four)
+    milestone_five = test_commands.add_parser(
+        "milestone-5",
+        help="reconstruct and validate all 17 SysML v1 artifacts",
+    )
+    milestone_five.add_argument(
+        "--output",
+        type=_path,
+        default=REPOSITORY_ROOT
+        / "reports"
+        / "conformance"
+        / "milestone-5.json",
+    )
+    milestone_five.add_argument(
+        "--diagnostics",
+        type=_path,
+        default=REPOSITORY_ROOT
+        / "reports"
+        / "diagnostics"
+        / "tests-milestone-5.json",
+    )
+    milestone_five.set_defaults(handler=_tests_milestone_five)
 
     tooling = commands.add_parser("tooling", help="build pinned tool adapters")
     tooling_commands = tooling.add_subparsers(dest="tooling_command", required=True)

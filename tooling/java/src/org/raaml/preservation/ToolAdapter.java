@@ -59,6 +59,25 @@ public final class ToolAdapter {
         "<([A-Za-z_][A-Za-z0-9_.:-]*)(\\s+)"
             + "((?:(?!xmi:type=)[^>])*?\\bhref=\"([^\"]+)\"[^>]*)>"
     );
+    private static final List<String> V1_OVERLAY_ORDER = List.of(
+        "CoreRAAML.xmi",
+        "CoreRAAMLLib.xmi",
+        "GeneralRAAML.xmi",
+        "GeneralRAAMLLib.xmi",
+        "FMEA.xmi",
+        "FTA.xmi",
+        "GSN.xmi",
+        "ISO26262.xmi",
+        "RBD.xmi",
+        "GeneralRAAMLSecurity.xmi",
+        "STPA.xmi",
+        "FMEALib.xmi",
+        "FTALib.xmi",
+        "ISO26262Lib.xmi",
+        "RBDLib.xmi",
+        "GeneralRAAMLSecurityLib.xmi",
+        "STPALib.xmi"
+    );
 
     private ToolAdapter() {
     }
@@ -195,6 +214,27 @@ public final class ToolAdapter {
         preload(resourceSet, umlBase + "StandardProfile.xmi", catalog.resolve("StandardProfile.xmi"));
         String localSysml = catalog.resolve("SysML.xmi").toUri().toString();
         preload(resourceSet, localSysml, catalog.resolve("SysML.xmi"));
+        alias(
+            resourceSet,
+            "https://www.omg.org/spec/SysML/20181001/SysML.xmi",
+            localSysml
+        );
+        alias(
+            resourceSet,
+            "http://www.omg.org/spec/SysML/20181001/SysML.xmi",
+            localSysml
+        );
+        String qudv =
+            "https://www.omg.org/spec/SysML/20181001/QUDV.xmi";
+        preload(resourceSet, qudv, catalog.resolve("QUDV.xmi"));
+        alias(
+            resourceSet,
+            "http://www.omg.org/spec/SysML/20181001/QUDV.xmi",
+            qudv
+        );
+        String iso80000 =
+            "https://www.omg.org/spec/SysML/20181001/ISO80000.xmi";
+        preload(resourceSet, iso80000, catalog.resolve("ISO80000.xmi"));
         requireFragment(
             resourceSet,
             localSysml,
@@ -224,13 +264,8 @@ public final class ToolAdapter {
         );
         alias(
             resourceSet,
-            "https://www.omg.org/spec/SysML/20181001/SysML.xmi",
-            localSysml
-        );
-        alias(
-            resourceSet,
-            "http://www.omg.org/spec/SysML/20181001/SysML.xmi",
-            localSysml
+            "http://www.omg.org/spec/SysML/20181001/ISO80000.xmi",
+            iso80000
         );
 
         try (var files = Files.list(catalog)) {
@@ -245,12 +280,31 @@ public final class ToolAdapter {
             try (var files = Files.list(overlay)) {
                 for (Path path : files
                     .filter(item -> item.getFileName().toString().endsWith(".xmi"))
-                    .sorted()
+                    .sorted(
+                        Comparator
+                            .comparingInt(
+                                (Path item) -> overlayRank(
+                                    item.getFileName().toString()
+                                )
+                            )
+                            .thenComparing(
+                                item -> item.getFileName().toString()
+                            )
+                    )
                     .toList()) {
+                    String filename = path.getFileName().toString();
+                    String remote =
+                        "https://www.omg.org/spec/RAAML/20240219/" + filename;
+                    String generated = "generated:/" + filename;
+                    alias(resourceSet, remote, generated);
+                    alias(
+                        resourceSet,
+                        "http://www.omg.org/spec/RAAML/20240219/" + filename,
+                        generated
+                    );
                     preload(
                         resourceSet,
-                        "https://www.omg.org/spec/RAAML/20240219/"
-                            + path.getFileName(),
+                        generated,
                         path
                     );
                 }
@@ -298,6 +352,11 @@ public final class ToolAdapter {
         report.put("diagnostics", diagnostics);
         finalizeReport(report);
         return report;
+    }
+
+    private static int overlayRank(String filename) {
+        int index = V1_OVERLAY_ORDER.indexOf(filename);
+        return index < 0 ? V1_OVERLAY_ORDER.size() : index;
     }
 
     private static void registerProfile(ResourceSet resourceSet, Path profilePath) {

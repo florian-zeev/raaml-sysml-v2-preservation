@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/florian-zeev/raaml-sysml-v2-preservation/schemas/milestone-5-build-report.schema.json",
+  "title": "Milestone 5 full-corpus reverse build report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "documentKind",
+    "implementationVersion",
+    "scopeId",
+    "ok",
+    "sourceDigests",
+    "reconstructedOutputs",
+    "idPolicy",
+    "collisionGate",
+    "tools",
+    "summary",
+    "stages"
+  ],
+  "properties": {
+    "schemaVersion": {"const": "0.1.0"},
+    "documentKind": {"const": "milestone-5-build-report"},
+    "implementationVersion": {"type": "string", "minLength": 1},
+    "scopeId": {"const": "milestone-5-full-corpus-reverse"},
+    "ok": {"const": true},
+    "sourceDigests": {
+      "type": "object",
+      "minProperties": 17,
+      "maxProperties": 17,
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$"
+      }
+    },
+    "reconstructedOutputs": {
+      "type": "object",
+      "minProperties": 17,
+      "maxProperties": 17,
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$"
+      }
+    },
+    "idPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scheme",
+        "originalMagicDrawIdsRequired",
+        "originalMagicDrawIdsClaimedPreserved"
+      ],
+      "properties": {
+        "scheme": {"type": "string", "minLength": 1},
+        "originalMagicDrawIdsRequired": {"const": false},
+        "originalMagicDrawIdsClaimedPreserved": {"const": false}
+      }
+    },
+    "collisionGate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "diagnosticCode",
+        "partialOutputWritten"
+      ],
+      "properties": {
+        "provider": {"const": "constant test hash provider"},
+        "diagnosticCode": {"const": "SYNTHETIC_ID_COLLISION"},
+        "partialOutputWritten": {"const": false}
+      }
+    },
+    "tools": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mandatoryV1Validator"],
+      "properties": {
+        "mandatoryV1Validator": {"type": "string", "minLength": 1}
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceArtifacts",
+        "reconstructedArtifacts",
+        "wellFormedXmlArtifacts",
+        "v1ValidationErrors",
+        "byteDeterministic",
+        "collisionRejected"
+      ],
+      "properties": {
+        "sourceArtifacts": {"const": 17},
+        "reconstructedArtifacts": {"const": 17},
+        "wellFormedXmlArtifacts": {"const": 17},
+        "v1ValidationErrors": {"const": 0},
+        "byteDeterministic": {"const": true},
+        "collisionRejected": {"const": true}
+      }
+    },
+    "stages": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["v1"],
+      "properties": {
+        "v1": {
+          "type": "array",
+          "minItems": 17,
+          "maxItems": 17,
+          "items": {"type": "object"}
+        }
+      }
+    }
+  }
+}

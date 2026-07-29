@@ -54,6 +54,13 @@ source files. The Linux host and offline container produced byte-identical
 evidence, and the mandatory validator reported zero errors in all five
 validation categories at commit `5f3131c`.
 
+Milestone 5 passes locally. It reconstructs all 17 v1 profile and library
+artifacts deterministically, preserves multi-package artifact structure, and
+loads every rebuilt artifact in the mandatory pinned v1 environment with zero
+required validation errors. Its injected fake-hash test proves that an ID
+collision stops reconstruction before partial output is written.
+Clean-environment host/container evidence is pending.
+
 ## Foundation and transformation-analysis quick start
 
 Python 3.14.4 is the tested orchestration runtime. On macOS Apple silicon:
@@ -70,6 +77,7 @@ Python 3.14.4 is the tested orchestration runtime. On macOS Apple silicon:
 ./raaml tests milestone-1
 ./raaml tests milestone-3
 ./raaml tests milestone-4
+./raaml tests milestone-5
 ./raaml transformation surface
 ./raaml transformation properties
 ./raaml transformation constraints
@@ -100,6 +108,7 @@ remain ignored. See the ADRs for exact versions and known limitations.
 | [`docs/milestone-3-vertical-slice.md`](docs/milestone-3-vertical-slice.md) | Scope, pipeline, local result, and claim boundary for the thin vertical slice |
 | [`docs/milestone-4-full-corpus.md`](docs/milestone-4-full-corpus.md) | Full-corpus generation, per-source manifests, validation evidence, and claim boundary |
 | [`docs/milestone-4-evidence.md`](docs/milestone-4-evidence.md) | Frozen clean-environment evidence and claim boundary for full-corpus v2 generation |
+| [`docs/milestone-5-reverse-mapping.md`](docs/milestone-5-reverse-mapping.md) | Full-corpus v1 reconstruction, stable-ID collision gate, loader evidence, and claim boundary |
 | [`analysis/corpus-transformation-surface-v0.1.json`](analysis/corpus-transformation-surface-v0.1.json) | Reproducible inventory of SysML v1 applications that select specialized transformation rules |
 | [`analysis/property-transformation-surface-v0.1.json`](analysis/property-transformation-surface-v0.1.json) | Total official-rule classification of all 267 UML Properties |
 | [`analysis/constraint-transformation-surface-v0.1.json`](analysis/constraint-transformation-surface-v0.1.json) | Total split of all 60 constraint OpaqueExpressions by official mapping fidelity |

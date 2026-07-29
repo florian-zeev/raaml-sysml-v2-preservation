@@ -15,8 +15,10 @@ from src.raaml_preservation.roundtrip import (
     forward_full_corpus,
     render_full_corpus_v2,
     render_v2,
+    reverse_full_corpus,
     select_milestone_three_slice,
     synthetic_id,
+    verify_full_corpus_manifest,
     verify_manifest,
 )
 from src.raaml_preservation.schemas import validate_instance_against_schema
@@ -174,6 +176,61 @@ class MilestoneFourForwardTests(unittest.TestCase):
             "generated `.sysml` files are the parser-tested concrete",
             proposal,
         )
+
+
+class MilestoneFiveReverseTests(unittest.TestCase):
+    def test_full_reverse_is_byte_deterministic(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="raaml-m5-unit-") as temporary:
+            root = Path(temporary)
+            forward = forward_full_corpus(ROOT, root / "forward")
+            first = reverse_full_corpus(
+                root / "forward" / "manifests",
+                forward["v2"],
+                root / "first",
+            )
+            second = reverse_full_corpus(
+                root / "forward" / "manifests",
+                forward["v2"],
+                root / "second",
+            )
+
+            self.assertEqual(len(first), 17)
+            self.assertEqual(len(second), 17)
+            self.assertEqual(
+                {path.name: path.read_bytes() for path in first},
+                {path.name: path.read_bytes() for path in second},
+            )
+
+    def test_full_manifest_digest_detects_fact_mutation(self) -> None:
+        _, canonical = extract_facts(ROOT)
+        v2_bytes = render_full_corpus_v2(canonical).encode("utf-8")
+        manifest = create_full_corpus_manifest(
+            canonical,
+            canonical["artifacts"][0],
+            v2_bytes,
+        )
+        manifest["payload"]["canonicalFacts"]["artifacts"][0][
+            "filename"
+        ] = "changed.xmi"
+
+        with self.assertRaisesRegex(RoundTripError, "payloadSha256"):
+            verify_full_corpus_manifest(manifest)
+
+    def test_injected_hash_collision_stops_before_output(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="raaml-m5-collision-") as temporary:
+            root = Path(temporary)
+            forward = forward_full_corpus(ROOT, root / "forward")
+            output = root / "reconstructed"
+
+            with self.assertRaisesRegex(RoundTripError, "collision"):
+                reverse_full_corpus(
+                    root / "forward" / "manifests",
+                    forward["v2"],
+                    output,
+                    hash_provider=lambda value: "0" * 64,
+                )
+
+            self.assertFalse(output.exists())
 
 
 if __name__ == "__main__":

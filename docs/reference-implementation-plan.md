@@ -1,8 +1,7 @@
 # RAAML-on-SysML-v2 reference implementation and evidence plan
 
-**Status:** Active execution plan; Milestones 0 through 4 passed, with
-Milestone 4 frozen at commit
-`5f3131c6ed0d5d2d98af16637a9c998020a3a3a1`
+**Status:** Active execution plan; Milestones 0 through 4 passed and frozen.
+Milestone 5 passes locally; clean-environment evidence is pending.
 
 **Purpose:** Produce reproducible evidence for the Draft Community Proposal v0.1
 

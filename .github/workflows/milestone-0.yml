@@ -1,4 +1,4 @@
-name: Milestones 0 through 4
+name: Milestones 0 through 5
 
 on:
   push:
@@ -62,6 +62,9 @@ jobs:
       - name: Generate and validate Milestone 4 full corpus
         run: ./raaml tests milestone-4
 
+      - name: Reconstruct and validate Milestone 5 v1 corpus
+        run: ./raaml tests milestone-5
+
       - name: Build digest-pinned container
         run: |
           docker build \
@@ -69,14 +72,14 @@ jobs:
             --no-cache \
             --platform linux/amd64 \
             --build-arg VCS_REF="$GITHUB_SHA" \
-            --tag raaml-preservation:milestone-4 \
+            --tag raaml-preservation:milestone-5 \
             .
           image_id="$(docker image inspect \
             --format '{{.Id}}' \
-            raaml-preservation:milestone-4)"
+            raaml-preservation:milestone-5)"
           echo "Container image ID: $image_id"
           {
-            echo "### Milestone 4 container"
+            echo "### Milestone 5 container"
             echo
             echo "- Git commit: \`$GITHUB_SHA\`"
             echo "- Image ID: \`$image_id\`"
@@ -94,7 +97,7 @@ jobs:
             --platform linux/amd64 \
             --volume "$PWD/sources/cache:/workspace/sources/cache:ro" \
             --volume "$PWD/container-evidence:/evidence" \
-            raaml-preservation:milestone-4 \
+            raaml-preservation:milestone-5 \
             sh -ec '
               ./raaml sources verify
               ./raaml tooling bootstrap
@@ -130,6 +133,9 @@ jobs:
               ./raaml tests milestone-4 \
                 --output /evidence/milestone-4.json \
                 --diagnostics /evidence/tests-milestone-4.json
+              ./raaml tests milestone-5 \
+                --output /evidence/milestone-5.json \
+                --diagnostics /evidence/tests-milestone-5.json
             '
 
       - name: Compare host and container canonical facts
@@ -152,12 +158,15 @@ jobs:
           cmp \
             reports/conformance/milestone-4.json \
             container-evidence/milestone-4.json
+          cmp \
+            reports/conformance/milestone-5.json \
+            container-evidence/milestone-5.json
           canonical_sha="$(
             sha256sum reports/facts/canonical-raaml-facts.json |
             cut -d ' ' -f 1
           )"
           {
-            echo "### Milestones 1 through 4 evidence"
+            echo "### Milestones 1 through 5 evidence"
             echo
             echo "- Canonical SHA-256: \`$canonical_sha\`"
             echo "- Host/container byte comparison: identical"
@@ -172,4 +181,7 @@ jobs:
             echo "- Milestone 4 preservation manifests: 17"
             echo "- Milestone 4 native targets: 343"
             echo "- Milestone 4 v2 validation errors: 0"
+            echo "- Milestone 5 artifacts reconstructed: 17"
+            echo "- Milestone 5 v1 validation errors: 0"
+            echo "- Milestone 5 deterministic collision gate: passed"
           } >> "$GITHUB_STEP_SUMMARY"

@@ -396,6 +396,24 @@
       }
     },
     {
+      "id": "sysml-1.6-qudv-library",
+      "collection": "v1-reference-models",
+      "standard": "SysML",
+      "standardVersion": "1.6",
+      "kind": "xmi",
+      "normativeStatus": "informative-machine-readable",
+      "omgFileId": "ptc/18-10-05",
+      "authoritativeUrl": "https://www.omg.org/spec/SysML/20181001/QUDV.xmi",
+      "acquisitionUrl": "https://web.archive.org/web/20200115012352id_/https://www.omg.org/spec/SysML/20181001/QUDV.xmi",
+      "filename": "QUDV.xmi",
+      "byteSize": 105679,
+      "sha256": "19a0baaeec4c5a40badea869aa8a93692ca07367b1f1ee08dd1cb11ae84b80a2",
+      "redistribution": {
+        "status": "unreviewed",
+        "committed": false
+      }
+    },
+    {
       "id": "sysml-v2-pilot-2026-04-distribution",
       "collection": "milestone-0-toolchain",
       "standard": "SysML v2 Pilot Implementation",

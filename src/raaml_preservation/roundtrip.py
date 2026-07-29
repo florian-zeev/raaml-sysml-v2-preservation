@@ -5,7 +5,7 @@ import hashlib
 import json
 from pathlib import Path
 import re
-from typing import Any
+from typing import Any, Callable
 import xml.etree.ElementTree as ET
 
 from .facts import extract_artifact_set, extract_facts, serialize_facts
@@ -31,6 +31,7 @@ XMI_ID = f"{{{XMI}}}id"
 XMI_TYPE = f"{{{XMI}}}type"
 XMI_IDREF = f"{{{XMI}}}idref"
 SAFE_NAME = re.compile(r"[^A-Za-z0-9_]")
+HashProvider = Callable[[bytes], str]
 
 ET.register_namespace("xmi", XMI)
 ET.register_namespace("uml", UML)
@@ -155,21 +156,68 @@ def verify_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
     return facts
 
 
+def verify_full_corpus_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
+    if manifest.get("schemaVersion") != SCHEMA_VERSION:
+        raise RoundTripError("MANIFEST_VERSION", "unsupported manifest version")
+    if manifest.get("documentKind") != "raaml-preservation-manifest":
+        raise RoundTripError("MANIFEST_KIND", "unexpected manifest document kind")
+    payload = manifest.get("payload")
+    if not isinstance(payload, dict):
+        raise RoundTripError("MANIFEST_PAYLOAD", "manifest payload is missing")
+    expected = hashlib.sha256(canonical_json(payload)).hexdigest()
+    if manifest.get("payloadSha256") != expected:
+        raise RoundTripError(
+            "MANIFEST_DIGEST",
+            "manifest payload does not match payloadSha256",
+        )
+    if payload.get("scopeId") != FULL_CORPUS_ID:
+        raise RoundTripError("MANIFEST_SCOPE", "unexpected full-corpus scope")
+    if payload.get("v2Filename") != FULL_CORPUS_V2_FILENAME:
+        raise RoundTripError("MANIFEST_V2_FILENAME", "unexpected SysML v2 filename")
+    facts = payload.get("canonicalFacts")
+    if not isinstance(facts, dict):
+        raise RoundTripError("MANIFEST_FACTS", "canonical facts are missing")
+    artifacts = facts.get("artifacts")
+    if not isinstance(artifacts, list) or len(artifacts) != 1:
+        raise RoundTripError(
+            "MANIFEST_ARTIFACT_COUNT",
+            "full-corpus manifest must contain exactly one source artifact",
+        )
+    artifact = artifacts[0]
+    if payload.get("artifactId") != artifact.get("artifactId"):
+        raise RoundTripError("MANIFEST_ARTIFACT_ID", "artifact identity mismatch")
+    if payload.get("sourceFilename") != artifact.get("filename"):
+        raise RoundTripError("MANIFEST_SOURCE_FILENAME", "source filename mismatch")
+    if payload.get("sourceSha256") != artifact.get("sha256"):
+        raise RoundTripError("MANIFEST_SOURCE_DIGEST", "source digest mismatch")
+    return facts
+
+
 def verify_native_targets(manifest: dict[str, Any], v2_path: Path) -> None:
     verify_manifest(manifest)
+    _verify_native_targets_payload(manifest["payload"], v2_path)
+
+
+def _verify_native_targets_payload(
+    payload: dict[str, Any],
+    v2_path: Path,
+) -> None:
     try:
         v2_bytes = v2_path.read_bytes()
         text = v2_bytes.decode("utf-8")
     except (OSError, UnicodeError) as error:
         raise RoundTripError("V2_READ", str(error)) from error
-    if hashlib.sha256(v2_bytes).hexdigest() != manifest["payload"].get("v2Sha256"):
+    if hashlib.sha256(v2_bytes).hexdigest() != payload.get("v2Sha256"):
         raise RoundTripError(
             "V2_DIGEST",
             "SysML v2 model does not match the manifest v2Sha256",
         )
-    targets = manifest["payload"].get("nativeTargets")
+    targets = payload.get("nativeTargets")
     if not isinstance(targets, list):
         raise RoundTripError("MANIFEST_NATIVE_TARGETS", "nativeTargets is missing")
+    if targets and all("qualifiedName" in target for target in targets):
+        _verify_qualified_native_targets(targets, text)
+        return
     expected_counts: dict[str, int] = {}
     for target in targets:
         line = target.get("declaration")
@@ -189,6 +237,51 @@ def verify_native_targets(manifest: dict[str, Any], v2_path: Path) -> None:
         raise RoundTripError(
             "V2_TARGET_MISSING",
             f"native v2 target count mismatch: {missing[:3]}",
+        )
+
+
+def _verify_qualified_native_targets(
+    targets: list[dict[str, Any]],
+    text: str,
+) -> None:
+    missing = []
+    for target in targets:
+        qualified_name = target.get("qualifiedName")
+        carrier = target.get("carrier")
+        if not isinstance(qualified_name, str) or not isinstance(carrier, str):
+            raise RoundTripError(
+                "MANIFEST_NATIVE_TARGET",
+                "qualified native target is invalid",
+            )
+        parts = qualified_name.split("::")
+        if len(parts) != 3:
+            raise RoundTripError(
+                "MANIFEST_NATIVE_TARGET",
+                f"invalid qualified native target: {qualified_name}",
+            )
+        root, package, name = parts
+        if not text.startswith(f"package {root} {{\n"):
+            missing.append(qualified_name)
+            continue
+        marker = f"    package {package} {{\n"
+        start = text.find(marker)
+        if start < 0:
+            missing.append(qualified_name)
+            continue
+        body_start = start + len(marker)
+        next_package = text.find("\n    package ", body_start)
+        root_end = text.rfind("\n}")
+        body_end = next_package if next_package >= 0 else root_end
+        declaration = re.compile(
+            rf"^        {re.escape(carrier)} {re.escape(name)}(?:\s|;|\{{)",
+            re.MULTILINE,
+        )
+        if len(declaration.findall(text[body_start:body_end])) != 1:
+            missing.append(qualified_name)
+    if missing:
+        raise RoundTripError(
+            "V2_TARGET_MISSING",
+            f"qualified v2 target mismatch: {missing[:3]}",
         )
 
 
@@ -255,6 +348,130 @@ def reverse_slice(
     for artifact in facts["artifacts"]:
         path = output_dir / artifact["filename"]
         path.write_bytes(render_v1_artifact(facts, artifact))
+        paths.append(path)
+    return paths
+
+
+def reverse_full_corpus(
+    manifest_dir: Path,
+    v2_path: Path,
+    output_dir: Path,
+    *,
+    hash_provider: HashProvider | None = None,
+) -> list[Path]:
+    if manifest_dir.is_symlink() or not manifest_dir.is_dir():
+        raise RoundTripError(
+            "MANIFEST_DIRECTORY",
+            "manifest directory does not exist or is not a directory",
+        )
+    manifest_paths = sorted(manifest_dir.glob("*.preservation.json"))
+    if any(path.is_symlink() or not path.is_file() for path in manifest_paths):
+        raise RoundTripError(
+            "MANIFEST_FILE_UNSAFE",
+            "manifest inputs must be regular files, not symbolic links",
+        )
+
+    locked = load_lock(Path(__file__).resolve().parents[2] / "standards.lock.json")
+    expected = {
+        artifact["filename"]: artifact
+        for artifact in locked["artifacts"]
+        if artifact["collection"] == "raaml-1.1-definitions"
+    }
+    if len(manifest_paths) != len(expected):
+        raise RoundTripError(
+            "FULL_CORPUS_MANIFEST_COUNT",
+            f"expected {len(expected)} manifests, got {len(manifest_paths)}",
+        )
+
+    combined: dict[str, Any] | None = None
+    shared_facts: bytes | None = None
+    seen: set[str] = set()
+    v2_digest: str | None = None
+    for manifest_path in manifest_paths:
+        try:
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeError, json.JSONDecodeError) as error:
+            raise RoundTripError("MANIFEST_READ", str(error)) from error
+        facts = verify_full_corpus_manifest(manifest)
+        payload = manifest["payload"]
+        filename = payload["sourceFilename"]
+        if filename in seen:
+            raise RoundTripError(
+                "FULL_CORPUS_MANIFEST_DUPLICATE",
+                f"duplicate manifest for {filename}",
+            )
+        seen.add(filename)
+        locked_artifact = expected.get(filename)
+        if locked_artifact is None:
+            raise RoundTripError(
+                "FULL_CORPUS_MANIFEST_UNKNOWN",
+                f"manifest is not for a locked RAAML artifact: {filename}",
+            )
+        if (
+            payload["artifactId"] != locked_artifact["id"]
+            or payload["sourceSha256"] != locked_artifact["sha256"]
+        ):
+            raise RoundTripError(
+                "FULL_CORPUS_MANIFEST_LOCK",
+                f"manifest identity does not match standards.lock.json: {filename}",
+            )
+        current_v2_digest = payload.get("v2Sha256")
+        if v2_digest is None:
+            v2_digest = current_v2_digest
+        elif current_v2_digest != v2_digest:
+            raise RoundTripError(
+                "FULL_CORPUS_V2_INCONSISTENT",
+                "manifests do not identify the same SysML v2 model",
+            )
+        _verify_native_targets_payload(payload, v2_path)
+
+        common = copy.deepcopy(facts)
+        artifact = common["artifacts"].pop()
+        serialized_common = canonical_json(common)
+        if shared_facts is None:
+            shared_facts = serialized_common
+            combined = common
+            combined["artifacts"] = []
+        elif serialized_common != shared_facts:
+            raise RoundTripError(
+                "FULL_CORPUS_FACTS_INCONSISTENT",
+                "manifests disagree on shared canonical-fact metadata",
+            )
+        assert combined is not None
+        combined["artifacts"].append(artifact)
+
+    missing = sorted(set(expected) - seen)
+    if missing:
+        raise RoundTripError(
+            "FULL_CORPUS_MANIFEST_MISSING",
+            f"missing manifest(s): {missing}",
+        )
+    assert combined is not None
+    combined["artifacts"].sort(key=lambda item: item["artifactId"])
+    _require_full_corpus_coverage(combined)
+    _require_reference_closure(combined)
+
+    rendered = [
+        (
+            artifact["filename"],
+            render_v1_artifact(
+                combined,
+                artifact,
+                hash_provider=hash_provider,
+            ),
+        )
+        for artifact in combined["artifacts"]
+    ]
+    if output_dir.is_symlink():
+        raise RoundTripError(
+            "OUTPUT_DIRECTORY_UNSAFE",
+            "output directory must not be a symbolic link",
+        )
+    output_dir.mkdir(parents=True, exist_ok=True)
+    paths = []
+    for filename, payload in rendered:
+        path = output_dir / filename
+        path.write_bytes(payload)
         paths.append(path)
     return paths
 
@@ -486,29 +703,82 @@ def _association_ends(
 def render_v1_artifact(
     facts: dict[str, Any],
     artifact: dict[str, Any],
+    *,
+    hash_provider: HashProvider | None = None,
 ) -> bytes:
-    context = _RenderContext(facts)
+    context = _RenderContext(facts, hash_provider=hash_provider)
     for namespace in facts["artifacts"]:
         for item in namespace["namespaces"]:
             ET.register_namespace(item["prefix"], item["uri"])
     root = ET.Element(f"{{{XMI}}}XMI")
-    package = artifact["packages"][0]
-    model_tag = f"{{{UML}}}{'Profile' if package['kind'] == 'Profile' else 'Package'}"
+    packages = sorted(
+        artifact["packages"],
+        key=lambda item: (len(item["packagePath"]), item["packagePath"]),
+    )
+    root_packages = [
+        package for package in packages if len(package["packagePath"]) == 1
+    ]
+    if len(root_packages) != 1:
+        raise RoundTripError(
+            "PACKAGE_ROOT",
+            f"{artifact['filename']} must have exactly one root package",
+        )
+    root_package = root_packages[0]
+    model_tag = (
+        f"{{{UML}}}"
+        f"{'Profile' if root_package['kind'] == 'Profile' else 'Package'}"
+    )
     model = ET.SubElement(
         root,
         model_tag,
         {
-            XMI_TYPE: f"uml:{package['kind']}",
-            XMI_ID: context.ids[package["id"]],
-            "name": package["name"],
+            XMI_TYPE: f"uml:{root_package['kind']}",
+            XMI_ID: context.ids[root_package["id"]],
+            "name": root_package["name"],
         },
     )
-    if package["uri"]["present"]:
-        model.set("URI", package["uri"]["value"] or "")
-    _append_comments(model, package["comments"], artifact, context, package["id"])
+    if root_package["uri"]["present"]:
+        model.set("URI", root_package["uri"]["value"] or "")
+    package_nodes = {tuple(root_package["packagePath"]): model}
+    for package in packages:
+        path = tuple(package["packagePath"])
+        if package is root_package:
+            node = model
+        else:
+            parent = package_nodes.get(path[:-1])
+            if parent is None:
+                raise RoundTripError(
+                    "PACKAGE_PARENT",
+                    f"{artifact['filename']} has no parent for {path}",
+                )
+            node = ET.SubElement(
+                parent,
+                "packagedElement",
+                {
+                    XMI_TYPE: f"uml:{package['kind']}",
+                    XMI_ID: context.ids[package["id"]],
+                    "name": package["name"],
+                },
+            )
+            if package["uri"]["present"]:
+                node.set("URI", package["uri"]["value"] or "")
+            package_nodes[path] = node
+        _append_comments(
+            node,
+            package["comments"],
+            artifact,
+            context,
+            package["id"],
+        )
     for machinery in artifact["machinery"]:
+        owner = package_nodes.get(tuple(machinery["ownerPath"]))
+        if owner is None:
+            raise RoundTripError(
+                "MACHINERY_OWNER",
+                f"{artifact['filename']} has no package {machinery['ownerPath']}",
+            )
         node = ET.SubElement(
-            model,
+            owner,
             _machinery_tag(machinery["kind"]),
             {
                 XMI_TYPE: _machinery_type(machinery["kind"]),
@@ -519,20 +789,25 @@ def render_v1_artifact(
             _append_reference(node, reference, artifact, context)
         _append_comments(node, machinery["comments"], artifact, context, machinery["id"])
     for declaration in artifact["declarations"]:
-        node = _append_declaration(model, declaration, artifact, context)
+        owner_path = _package_path_for_canonical_id(artifact, declaration["id"])
+        owner = package_nodes[owner_path]
+        node = _append_declaration(owner, declaration, artifact, context)
         _append_comments(node, declaration["comments"], artifact, context, declaration["id"])
         for extension in declaration["extensions"]:
-            _append_extension(model, extension, artifact, context)
+            _append_extension(owner, extension, artifact, context)
     for namespace in artifact["namespaces"]:
         ET.SubElement(
             root,
             f"{{{MOFEXT}}}Tag",
             {
                 XMI_TYPE: "mofext:Tag",
-                XMI_ID: _digest_id(artifact["artifactId"], namespace["prefix"]),
+                XMI_ID: context.digest_id(
+                    artifact["artifactId"],
+                    namespace["prefix"],
+                ),
                 "name": "org.omg.xmi.nsPrefix",
                 "value": namespace["prefix"],
-                "element": context.ids[package["id"]],
+                "element": context.ids[root_package["id"]],
             },
         )
     for application in artifact["applications"]:
@@ -558,32 +833,125 @@ def render_v1_artifact(
     ) + b"\n"
 
 
+def _package_path_for_canonical_id(
+    artifact: dict[str, Any],
+    canonical_id: str,
+) -> tuple[str, ...]:
+    matches = []
+    for package in artifact["packages"]:
+        path = tuple(package["packagePath"])
+        prefix = f"{artifact['artifactId']}::{'::'.join(path)}::"
+        if canonical_id.startswith(prefix):
+            matches.append(path)
+    if not matches:
+        raise RoundTripError(
+            "DECLARATION_OWNER",
+            f"{artifact['filename']} has no package owner for {canonical_id}",
+        )
+    return max(matches, key=len)
+
+
 class _RenderContext:
-    def __init__(self, facts: dict[str, Any]):
+    def __init__(
+        self,
+        facts: dict[str, Any],
+        *,
+        hash_provider: HashProvider | None = None,
+    ):
         self.facts = facts
+        self.hash_provider = hash_provider or _sha256_hex
         self.artifact_by_id = {
             artifact["artifactId"]: artifact for artifact in facts["artifacts"]
         }
         self.artifact_for_target: dict[str, dict[str, Any]] = {}
         self.ids: dict[str, str] = {}
+        self.sources_by_generated_id: dict[str, str] = {}
         for artifact in facts["artifacts"]:
             key = Path(artifact["filename"]).stem
             for package in artifact["packages"]:
-                self.ids[package["id"]] = synthetic_id(key, package["name"])
+                self._assign(
+                    package["id"],
+                    synthetic_id(
+                        key,
+                        package["name"],
+                        hash_provider=self.hash_provider,
+                    ),
+                )
                 self.artifact_for_target[package["id"]] = artifact
             for declaration in artifact["declarations"]:
                 name = declaration["name"] or declaration["id"]
-                self.ids[declaration["id"]] = synthetic_id(key, name)
+                self._assign(
+                    declaration["id"],
+                    synthetic_id(
+                        key,
+                        name,
+                        hash_provider=self.hash_provider,
+                    ),
+                )
                 self.artifact_for_target[declaration["id"]] = artifact
                 self._index_owned(artifact, declaration, key)
             for machinery in artifact["machinery"]:
-                self.ids[machinery["id"]] = _digest_id(key, machinery["id"])
+                self._assign(
+                    machinery["id"],
+                    _digest_id(
+                        key,
+                        machinery["id"],
+                        hash_provider=self.hash_provider,
+                    ),
+                )
                 self.artifact_for_target[machinery["id"]] = artifact
             for application in artifact["applications"]:
-                self.ids[application["id"]] = _digest_id(key, application["id"])
+                self._assign(
+                    application["id"],
+                    _digest_id(
+                        key,
+                        application["id"],
+                        hash_provider=self.hash_provider,
+                    ),
+                )
                 self.artifact_for_target[application["id"]] = artifact
-        if len(set(self.ids.values())) != len(self.ids):
-            raise RoundTripError("SYNTHETIC_ID_COLLISION", "synthetic ID collision")
+
+    def _assign(self, canonical_id: str, generated_id: str) -> None:
+        self._claim(canonical_id, generated_id)
+        self.ids[canonical_id] = generated_id
+
+    def _claim(self, source: str, generated_id: str) -> str:
+        previous = self.sources_by_generated_id.get(generated_id)
+        if previous is not None and previous != source:
+            raise RoundTripError(
+                "SYNTHETIC_ID_COLLISION",
+                f"synthetic ID collision between {previous} and {source}",
+            )
+        self.sources_by_generated_id[generated_id] = source
+        return generated_id
+
+    def digest_id(self, *parts: str) -> str:
+        source = "::".join(parts)
+        return self._claim(
+            source,
+            _digest_id(*parts, hash_provider=self.hash_provider),
+        )
+
+    def owned_id(
+        self,
+        artifact: str,
+        owner: str,
+        kind: str,
+        name: str,
+        ordinal: int,
+    ) -> str:
+        source = f"{artifact}::{owner}::{kind}::{name}::{ordinal}"
+        return self._claim(
+            source,
+            synthetic_owned_id(
+                artifact,
+                owner,
+                kind,
+                name,
+                ordinal,
+                hash_provider=self.hash_provider,
+            ),
+        )
 
     def _index_owned(
         self,
@@ -594,18 +962,30 @@ class _RenderContext:
         for relation in ("properties", "ownedEnds", "extensions", "constraints", "connectors"):
             for ordinal, item in enumerate(declaration[relation], start=1):
                 local = item.get("name") or item["id"]
-                self.ids[item["id"]] = synthetic_owned_id(
-                    key, declaration["id"], relation, local, ordinal
+                self._assign(
+                    item["id"],
+                    synthetic_owned_id(
+                        key,
+                        declaration["id"],
+                        relation,
+                        local,
+                        ordinal,
+                        hash_provider=self.hash_provider,
+                    ),
                 )
                 self.artifact_for_target[item["id"]] = artifact
                 if relation == "extensions":
                     for end_ordinal, end in enumerate(item["ownedEnds"], start=1):
-                        self.ids[end["id"]] = synthetic_owned_id(
-                            key,
-                            item["id"],
-                            "ExtensionEnd",
-                            end.get("name") or end["id"],
-                            end_ordinal,
+                        self._assign(
+                            end["id"],
+                            synthetic_owned_id(
+                                key,
+                                item["id"],
+                                "ExtensionEnd",
+                                end.get("name") or end["id"],
+                                end_ordinal,
+                                hash_provider=self.hash_provider,
+                            ),
                         )
                         self.artifact_for_target[end["id"]] = artifact
 
@@ -666,7 +1046,11 @@ def _append_declaration(
             "generalization",
             {
                 XMI_TYPE: "uml:Generalization",
-                XMI_ID: _digest_id(declaration["id"], "generalization", reference["target"]),
+                XMI_ID: context.digest_id(
+                    declaration["id"],
+                    "generalization",
+                    reference["target"],
+                ),
             },
         )
         _append_reference(relationship, reference, artifact, context)
@@ -684,7 +1068,7 @@ def _append_declaration(
             "ownedLiteral",
             {
                 XMI_TYPE: "uml:EnumerationLiteral",
-                XMI_ID: synthetic_owned_id(
+                XMI_ID: context.owned_id(
                     Path(artifact["filename"]).stem,
                     declaration["id"],
                     "EnumerationLiteral",
@@ -719,7 +1103,10 @@ def _append_declaration(
             "specification",
             {
                 XMI_TYPE: "uml:OpaqueExpression",
-                XMI_ID: _digest_id(constraint["id"], "specification"),
+                XMI_ID: context.digest_id(
+                    constraint["id"],
+                    "specification",
+                ),
             },
         )
         for body in constraint["bodyLines"]:
@@ -739,7 +1126,7 @@ def _append_declaration(
             "icon",
             {
                 XMI_TYPE: "uml:Image",
-                XMI_ID: synthetic_owned_id(
+                XMI_ID: context.owned_id(
                     Path(artifact["filename"]).stem,
                     declaration["id"],
                     "Image",
@@ -812,7 +1199,11 @@ def _append_property(
                 f"{role}Value",
                 {
                     XMI_TYPE: value["kind"],
-                    XMI_ID: _digest_id(prop["id"], role, str(ordinal)),
+                    XMI_ID: context.digest_id(
+                        prop["id"],
+                        role,
+                        str(ordinal),
+                    ),
                 },
             )
             if value["value"] is not None:
@@ -833,7 +1224,11 @@ def _append_comments(
             "ownedComment",
             {
                 XMI_TYPE: "uml:Comment",
-                XMI_ID: _digest_id(owner_id, "comment", str(ordinal)),
+                XMI_ID: context.digest_id(
+                    owner_id,
+                    "comment",
+                    str(ordinal),
+                ),
                 "body": comment["body"],
             },
         )
@@ -1001,10 +1396,20 @@ def _differences(expected: Any, actual: Any, path: str = "$") -> list[dict[str, 
     ]
 
 
-def synthetic_id(artifact: str, name: str) -> str:
-    return "_raaml_" + hashlib.sha256(
+def _sha256_hex(value: bytes) -> str:
+    return hashlib.sha256(value).hexdigest()
+
+
+def synthetic_id(
+    artifact: str,
+    name: str,
+    *,
+    hash_provider: HashProvider | None = None,
+) -> str:
+    provider = hash_provider or _sha256_hex
+    return "_raaml_" + provider(
         f"{artifact}::{name}".encode("utf-8")
-    ).hexdigest()[:40]
+    )[:40]
 
 
 def synthetic_owned_id(
@@ -1013,13 +1418,20 @@ def synthetic_owned_id(
     kind: str,
     name: str,
     ordinal: int,
+    *,
+    hash_provider: HashProvider | None = None,
 ) -> str:
     value = f"{artifact}::{owner}::{kind}::{name}::{ordinal}"
-    return "_raaml_" + hashlib.sha256(value.encode("utf-8")).hexdigest()[:40]
+    provider = hash_provider or _sha256_hex
+    return "_raaml_" + provider(value.encode("utf-8"))[:40]
 
 
-def _digest_id(*parts: str) -> str:
-    return "_raaml_" + hashlib.sha256("::".join(parts).encode("utf-8")).hexdigest()[:40]
+def _digest_id(
+    *parts: str,
+    hash_provider: HashProvider | None = None,
+) -> str:
+    provider = hash_provider or _sha256_hex
+    return "_raaml_" + provider("::".join(parts).encode("utf-8"))[:40]
 
 
 def _identifier(value: str) -> str:

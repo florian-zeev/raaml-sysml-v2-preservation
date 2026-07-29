@@ -22,6 +22,9 @@ All schemas use JSON Schema draft 2020-12 and reject undeclared fields.
   canonical fact comparison.
 - `milestone-4-build-report.schema.json` defines the deterministic
   full-corpus generation, manifest, validator, and interoperability evidence.
+- `milestone-5-build-report.schema.json` defines deterministic full-corpus
+  v1 reconstruction, stable-ID policy, collision rejection, and v1 loader
+  evidence.
 
 The fact schemas implement
 [`docs/milestone-1-fact-contract.md`](../docs/milestone-1-fact-contract.md).

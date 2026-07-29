@@ -110,6 +110,7 @@ class SourceVerificationTests(unittest.TestCase):
                 "kerml-1.0-abstract-syntax",
                 "uml-2.5.1-specification",
                 "sysml-1.6-specification",
+                "sysml-1.6-qudv-library",
                 "ocl-2.4-specification",
                 "ocl-2.4-metamodel",
                 "ocl-2.4-essential-metamodel",
@@ -120,6 +121,19 @@ class SourceVerificationTests(unittest.TestCase):
                 "temurin-jdk-21.0.11-macos-aarch64",
                 "temurin-jdk-21.0.11-linux-x64",
             }.issubset(artifact_ids)
+        )
+        qudv = next(
+            artifact
+            for artifact in lock["artifacts"]
+            if artifact["id"] == "sysml-1.6-qudv-library"
+        )
+        self.assertEqual(qudv["omgFileId"], "ptc/18-10-05")
+        self.assertEqual(
+            qudv["authoritativeUrl"],
+            "https://www.omg.org/spec/SysML/20181001/QUDV.xmi",
+        )
+        self.assertTrue(
+            qudv["acquisitionUrl"].startswith("https://web.archive.org/")
         )
 
     def test_matching_regular_file_passes(self) -> None:
