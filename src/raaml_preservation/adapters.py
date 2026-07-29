@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import copy
 import json
 import os
 import platform
 import posixpath
 from pathlib import Path
+import re
 import subprocess
 import sys
 import tarfile
@@ -18,6 +20,30 @@ from .sources import load_lock
 
 class AdapterError(RuntimeError):
     pass
+
+
+JAVA_OBJECT_IDENTITY = re.compile(r"@[0-9a-fA-F]+(?=\{)")
+LOCAL_XMI_URI = re.compile(
+    r"file:[^#{}'\"]*/([^/#{}'\"]+\.xmi)(#[^{}'\"]+)?"
+)
+
+
+def stable_adapter_report(report: dict[str, Any]) -> dict[str, Any]:
+    """Remove run-specific JVM identities and local paths from diagnostics."""
+    stable = copy.deepcopy(report)
+    for diagnostic in stable.get("diagnostics", []):
+        message = diagnostic.get("message")
+        if not isinstance(message, str):
+            continue
+        message = JAVA_OBJECT_IDENTITY.sub("@<identity>", message)
+        message = LOCAL_XMI_URI.sub(
+            lambda match: (
+                f"generated:/{match.group(1)}{match.group(2) or ''}"
+            ),
+            message,
+        )
+        diagnostic["message"] = message
+    return stable
 
 
 MAX_ARCHIVE_MEMBERS = 100_000

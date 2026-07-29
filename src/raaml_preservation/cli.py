@@ -16,6 +16,7 @@ from .adapters import (
     bootstrap_tooling,
     build_adapter,
     run_adapter,
+    stable_adapter_report,
 )
 from .facts import (
     FactExtractionError,
@@ -476,11 +477,12 @@ def _tests_milestone_three(args: argparse.Namespace) -> int:
                         "FORWARD_NONDETERMINISTIC",
                         f"two forward runs differ for {filename}",
                     )
-            stage_reports["v2"] = run_adapter(
+            v2_report = run_adapter(
                 REPOSITORY_ROOT, "v2", first_result["v2"]
             )
+            stage_reports["v2"] = stable_adapter_report(v2_report)
             checked += 1
-            if not stage_reports["v2"]["ok"]:
+            if not v2_report["ok"]:
                 raise RoundTripError("V2_VALIDATION_FAILED", "generated v2 is invalid")
             paths = reverse_slice(
                 first_result["manifest"],
@@ -496,7 +498,7 @@ def _tests_milestone_three(args: argparse.Namespace) -> int:
                     path,
                     v1_catalog_dir=reconstructed,
                 )
-                v1_reports.append(result)
+                v1_reports.append(stable_adapter_report(result))
                 checked += 1
                 if not result["ok"]:
                     raise RoundTripError(

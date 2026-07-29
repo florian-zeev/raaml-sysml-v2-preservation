@@ -11,6 +11,7 @@ from raaml_preservation.adapters import (
     AdapterError,
     _extract_tar_safely,
     _extract_zip_safely,
+    stable_adapter_report,
 )
 
 
@@ -41,7 +42,6 @@ class ArchiveExtractionTests(unittest.TestCase):
                 _extract_zip_safely(archive, destination)
 
             self.assertFalse((root / "outside").exists())
-
     def test_zip_windows_absolute_path_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -108,6 +108,34 @@ class ArchiveExtractionTests(unittest.TestCase):
                 _extract_tar_safely(archive, destination)
 
             self.assertFalse((root / "outside").exists())
+
+
+class StableAdapterReportTests(unittest.TestCase):
+    def test_jvm_identity_and_temporary_xmi_path_are_normalized(self) -> None:
+        report = {
+            "diagnostics": [
+                {
+                    "severity": "warning",
+                    "code": "V1_MODEL_DIAGNOSTIC",
+                    "message": (
+                        "PropertyImpl@261b6c8c{"
+                        "file:/tmp/raaml-m3-abcd/reconstructed/"
+                        "GeneralRAAMLLib.xmi#_raaml_123}"
+                    ),
+                }
+            ]
+        }
+
+        stable = stable_adapter_report(report)
+
+        self.assertEqual(
+            stable["diagnostics"][0]["message"],
+            (
+                "PropertyImpl@<identity>{"
+                "generated:/GeneralRAAMLLib.xmi#_raaml_123}"
+            ),
+        )
+        self.assertNotEqual(stable, report)
 
 
 if __name__ == "__main__":
