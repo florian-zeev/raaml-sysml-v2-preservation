@@ -47,12 +47,12 @@ application. The Linux host and offline container generated and validated the
 same SysML v2 view, reconstructed and loaded six v1 XMI artifacts, and found
 zero canonical fact differences at commit `29018cf`.
 
-Milestone 4 is implemented locally and awaits the clean Linux/container gate.
-It generates one parser-valid SysML v2 corpus model containing all 283
-in-scope declarations and 60 constraint carriers, plus one schema-valid
-preservation manifest for each of the 17 source files. Two local generations
-produce 18 byte-identical outputs, and the mandatory validator reports zero
-errors in all five validation categories.
+Milestone 4 passed on 2026-07-29. It generates one parser-valid SysML v2
+corpus model containing all 283 in-scope declarations and 60 constraint
+carriers, plus one schema-valid preservation manifest for each of the 17
+source files. The Linux host and offline container produced byte-identical
+evidence, and the mandatory validator reported zero errors in all five
+validation categories at commit `5f3131c`.
 
 ## Foundation and transformation-analysis quick start
 
@@ -99,6 +99,7 @@ remain ignored. See the ADRs for exact versions and known limitations.
 | [`docs/milestone-2-transformation-analysis.md`](docs/milestone-2-transformation-analysis.md) | Resolved comparison with the official SysML v1-to-v2 transformation |
 | [`docs/milestone-3-vertical-slice.md`](docs/milestone-3-vertical-slice.md) | Scope, pipeline, local result, and claim boundary for the thin vertical slice |
 | [`docs/milestone-4-full-corpus.md`](docs/milestone-4-full-corpus.md) | Full-corpus generation, per-source manifests, validation evidence, and claim boundary |
+| [`docs/milestone-4-evidence.md`](docs/milestone-4-evidence.md) | Frozen clean-environment evidence and claim boundary for full-corpus v2 generation |
 | [`analysis/corpus-transformation-surface-v0.1.json`](analysis/corpus-transformation-surface-v0.1.json) | Reproducible inventory of SysML v1 applications that select specialized transformation rules |
 | [`analysis/property-transformation-surface-v0.1.json`](analysis/property-transformation-surface-v0.1.json) | Total official-rule classification of all 267 UML Properties |
 | [`analysis/constraint-transformation-surface-v0.1.json`](analysis/constraint-transformation-surface-v0.1.json) | Total split of all 60 constraint OpaqueExpressions by official mapping fidelity |

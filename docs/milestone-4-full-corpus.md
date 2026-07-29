@@ -1,6 +1,6 @@
 # Milestone 4 full SysML v2 corpus
 
-**Status:** Passes locally; clean Linux/container run pending
+**Status:** Passed
 
 **Date started:** 2026-07-29
 
@@ -95,6 +95,9 @@ at `reports/conformance/milestone-4.json`.
 The mandatory pinned SysML v2 implementation is the only parser used for this
 gate. The report therefore states: **not tested with a second
 implementation**.
+
+The clean Linux and offline-container gate passed at commit
+`5f3131c6ed0d5d2d98af16637a9c998020a3a3a1`.
 
 ## Claim boundary
 
