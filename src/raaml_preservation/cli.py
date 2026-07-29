@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -22,9 +23,16 @@ from .facts import (
     extract_facts,
     serialize_facts,
 )
+from .roundtrip import (
+    RoundTripError,
+    canonical_json,
+    compare_reconstructed,
+    forward_slice,
+    reverse_slice,
+)
 from .oracle import EXPECTED_TOTALS, audit_corpus
 from .ocl_validation import validate_ocl_corpus
-from .sources import LockError, fetch_sources, verify_sources
+from .sources import LockError, fetch_sources, load_lock, verify_sources
 from .transformation import (
     analyze_constraint_transformation_surface,
     analyze_corpus_transformation_surface,
@@ -340,6 +348,313 @@ def _tests_milestone_one(args: argparse.Namespace) -> int:
             "checked": checked,
             "failed": len(diagnostics),
         },
+        "diagnostics": diagnostics,
+    }
+    _write_json_atomic(args.diagnostics, report)
+    return 0 if report["ok"] else 1
+
+
+def _forward_command(args: argparse.Namespace) -> int:
+    diagnostics: list[dict[str, str]] = []
+    try:
+        result = forward_slice(REPOSITORY_ROOT, args.output_dir)
+        validate_instance_against_schema(
+            json.loads(result["manifest"].read_text(encoding="utf-8")),
+            REPOSITORY_ROOT / "schemas" / "preservation-manifest.schema.json",
+        )
+        validate_instance_against_schema(
+            result["facts"],
+            REPOSITORY_ROOT / "schemas" / "canonical-raaml-facts.schema.json",
+        )
+    except (FactExtractionError, RoundTripError, SchemaValidationError, OSError) as error:
+        diagnostics.append(
+            {
+                "severity": "error",
+                "code": getattr(error, "code", "FORWARD_FAILED"),
+                "message": str(error),
+            }
+        )
+    report = {
+        "schemaVersion": "0.1.0",
+        "command": "forward",
+        "ok": not diagnostics,
+        "summary": {"checked": 1, "failed": len(diagnostics)},
+        "diagnostics": diagnostics,
+    }
+    _write_json_atomic(args.diagnostics, report)
+    return 0 if report["ok"] else 1
+
+
+def _reverse_command(args: argparse.Namespace) -> int:
+    diagnostics: list[dict[str, str]] = []
+    checked = 0
+    try:
+        paths = reverse_slice(args.manifest, args.v2, args.output_dir)
+        checked = len(paths)
+    except (RoundTripError, OSError) as error:
+        diagnostics.append(
+            {
+                "severity": "error",
+                "code": getattr(error, "code", "REVERSE_FAILED"),
+                "message": str(error),
+            }
+        )
+    report = {
+        "schemaVersion": "0.1.0",
+        "command": "reverse",
+        "ok": not diagnostics,
+        "summary": {"checked": checked, "failed": len(diagnostics)},
+        "diagnostics": diagnostics,
+    }
+    _write_json_atomic(args.diagnostics, report)
+    return 0 if report["ok"] else 1
+
+
+def _compare_command(args: argparse.Namespace) -> int:
+    diagnostics: list[dict[str, str]] = []
+    comparison: dict[str, Any] | None = None
+    try:
+        comparison = compare_reconstructed(
+            REPOSITORY_ROOT,
+            args.manifest,
+            args.reconstructed_dir,
+        )
+        if not comparison["ok"]:
+            diagnostics.append(
+                {
+                    "severity": "error",
+                    "code": "ROUNDTRIP_FACT_DIFFERENCE",
+                    "message": (
+                        f"{comparison['summary']['differences']} canonical "
+                        "fact difference(s)"
+                    ),
+                }
+            )
+        validate_instance_against_schema(
+            comparison,
+            REPOSITORY_ROOT / "schemas" / "roundtrip-report.schema.json",
+        )
+        _write_json_atomic(args.output, comparison)
+    except (FactExtractionError, RoundTripError, OSError, json.JSONDecodeError) as error:
+        diagnostics.append(
+            {
+                "severity": "error",
+                "code": getattr(error, "code", "COMPARE_FAILED"),
+                "message": str(error),
+            }
+        )
+    report = {
+        "schemaVersion": "0.1.0",
+        "command": "compare",
+        "ok": not diagnostics,
+        "summary": {
+            "checked": 1 if comparison is not None else 0,
+            "failed": len(diagnostics),
+        },
+        "diagnostics": diagnostics,
+    }
+    _write_json_atomic(args.diagnostics, report)
+    return 0 if report["ok"] else 1
+
+
+def _tests_milestone_three(args: argparse.Namespace) -> int:
+    diagnostics: list[dict[str, str]] = []
+    checked = 0
+    stage_reports: dict[str, Any] = {}
+    try:
+        with tempfile.TemporaryDirectory(prefix="raaml-m3-") as temporary:
+            root = Path(temporary)
+            first = root / "first"
+            second = root / "second"
+            reconstructed = root / "reconstructed"
+            first_result = forward_slice(REPOSITORY_ROOT, first)
+            second_result = forward_slice(REPOSITORY_ROOT, second)
+            checked += 2
+            for filename in ("preservation-manifest.json", "raaml-milestone-3.sysml"):
+                if (first / filename).read_bytes() != (second / filename).read_bytes():
+                    raise RoundTripError(
+                        "FORWARD_NONDETERMINISTIC",
+                        f"two forward runs differ for {filename}",
+                    )
+            stage_reports["v2"] = run_adapter(
+                REPOSITORY_ROOT, "v2", first_result["v2"]
+            )
+            checked += 1
+            if not stage_reports["v2"]["ok"]:
+                raise RoundTripError("V2_VALIDATION_FAILED", "generated v2 is invalid")
+            paths = reverse_slice(
+                first_result["manifest"],
+                first_result["v2"],
+                reconstructed,
+            )
+            checked += len(paths)
+            v1_reports = []
+            for path in paths:
+                result = run_adapter(
+                    REPOSITORY_ROOT,
+                    "v1",
+                    path,
+                    v1_catalog_dir=reconstructed,
+                )
+                v1_reports.append(result)
+                checked += 1
+                if not result["ok"]:
+                    raise RoundTripError(
+                        "V1_VALIDATION_FAILED",
+                        f"reconstructed {path.name} is invalid",
+                    )
+            stage_reports["v1"] = v1_reports
+            comparison = compare_reconstructed(
+                REPOSITORY_ROOT,
+                first_result["manifest"],
+                reconstructed,
+            )
+            stage_reports["comparison"] = comparison["summary"]
+            checked += 1
+            if not comparison["ok"]:
+                raise RoundTripError(
+                    "ROUNDTRIP_FACT_DIFFERENCE",
+                    f"{comparison['summary']['differences']} fact difference(s)",
+                )
+            validate_instance_against_schema(
+                comparison,
+                REPOSITORY_ROOT / "schemas" / "roundtrip-report.schema.json",
+            )
+            manifest = json.loads(
+                first_result["manifest"].read_text(encoding="utf-8")
+            )
+            manifest["payload"]["canonicalFacts"]["artifacts"][0][
+                "declarations"
+            ][0]["name"] = "Corrupted"
+            corrupt_path = root / "corrupt-manifest.json"
+            _write_json_atomic(corrupt_path, manifest)
+            try:
+                reverse_slice(
+                    corrupt_path,
+                    first_result["v2"],
+                    root / "corrupt-output",
+                )
+            except RoundTripError as error:
+                if error.code != "MANIFEST_DIGEST":
+                    raise
+            else:
+                raise RoundTripError(
+                    "CORRUPT_MANIFEST_ACCEPTED",
+                    "corrupt manifest was accepted",
+                )
+            checked += 1
+            missing_v2 = root / "missing-target.sysml"
+            missing_v2.write_text(
+                first_result["v2"].read_text(encoding="utf-8").replace(
+                    "        metadata def Situation;\n",
+                    "",
+                    1,
+                ),
+                encoding="utf-8",
+                newline="\n",
+            )
+            try:
+                reverse_slice(
+                    first_result["manifest"],
+                    missing_v2,
+                    root / "missing-output",
+                )
+            except RoundTripError as error:
+                if error.code not in {"V2_DIGEST", "V2_TARGET_MISSING"}:
+                    raise
+            else:
+                raise RoundTripError(
+                    "MISSING_TARGET_ACCEPTED",
+                    "manifest with removed targets was accepted",
+                )
+            checked += 1
+            ordered = json.loads(
+                first_result["manifest"].read_text(encoding="utf-8")
+            )
+            core_library = next(
+                artifact
+                for artifact in ordered["payload"]["canonicalFacts"]["artifacts"]
+                if artifact["filename"] == "CoreRAAMLLib.xmi"
+            )
+            association = next(
+                item
+                for item in core_library["declarations"]
+                if item["kind"] == "Association"
+            )
+            association["memberEnds"].reverse()
+            ordered["payloadSha256"] = hashlib.sha256(
+                canonical_json(ordered["payload"])
+            ).hexdigest()
+            ordered_path = root / "ordered-value.json"
+            _write_json_atomic(ordered_path, ordered)
+            ordered_output = root / "ordered-output"
+            reverse_slice(
+                ordered_path,
+                first_result["v2"],
+                ordered_output,
+            )
+            ordered_comparison = compare_reconstructed(
+                REPOSITORY_ROOT,
+                first_result["manifest"],
+                ordered_output,
+            )
+            if ordered_comparison["ok"]:
+                raise RoundTripError(
+                    "ORDERED_MUTATION_UNDETECTED",
+                    "ordered member-end mutation was not detected",
+                )
+            checked += 1
+            published = {
+                "schemaVersion": "0.1.0",
+                "documentKind": "milestone-3-conformance-report",
+                "implementationVersion": __version__,
+                "sliceId": "milestone-3-core-general-stpa",
+                "ok": True,
+                "sourceDigests": {
+                    artifact["filename"]: artifact["sha256"]
+                    for artifact in first_result["facts"]["artifacts"]
+                },
+                "lockedInputs": {
+                    artifact["id"]: {
+                        "collection": artifact["collection"],
+                        "filename": artifact["filename"],
+                        "sha256": artifact["sha256"],
+                    }
+                    for artifact in load_lock(
+                        REPOSITORY_ROOT / "standards.lock.json"
+                    )["artifacts"]
+                },
+                "tools": {
+                    "v2Adapter": stage_reports["v2"].get("adapterVersion"),
+                    "v1Adapter": (
+                        stage_reports["v1"][0].get("adapterVersion")
+                        if stage_reports["v1"]
+                        else None
+                    ),
+                },
+                "summary": comparison["summary"],
+                "stages": stage_reports,
+            }
+            _write_json_atomic(args.output, published)
+    except (
+        AdapterError,
+        FactExtractionError,
+        RoundTripError,
+        SchemaValidationError,
+        OSError,
+    ) as error:
+        diagnostics.append(
+            {
+                "severity": "error",
+                "code": getattr(error, "code", "MILESTONE_THREE_FAILURE"),
+                "message": str(error),
+            }
+        )
+    report = {
+        "schemaVersion": "0.1.0",
+        "command": "tests milestone-3",
+        "ok": not diagnostics,
+        "summary": {"checked": checked, "failed": len(diagnostics)},
         "diagnostics": diagnostics,
     }
     _write_json_atomic(args.diagnostics, report)
@@ -750,6 +1065,76 @@ def build_parser() -> argparse.ArgumentParser:
     )
     extract.set_defaults(handler=_facts_extract)
 
+    forward = commands.add_parser(
+        "forward",
+        help="map the Milestone 3 RAAML slice to SysML v2 plus a manifest",
+    )
+    forward.add_argument(
+        "--milestone-3",
+        action="store_true",
+        required=True,
+        help="generate the frozen Milestone 3 vertical slice",
+    )
+    forward.add_argument(
+        "--output-dir",
+        type=_path,
+        default=REPOSITORY_ROOT / "generated" / "milestone-3" / "forward",
+    )
+    forward.add_argument(
+        "--diagnostics",
+        type=_path,
+        default=REPOSITORY_ROOT
+        / "reports"
+        / "diagnostics"
+        / "forward-milestone-3.json",
+    )
+    forward.set_defaults(handler=_forward_command)
+
+    reverse = commands.add_parser(
+        "reverse",
+        help="reconstruct v1 XMI from a preservation manifest",
+    )
+    reverse.add_argument("--manifest", type=_path, required=True)
+    reverse.add_argument("--v2", type=_path, required=True)
+    reverse.add_argument(
+        "--output-dir",
+        type=_path,
+        default=REPOSITORY_ROOT / "generated" / "milestone-3" / "reconstructed",
+    )
+    reverse.add_argument(
+        "--diagnostics",
+        type=_path,
+        default=REPOSITORY_ROOT
+        / "reports"
+        / "diagnostics"
+        / "reverse-milestone-3.json",
+    )
+    reverse.set_defaults(handler=_reverse_command)
+
+    compare = commands.add_parser(
+        "compare",
+        help="compare source and reconstructed canonical facts",
+    )
+    compare.add_argument("--manifest", type=_path, required=True)
+    compare.add_argument("--reconstructed-dir", type=_path, required=True)
+    compare.add_argument(
+        "--output",
+        type=_path,
+        default=REPOSITORY_ROOT
+        / "reports"
+        / "conformance"
+        / "milestone-3-comparison.json",
+    )
+    compare.add_argument(
+        "--diagnostics",
+        type=_path,
+        default=REPOSITORY_ROOT
+        / "reports"
+        / "diagnostics"
+        / "compare-milestone-3.json",
+    )
+    compare.set_defaults(handler=_compare_command)
+
     oracle = commands.add_parser(
         "oracle",
         help="audit the corpus independently of production fact extraction",
@@ -900,6 +1285,27 @@ def build_parser() -> argparse.ArgumentParser:
         / "tests-milestone-1.json",
     )
     milestone_one.set_defaults(handler=_tests_milestone_one)
+    milestone_three = test_commands.add_parser(
+        "milestone-3",
+        help="run the complete thin vertical-slice round trip",
+    )
+    milestone_three.add_argument(
+        "--output",
+        type=_path,
+        default=REPOSITORY_ROOT
+        / "reports"
+        / "conformance"
+        / "milestone-3.json",
+    )
+    milestone_three.add_argument(
+        "--diagnostics",
+        type=_path,
+        default=REPOSITORY_ROOT
+        / "reports"
+        / "diagnostics"
+        / "tests-milestone-3.json",
+    )
+    milestone_three.set_defaults(handler=_tests_milestone_three)
 
     tooling = commands.add_parser("tooling", help="build pinned tool adapters")
     tooling_commands = tooling.add_subparsers(dest="tooling_command", required=True)

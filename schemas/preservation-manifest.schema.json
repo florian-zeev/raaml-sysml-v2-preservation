@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/florian-zeev/raaml-sysml-v2-preservation/schemas/preservation-manifest.schema.json",
+  "title": "RAAML preservation manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "documentKind",
+    "payloadSha256",
+    "payload"
+  ],
+  "properties": {
+    "schemaVersion": {"const": "0.1.0"},
+    "documentKind": {"const": "raaml-preservation-manifest"},
+    "payloadSha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sliceId", "v2Sha256", "nativeTargets", "canonicalFacts"],
+      "properties": {
+        "sliceId": {
+          "const": "milestone-3-core-general-stpa"
+        },
+        "v2Sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "canonicalFacts": {
+          "type": "object"
+        },
+        "nativeTargets": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["canonicalId", "carrier", "declaration"],
+            "properties": {
+              "canonicalId": {"type": "string", "minLength": 1},
+              "carrier": {
+                "enum": [
+                  "metadata def",
+                  "occurrence def",
+                  "connection def",
+                  "enum def",
+                  "constraint def"
+                ]
+              },
+              "declaration": {"type": "string", "minLength": 1}
+            }
+          }
+        }
+      }
+    }
+  }
+}

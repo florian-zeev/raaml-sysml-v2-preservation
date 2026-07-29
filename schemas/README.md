@@ -15,6 +15,10 @@ All schemas use JSON Schema draft 2020-12 and reject undeclared fields.
   labeled and unlabeled constraint OpaqueExpressions.
 - `transformation-matrix.schema.json` defines the reproducible Milestone 2
   comparison with the official SysML v1-to-v2 transformation.
+- `preservation-manifest.schema.json` defines the integrity-protected
+  Milestone 3 source-fact payload carried alongside the native v2 view.
+- `roundtrip-report.schema.json` defines the machine-readable before/after
+  canonical fact comparison.
 
 The fact schemas implement
 [`docs/milestone-1-fact-contract.md`](../docs/milestone-1-fact-contract.md).

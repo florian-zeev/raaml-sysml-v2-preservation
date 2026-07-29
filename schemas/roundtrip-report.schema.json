@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/florian-zeev/raaml-sysml-v2-preservation/schemas/roundtrip-report.schema.json",
+  "title": "RAAML round-trip comparison report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "documentKind",
+    "sliceId",
+    "ok",
+    "summary",
+    "differences",
+    "sourceFacts",
+    "reconstructedFacts"
+  ],
+  "properties": {
+    "schemaVersion": {"const": "0.1.0"},
+    "documentKind": {"const": "raaml-roundtrip-report"},
+    "sliceId": {"const": "milestone-3-core-general-stpa"},
+    "ok": {"type": "boolean"},
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifacts",
+        "sourceFactsSha256",
+        "reconstructedFactsSha256",
+        "differences"
+      ],
+      "properties": {
+        "artifacts": {"type": "integer", "minimum": 1},
+        "sourceFactsSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "reconstructedFactsSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "differences": {"type": "integer", "minimum": 0}
+      }
+    },
+    "differences": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "expected", "actual"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "expected": {},
+          "actual": {}
+        }
+      }
+    },
+    "sourceFacts": {"type": "object"},
+    "reconstructedFacts": {"type": "object"}
+  }
+}

@@ -99,6 +99,36 @@ def extract_facts(
     return raw, canonical
 
 
+def extract_artifact_set(
+    repository_root: Path,
+    artifacts: list[dict[str, str]],
+    source_dir: Path,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Extract a declared artifact set without replacing its source provenance.
+
+    This is used for reconstructed outputs. Each descriptor supplies the
+    original artifact identity and digest, while ``source_dir`` supplies the
+    XMI bytes being checked.
+    """
+    lock = load_lock(repository_root / "standards.lock.json")
+    allowed = _allowed_remote_documents(lock)
+    raw_artifacts = []
+    for artifact in artifacts:
+        path = source_dir / artifact["filename"]
+        try:
+            preflight_xml(path, allowed_remote_documents=allowed)
+        except UnsafeXmlError as error:
+            raise FactExtractionError(error.code, str(error)) from error
+        raw_artifacts.append(_extract_artifact(path, artifact))
+    raw = {
+        "schemaVersion": SCHEMA_VERSION,
+        "documentKind": "raw-raaml-facts",
+        "corpus": CORPUS,
+        "artifacts": raw_artifacts,
+    }
+    return raw, canonicalize_facts(raw)
+
+
 def canonicalize_facts(
     raw: dict[str, Any],
     *,

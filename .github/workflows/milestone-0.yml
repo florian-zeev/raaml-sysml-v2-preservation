@@ -56,6 +56,9 @@ jobs:
           ./raaml validate-ocl --all
           ./raaml tests milestone-1
 
+      - name: Run Milestone 3 vertical slice
+        run: ./raaml tests milestone-3
+
       - name: Build digest-pinned container
         run: |
           docker build \
@@ -118,6 +121,9 @@ jobs:
                 --diagnostics /evidence/validate-ocl.json
               ./raaml tests milestone-1 \
                 --diagnostics /evidence/tests-milestone-1.json
+              ./raaml tests milestone-3 \
+                --output /evidence/milestone-3.json \
+                --diagnostics /evidence/tests-milestone-3.json
             '
 
       - name: Compare host and container canonical facts
@@ -134,6 +140,9 @@ jobs:
           cmp \
             reports/transformation/constraint-surface.json \
             container-evidence/constraint-transformation-surface.json
+          cmp \
+            reports/conformance/milestone-3.json \
+            container-evidence/milestone-3.json
           canonical_sha="$(
             sha256sum reports/facts/canonical-raaml-facts.json |
             cut -d ' ' -f 1
@@ -148,4 +157,6 @@ jobs:
             echo "- Open transformation rows: 0"
             echo "- Properties classified: 267"
             echo "- Constraint OpaqueExpressions classified: 60"
+            echo "- Milestone 3 artifacts reconstructed: 6"
+            echo "- Milestone 3 canonical fact differences: 0"
           } >> "$GITHUB_STEP_SUMMARY"

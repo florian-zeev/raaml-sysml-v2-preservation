@@ -174,11 +174,14 @@ public final class ToolAdapter {
     }
 
     private static Map<String, Object> validateV1(String[] args) throws IOException {
-        if (args.length != 3) {
-            throw new IllegalArgumentException("usage: v1 MODEL_FILE CATALOG_DIRECTORY");
+        if (args.length != 3 && args.length != 4) {
+            throw new IllegalArgumentException(
+                "usage: v1 MODEL_FILE CATALOG_DIRECTORY [OVERLAY_DIRECTORY]"
+            );
         }
         Path model = existingRegularFile(args[1]);
         Path catalog = existingDirectory(args[2]);
+        Path overlay = args.length == 4 ? existingDirectory(args[3]) : null;
 
         ResourceSet resourceSet = UMLResourcesUtil.init(new ResourceSetImpl());
         resourceSet.getPackageRegistry().put(
@@ -238,10 +241,25 @@ public final class ToolAdapter {
                     URI.createFileURI(path.toAbsolutePath().toString()).toString()
                 ));
         }
+        if (overlay != null) {
+            try (var files = Files.list(overlay)) {
+                for (Path path : files
+                    .filter(item -> item.getFileName().toString().endsWith(".xmi"))
+                    .sorted()
+                    .toList()) {
+                    preload(
+                        resourceSet,
+                        "https://www.omg.org/spec/RAAML/20240219/"
+                            + path.getFileName(),
+                        path
+                    );
+                }
+            }
+        }
         if (!model.getFileName().toString().equals("CoreRAAML.xmi")) {
             registerProfile(
                 resourceSet,
-                catalog.resolve("CoreRAAML.xmi")
+                (overlay == null ? catalog : overlay).resolve("CoreRAAML.xmi")
             );
         }
 

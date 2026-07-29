@@ -40,6 +40,12 @@ reproduces the analysis byte for byte on the Linux host and in the offline
 container at commit `5a2bef4`. This closes the transformation design analysis;
 it still does not demonstrate a SysML v2 round trip.
 
+Milestone 3 is implemented locally and awaits the clean Linux/container gate.
+The thin slice covers all Core and General definitions plus selected STPA
+definitions and a normative library application. The local gate generates and
+validates SysML v2, reconstructs and loads six v1 XMI artifacts, and compares
+the source and reconstructed canonical facts exactly.
+
 ## Foundation and transformation-analysis quick start
 
 Python 3.14.4 is the tested orchestration runtime. On macOS Apple silicon:
@@ -54,6 +60,7 @@ Python 3.14.4 is the tested orchestration runtime. On macOS Apple silicon:
 ./raaml oracle audit --all
 ./raaml validate-ocl --all
 ./raaml tests milestone-1
+./raaml tests milestone-3
 ./raaml transformation surface
 ./raaml transformation properties
 ./raaml transformation constraints
@@ -81,6 +88,7 @@ remain ignored. See the ADRs for exact versions and known limitations.
 | [`docs/milestone-1-coverage.md`](docs/milestone-1-coverage.md) | Fact-category coverage, golden examples, and negative cases |
 | [`docs/milestone-2-evidence.md`](docs/milestone-2-evidence.md) | Frozen transformation-analysis and reproducibility evidence |
 | [`docs/milestone-2-transformation-analysis.md`](docs/milestone-2-transformation-analysis.md) | Resolved comparison with the official SysML v1-to-v2 transformation |
+| [`docs/milestone-3-vertical-slice.md`](docs/milestone-3-vertical-slice.md) | Scope, pipeline, local result, and claim boundary for the thin vertical slice |
 | [`analysis/corpus-transformation-surface-v0.1.json`](analysis/corpus-transformation-surface-v0.1.json) | Reproducible inventory of SysML v1 applications that select specialized transformation rules |
 | [`analysis/property-transformation-surface-v0.1.json`](analysis/property-transformation-surface-v0.1.json) | Total official-rule classification of all 267 UML Properties |
 | [`analysis/constraint-transformation-surface-v0.1.json`](analysis/constraint-transformation-surface-v0.1.json) | Total split of all 60 constraint OpaqueExpressions by official mapping fidelity |

@@ -267,6 +267,8 @@ def run_adapter(
     repository_root: Path,
     mode: str,
     input_path: Path,
+    *,
+    v1_catalog_dir: Path | None = None,
 ) -> dict[str, Any]:
     paths = tool_paths(repository_root)
     class_file = (
@@ -325,6 +327,8 @@ def run_adapter(
                 ],
             }
         arguments.append(str(repository_root / "sources" / "cache"))
+        if v1_catalog_dir is not None:
+            arguments.append(str(v1_catalog_dir))
     elif mode not in {"ocl", "ocl-corpus"}:
         raise AdapterError(f"unknown adapter mode: {mode}")
 
