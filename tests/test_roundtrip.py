@@ -3,6 +3,8 @@ from __future__ import annotations
 import copy
 import json
 from pathlib import Path
+import re
+import shutil
 import tempfile
 import unittest
 
@@ -10,6 +12,7 @@ from src.raaml_preservation.facts import extract_facts
 from src.raaml_preservation.roundtrip import (
     FULL_CORPUS_V2_FILENAME,
     RoundTripError,
+    compare_full_corpus,
     create_full_corpus_manifest,
     create_manifest,
     forward_full_corpus,
@@ -231,6 +234,82 @@ class MilestoneFiveReverseTests(unittest.TestCase):
                 )
 
             self.assertFalse(output.exists())
+
+
+class MilestoneSixComparisonTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.temporary = tempfile.TemporaryDirectory(
+            prefix="raaml-m6-unit-"
+        )
+        cls.addClassCleanup(cls.temporary.cleanup)
+        cls.root = Path(cls.temporary.name)
+        forward = forward_full_corpus(ROOT, cls.root / "forward")
+        cls.reconstructed = cls.root / "reconstructed"
+        reverse_full_corpus(
+            cls.root / "forward" / "manifests",
+            forward["v2"],
+            cls.reconstructed,
+        )
+
+    def test_full_corpus_canonical_facts_are_equal(self) -> None:
+        report = compare_full_corpus(ROOT, self.reconstructed)
+
+        self.assertTrue(report["ok"])
+        self.assertEqual(report["summary"]["artifacts"], 17)
+        self.assertEqual(report["summary"]["differences"], 0)
+        self.assertEqual(
+            report["summary"]["sourceFactsSha256"],
+            report["summary"]["reconstructedFactsSha256"],
+        )
+        self.assertEqual(
+            report["sourceCounts"],
+            report["reconstructedCounts"],
+        )
+        self.assertTrue(
+            all(item["differences"] == 0 for item in report["perArtifact"])
+        )
+        validate_instance_against_schema(
+            report,
+            ROOT / "schemas" / "full-corpus-comparison-report.schema.json",
+        )
+
+    def test_changed_reconstructed_fact_is_reported(self) -> None:
+        changed = self.root / "changed"
+        shutil.copytree(self.reconstructed, changed)
+        mutation_path = next(
+            path
+            for path in sorted(changed.glob("*.xmi"))
+            if re.search(r'isAbstract="(?:true|false)"', path.read_text())
+        )
+        original = mutation_path.read_text(encoding="utf-8")
+        mutated = re.sub(
+            r'isAbstract="(true|false)"',
+            lambda match: (
+                'isAbstract="false"'
+                if match.group(1) == "true"
+                else 'isAbstract="true"'
+            ),
+            original,
+            count=1,
+        )
+        mutation_path.write_text(mutated, encoding="utf-8", newline="\n")
+
+        report = compare_full_corpus(ROOT, changed)
+
+        self.assertFalse(report["ok"])
+        self.assertGreater(report["summary"]["differences"], 0)
+        self.assertNotEqual(
+            report["summary"]["sourceFactsSha256"],
+            report["summary"]["reconstructedFactsSha256"],
+        )
+        self.assertTrue(
+            any(item["differences"] > 0 for item in report["perArtifact"])
+        )
+        validate_instance_against_schema(
+            report,
+            ROOT / "schemas" / "full-corpus-comparison-report.schema.json",
+        )
 
 
 if __name__ == "__main__":

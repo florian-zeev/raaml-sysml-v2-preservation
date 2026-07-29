@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/florian-zeev/raaml-sysml-v2-preservation/schemas/full-corpus-comparison-report.schema.json",
+  "title": "RAAML full-corpus canonical fact comparison report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "documentKind",
+    "corpusId",
+    "ok",
+    "summary",
+    "sourceCounts",
+    "reconstructedCounts",
+    "perArtifact",
+    "differences",
+    "sourceFacts",
+    "reconstructedFacts"
+  ],
+  "properties": {
+    "schemaVersion": {"const": "0.1.0"},
+    "documentKind": {"const": "raaml-full-corpus-comparison-report"},
+    "corpusId": {"const": "raaml-1.1-definitions"},
+    "ok": {"type": "boolean"},
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifacts",
+        "sourceFactsSha256",
+        "reconstructedFactsSha256",
+        "differences"
+      ],
+      "properties": {
+        "artifacts": {"const": 17},
+        "sourceFactsSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "reconstructedFactsSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "differences": {"type": "integer", "minimum": 0}
+      }
+    },
+    "sourceCounts": {"$ref": "#/$defs/counts"},
+    "reconstructedCounts": {"$ref": "#/$defs/counts"},
+    "perArtifact": {
+      "type": "array",
+      "minItems": 17,
+      "maxItems": 17,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "artifactId",
+          "filename",
+          "sourceCounts",
+          "reconstructedCounts",
+          "differences"
+        ],
+        "properties": {
+          "artifactId": {"type": "string", "minLength": 1},
+          "filename": {"type": "string", "pattern": "^[^/\\\\]+\\.xmi$"},
+          "sourceCounts": {"$ref": "#/$defs/counts"},
+          "reconstructedCounts": {"$ref": "#/$defs/counts"},
+          "differences": {"type": "integer", "minimum": 0}
+        }
+      }
+    },
+    "differences": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/difference"}
+    },
+    "sourceFacts": {"type": "object"},
+    "reconstructedFacts": {"type": "object"}
+  },
+  "$defs": {
+    "counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profiles",
+        "packages",
+        "stereotypes",
+        "classes",
+        "enumerations",
+        "enumerationLiterals",
+        "associations",
+        "associationClasses",
+        "properties",
+        "ports",
+        "connectors",
+        "constraints",
+        "extensions",
+        "extensionEnds",
+        "comments",
+        "images",
+        "raamlApplications"
+      ],
+      "properties": {
+        "profiles": {"type": "integer", "minimum": 0},
+        "packages": {"type": "integer", "minimum": 0},
+        "stereotypes": {"type": "integer", "minimum": 0},
+        "classes": {"type": "integer", "minimum": 0},
+        "enumerations": {"type": "integer", "minimum": 0},
+        "enumerationLiterals": {"type": "integer", "minimum": 0},
+        "associations": {"type": "integer", "minimum": 0},
+        "associationClasses": {"type": "integer", "minimum": 0},
+        "properties": {"type": "integer", "minimum": 0},
+        "ports": {"type": "integer", "minimum": 0},
+        "connectors": {"type": "integer", "minimum": 0},
+        "constraints": {"type": "integer", "minimum": 0},
+        "extensions": {"type": "integer", "minimum": 0},
+        "extensionEnds": {"type": "integer", "minimum": 0},
+        "comments": {"type": "integer", "minimum": 0},
+        "images": {"type": "integer", "minimum": 0},
+        "raamlApplications": {"type": "integer", "minimum": 0}
+      }
+    },
+    "difference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "expected", "actual"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "expected": {},
+        "actual": {}
+      }
+    }
+  }
+}

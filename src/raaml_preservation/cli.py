@@ -30,6 +30,7 @@ from .roundtrip import (
     FULL_CORPUS_ID,
     RoundTripError,
     canonical_json,
+    compare_full_corpus,
     compare_reconstructed,
     forward_full_corpus,
     forward_slice,
@@ -630,11 +631,37 @@ def _compare_command(args: argparse.Namespace) -> int:
     diagnostics: list[dict[str, str]] = []
     comparison: dict[str, Any] | None = None
     try:
-        comparison = compare_reconstructed(
-            REPOSITORY_ROOT,
-            args.manifest,
-            args.reconstructed_dir,
-        )
+        if args.full_corpus:
+            comparison = compare_full_corpus(
+                REPOSITORY_ROOT,
+                args.reconstructed_dir,
+            )
+            schema = (
+                REPOSITORY_ROOT
+                / "schemas"
+                / "full-corpus-comparison-report.schema.json"
+            )
+            default_output = (
+                REPOSITORY_ROOT
+                / "reports"
+                / "conformance"
+                / "milestone-6-comparison.json"
+            )
+        else:
+            comparison = compare_reconstructed(
+                REPOSITORY_ROOT,
+                args.manifest,
+                args.reconstructed_dir,
+            )
+            schema = (
+                REPOSITORY_ROOT / "schemas" / "roundtrip-report.schema.json"
+            )
+            default_output = (
+                REPOSITORY_ROOT
+                / "reports"
+                / "conformance"
+                / "milestone-3-comparison.json"
+            )
         if not comparison["ok"]:
             diagnostics.append(
                 {
@@ -646,12 +673,15 @@ def _compare_command(args: argparse.Namespace) -> int:
                     ),
                 }
             )
-        validate_instance_against_schema(
-            comparison,
-            REPOSITORY_ROOT / "schemas" / "roundtrip-report.schema.json",
-        )
-        _write_json_atomic(args.output, comparison)
-    except (FactExtractionError, RoundTripError, OSError, json.JSONDecodeError) as error:
+        validate_instance_against_schema(comparison, schema)
+        _write_json_atomic(args.output or default_output, comparison)
+    except (
+        FactExtractionError,
+        RoundTripError,
+        SchemaValidationError,
+        OSError,
+        json.JSONDecodeError,
+    ) as error:
         diagnostics.append(
             {
                 "severity": "error",
@@ -1527,15 +1557,22 @@ def build_parser() -> argparse.ArgumentParser:
         "compare",
         help="compare source and reconstructed canonical facts",
     )
-    compare.add_argument("--manifest", type=_path, required=True)
+    compare_scope = compare.add_mutually_exclusive_group(required=True)
+    compare_scope.add_argument(
+        "--manifest",
+        type=_path,
+        help="compare the Milestone 3 manifest slice",
+    )
+    compare_scope.add_argument(
+        "--full-corpus",
+        action="store_true",
+        help="compare all 17 reconstructed artifacts with the locked sources",
+    )
     compare.add_argument("--reconstructed-dir", type=_path, required=True)
     compare.add_argument(
         "--output",
         type=_path,
-        default=REPOSITORY_ROOT
-        / "reports"
-        / "conformance"
-        / "milestone-3-comparison.json",
+        default=None,
     )
     compare.add_argument(
         "--diagnostics",

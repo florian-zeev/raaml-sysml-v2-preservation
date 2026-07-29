@@ -8,7 +8,12 @@ import re
 from typing import Any, Callable
 import xml.etree.ElementTree as ET
 
-from .facts import extract_artifact_set, extract_facts, serialize_facts
+from .facts import (
+    count_facts,
+    extract_artifact_set,
+    extract_facts,
+    serialize_facts,
+)
 from .sources import load_lock
 
 
@@ -510,6 +515,94 @@ def compare_reconstructed(
         "sourceFacts": expected,
         "reconstructedFacts": actual,
     }
+
+
+def compare_full_corpus(
+    repository_root: Path,
+    reconstructed_dir: Path,
+) -> dict[str, Any]:
+    _, expected = extract_facts(repository_root)
+    descriptors = [
+        {
+            "id": artifact["artifactId"],
+            "filename": artifact["filename"],
+            "sha256": artifact["sha256"],
+        }
+        for artifact in expected["artifacts"]
+    ]
+    _, actual = extract_artifact_set(
+        repository_root,
+        descriptors,
+        reconstructed_dir,
+    )
+    differences = _differences(expected, actual)
+    expected_by_id = {
+        artifact["artifactId"]: artifact
+        for artifact in expected["artifacts"]
+    }
+    actual_by_id = {
+        artifact["artifactId"]: artifact
+        for artifact in actual["artifacts"]
+    }
+    per_artifact = []
+    for artifact_id in sorted(set(expected_by_id) | set(actual_by_id)):
+        source = expected_by_id.get(artifact_id)
+        reconstructed = actual_by_id.get(artifact_id)
+        artifact_differences = _differences(source, reconstructed)
+        artifact = source or reconstructed
+        assert artifact is not None
+        per_artifact.append(
+            {
+                "artifactId": artifact_id,
+                "filename": artifact["filename"],
+                "sourceCounts": (
+                    _single_artifact_counts(expected, source)
+                    if source is not None
+                    else {}
+                ),
+                "reconstructedCounts": (
+                    _single_artifact_counts(actual, reconstructed)
+                    if reconstructed is not None
+                    else {}
+                ),
+                "differences": len(artifact_differences),
+            }
+        )
+    return {
+        "schemaVersion": SCHEMA_VERSION,
+        "documentKind": "raaml-full-corpus-comparison-report",
+        "corpusId": expected["corpus"],
+        "ok": not differences,
+        "summary": {
+            "artifacts": len(expected["artifacts"]),
+            "sourceFactsSha256": hashlib.sha256(
+                serialize_facts(expected)
+            ).hexdigest(),
+            "reconstructedFactsSha256": hashlib.sha256(
+                serialize_facts(actual)
+            ).hexdigest(),
+            "differences": len(differences),
+        },
+        "sourceCounts": count_facts(expected),
+        "reconstructedCounts": count_facts(actual),
+        "perArtifact": per_artifact,
+        "differences": differences,
+        "sourceFacts": expected,
+        "reconstructedFacts": actual,
+    }
+
+
+def _single_artifact_counts(
+    corpus: dict[str, Any],
+    artifact: dict[str, Any],
+) -> dict[str, int]:
+    scoped = {
+        "schemaVersion": corpus["schemaVersion"],
+        "documentKind": corpus["documentKind"],
+        "corpus": corpus["corpus"],
+        "artifacts": [artifact],
+    }
+    return count_facts(scoped)
 
 
 def render_v2(facts: dict[str, Any]) -> str:
@@ -1120,6 +1213,8 @@ def _append_declaration(
             context,
             constraint["id"],
         )
+    for connector in declaration["connectors"]:
+        _append_connector(node, connector, artifact, context)
     for icon_ordinal, icon in enumerate(declaration["icons"], start=1):
         icon_node = ET.SubElement(
             node,
@@ -1140,6 +1235,51 @@ def _append_declaration(
             if icon[field]["present"]:
                 icon_node.set(field, icon[field]["value"] or "")
     return node
+
+
+def _append_connector(
+    owner: ET.Element,
+    connector: dict[str, Any],
+    artifact: dict[str, Any],
+    context: _RenderContext,
+) -> None:
+    attrs = {
+        XMI_TYPE: "uml:Connector",
+        XMI_ID: context.ids[connector["id"]],
+    }
+    if connector["name"] is not None:
+        attrs["name"] = connector["name"]
+    node = ET.SubElement(owner, "ownedConnector", attrs)
+    for ordinal, end in enumerate(connector["ends"], start=1):
+        end_node = ET.SubElement(
+            node,
+            "end",
+            {
+                XMI_TYPE: "uml:ConnectorEnd",
+                XMI_ID: context.owned_id(
+                    Path(artifact["filename"]).stem,
+                    connector["id"],
+                    "ConnectorEnd",
+                    "end",
+                    ordinal,
+                ),
+            },
+        )
+        _append_reference(end_node, end["role"], artifact, context)
+        if end["partWithPort"] is not None:
+            _append_reference(
+                end_node,
+                end["partWithPort"],
+                artifact,
+                context,
+            )
+    _append_comments(
+        node,
+        connector["comments"],
+        artifact,
+        context,
+        connector["id"],
+    )
 
 
 def _append_extension(

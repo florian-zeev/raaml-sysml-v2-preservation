@@ -20,6 +20,8 @@ All schemas use JSON Schema draft 2020-12 and reject undeclared fields.
   payloads carried alongside the native v2 view.
 - `roundtrip-report.schema.json` defines the machine-readable before/after
   canonical fact comparison.
+- `full-corpus-comparison-report.schema.json` defines the 17-file,
+  per-artifact and per-category canonical fact comparison.
 - `milestone-4-build-report.schema.json` defines the deterministic
   full-corpus generation, manifest, validator, and interoperability evidence.
 - `milestone-5-build-report.schema.json` defines deterministic full-corpus
