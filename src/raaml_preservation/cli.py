@@ -17,6 +17,7 @@ from .adapters import (
     bootstrap_tooling,
     build_adapter,
     run_adapter,
+    run_v1_corpus_adapter,
     stable_adapter_report,
 )
 from .facts import (
@@ -471,7 +472,6 @@ def _tests_milestone_five(args: argparse.Namespace) -> int:
                     f"expected 17 reconstructed artifacts, got {len(first_digests)}",
                 )
 
-            v1_reports = []
             for path in first:
                 try:
                     root_element = ET.fromstring(path.read_bytes())
@@ -499,19 +499,33 @@ def _tests_milestone_five(args: argparse.Namespace) -> int:
                         "RECONSTRUCTED_ID_POLICY",
                         f"{path.name}: generated IDs do not follow the stable-ID policy",
                     )
-                result = run_adapter(
-                    REPOSITORY_ROOT,
-                    "v1",
-                    path,
-                    v1_catalog_dir=first_dir,
+                checked += 1
+
+            corpus_result = run_v1_corpus_adapter(
+                REPOSITORY_ROOT,
+                first_dir,
+            )
+            v1_reports = [
+                stable_adapter_report(report)
+                for report in corpus_result.get("results", [])
+            ]
+            checked += len(v1_reports)
+            if len(v1_reports) != 17:
+                raise RoundTripError(
+                    "FULL_REVERSE_V1_RESULT_COUNT",
+                    f"expected 17 v1 validation results, got {len(v1_reports)}",
                 )
-                v1_reports.append(stable_adapter_report(result))
-                checked += 2
-                if not result["ok"]:
-                    raise RoundTripError(
-                        "FULL_REVERSE_V1_INVALID",
-                        f"reconstructed {path.name} is invalid",
-                    )
+            if not corpus_result["ok"]:
+                failed_inputs = [
+                    report.get("input", "(unknown)")
+                    for report in v1_reports
+                    if not report.get("ok")
+                ]
+                raise RoundTripError(
+                    "FULL_REVERSE_V1_INVALID",
+                    "invalid reconstructed artifact(s): "
+                    + ", ".join(failed_inputs),
+                )
 
             collision_output = root / "collision-output"
             try:

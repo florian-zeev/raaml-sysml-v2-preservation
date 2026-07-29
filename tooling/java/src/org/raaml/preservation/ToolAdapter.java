@@ -88,12 +88,13 @@ public final class ToolAdapter {
         try {
             if (args.length < 1) {
                 throw new IllegalArgumentException(
-                    "expected adapter mode: v2, v1, ocl, or ocl-corpus"
+                    "expected adapter mode: v2, v1, v1-corpus, ocl, or ocl-corpus"
                 );
             }
             report = switch (args[0]) {
                 case "v2" -> validateV2(args);
                 case "v1" -> validateV1(args);
+                case "v1-corpus" -> validateV1Corpus(args);
                 case "ocl" -> parseOcl(args);
                 case "ocl-corpus" -> parseOclCorpus(args);
                 default -> throw new IllegalArgumentException("unknown adapter mode: " + args[0]);
@@ -202,6 +203,25 @@ public final class ToolAdapter {
         Path catalog = existingDirectory(args[2]);
         Path overlay = args.length == 4 ? existingDirectory(args[3]) : null;
 
+        ResourceSet resourceSet = initializeV1ResourceSet(catalog, overlay);
+        if (!model.getFileName().toString().equals("CoreRAAML.xmi")) {
+            registerProfile(
+                resourceSet,
+                (overlay == null ? catalog : overlay).resolve("CoreRAAML.xmi")
+            );
+        }
+
+        Resource resource = loadNormalized(
+            resourceSet,
+            URI.createFileURI(model.toAbsolutePath().toString()),
+            model
+        );
+        EcoreUtil.resolveAll(resourceSet);
+        return validateV1Resource(resourceSet, resource, model.getFileName().toString());
+    }
+
+    private static ResourceSet initializeV1ResourceSet(Path catalog, Path overlay)
+        throws IOException {
         ResourceSet resourceSet = UMLResourcesUtil.init(new ResourceSetImpl());
         resourceSet.getPackageRegistry().put(
             "http://www.omg.org/spec/UML/20131001",
@@ -310,20 +330,14 @@ public final class ToolAdapter {
                 }
             }
         }
-        if (!model.getFileName().toString().equals("CoreRAAML.xmi")) {
-            registerProfile(
-                resourceSet,
-                (overlay == null ? catalog : overlay).resolve("CoreRAAML.xmi")
-            );
-        }
+        return resourceSet;
+    }
 
-        Resource resource = loadNormalized(
-            resourceSet,
-            URI.createFileURI(model.toAbsolutePath().toString()),
-            model
-        );
-        EcoreUtil.resolveAll(resourceSet);
-
+    private static Map<String, Object> validateV1Resource(
+        ResourceSet resourceSet,
+        Resource resource,
+        String input
+    ) {
         List<Map<String, Object>> diagnostics = new ArrayList<>();
         for (Resource loaded : resourceSet.getResources()) {
             addResourceDiagnostics(loaded, diagnostics);
@@ -347,10 +361,83 @@ public final class ToolAdapter {
             .noneMatch(item -> "error".equals(item.get("severity")));
         Map<String, Object> report = baseReport("v1");
         report.put("ok", ok);
-        report.put("input", model.getFileName().toString());
+        report.put("input", input);
         report.put("loadedResources", resourceSet.getResources().size());
         report.put("diagnostics", diagnostics);
         finalizeReport(report);
+        return report;
+    }
+
+    private static Map<String, Object> validateV1Corpus(String[] args) throws IOException {
+        if (args.length != 3) {
+            throw new IllegalArgumentException(
+                "usage: v1-corpus MODEL_DIRECTORY CATALOG_DIRECTORY"
+            );
+        }
+        Path models = existingDirectory(args[1]);
+        Path catalog = existingDirectory(args[2]);
+        List<Path> modelPaths;
+        try (var files = Files.list(models)) {
+            modelPaths = files
+                .filter(path -> path.getFileName().toString().endsWith(".xmi"))
+                .sorted(
+                    Comparator
+                        .comparingInt(
+                            (Path item) -> overlayRank(
+                                item.getFileName().toString()
+                            )
+                        )
+                        .thenComparing(item -> item.getFileName().toString())
+                )
+                .toList();
+        }
+        if (modelPaths.size() != V1_OVERLAY_ORDER.size()) {
+            throw new IllegalArgumentException(
+                "expected " + V1_OVERLAY_ORDER.size()
+                    + " corpus XMI files, got " + modelPaths.size()
+            );
+        }
+        List<String> filenames = modelPaths.stream()
+            .map(path -> path.getFileName().toString())
+            .toList();
+        if (!new LinkedHashSet<>(filenames).equals(
+            new LinkedHashSet<>(V1_OVERLAY_ORDER)
+        )) {
+            throw new IllegalArgumentException(
+                "corpus filenames do not match the required RAAML overlay"
+            );
+        }
+
+        ResourceSet resourceSet = initializeV1ResourceSet(catalog, models);
+        registerProfile(resourceSet, models.resolve("CoreRAAML.xmi"));
+        EcoreUtil.resolveAll(resourceSet);
+
+        List<Map<String, Object>> results = new ArrayList<>();
+        for (Path path : modelPaths) {
+            String filename = path.getFileName().toString();
+            Resource resource = resourceSet.getResource(
+                URI.createURI("generated:/" + filename),
+                false
+            );
+            if (resource == null) {
+                throw new IllegalArgumentException(
+                    "preloaded corpus resource is missing: " + filename
+                );
+            }
+            results.add(validateV1Resource(resourceSet, resource, filename));
+        }
+
+        long failures = results.stream()
+            .filter(result -> !Boolean.TRUE.equals(result.get("ok")))
+            .count();
+        Map<String, Object> report = baseReport("v1-corpus");
+        report.put("ok", failures == 0);
+        report.put("results", results);
+        report.put("diagnostics", List.of());
+        Map<String, Object> summary = new LinkedHashMap<>();
+        summary.put("checked", results.size());
+        summary.put("failed", failures);
+        report.put("summary", summary);
         return report;
     }
 

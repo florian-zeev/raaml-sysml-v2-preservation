@@ -358,6 +358,86 @@ def run_adapter(
     elif mode not in {"ocl", "ocl-corpus"}:
         raise AdapterError(f"unknown adapter mode: {mode}")
 
+    return _invoke_java_adapter(repository_root, paths, arguments)
+
+
+def run_v1_corpus_adapter(
+    repository_root: Path,
+    input_dir: Path,
+) -> dict[str, Any]:
+    paths = tool_paths(repository_root)
+    class_file = (
+        paths["classes"]
+        / "org"
+        / "raaml"
+        / "preservation"
+        / "ToolAdapter.class"
+    )
+    for name in ("java", "jar"):
+        if not paths[name].is_file():
+            raise AdapterError(f"required {name} is missing: {paths[name]}")
+    if not class_file.is_file():
+        raise AdapterError("adapter classes are missing; run tooling build-adapters")
+    if (
+        not input_dir.is_dir()
+        or input_dir.is_symlink()
+    ):
+        raise AdapterError(
+            f"input must be a non-symlink directory: {input_dir}"
+        )
+
+    lock = load_lock(repository_root / "standards.lock.json")
+    expected = {
+        artifact["filename"]
+        for artifact in lock["artifacts"]
+        if artifact["collection"] == "raaml-1.1-definitions"
+    }
+    inputs = sorted(input_dir.glob("*.xmi"))
+    if (
+        {path.name for path in inputs} != expected
+        or any(not path.is_file() or path.is_symlink() for path in inputs)
+    ):
+        raise AdapterError(
+            "input directory must contain exactly the 17 locked RAAML "
+            "definition files as regular non-symlink files"
+        )
+
+    authoritative = {
+        artifact["authoritativeUrl"] for artifact in lock["artifacts"]
+    }
+    allowed = frozenset(
+        authoritative
+        | {
+            url.replace("https://www.omg.org/", "http://www.omg.org/", 1)
+            for url in authoritative
+            if url.startswith("https://www.omg.org/")
+        }
+    )
+    for input_path in inputs:
+        try:
+            preflight_xml(
+                input_path,
+                allowed_remote_documents=allowed,
+            )
+        except UnsafeXmlError as error:
+            raise AdapterError(f"{input_path.name}: {error}") from error
+
+    return _invoke_java_adapter(
+        repository_root,
+        paths,
+        [
+            "v1-corpus",
+            str(input_dir),
+            str(repository_root / "sources" / "cache"),
+        ],
+    )
+
+
+def _invoke_java_adapter(
+    repository_root: Path,
+    paths: dict[str, Path],
+    arguments: list[str],
+) -> dict[str, Any]:
     process = subprocess.run(
         [
             str(paths["java"]),

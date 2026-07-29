@@ -5,14 +5,20 @@ from pathlib import Path
 import tarfile
 import tempfile
 import unittest
+from unittest.mock import patch
 import zipfile
 
 from raaml_preservation.adapters import (
     AdapterError,
     _extract_tar_safely,
     _extract_zip_safely,
+    run_v1_corpus_adapter,
     stable_adapter_report,
 )
+from raaml_preservation.sources import load_lock
+
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 class ArchiveExtractionTests(unittest.TestCase):
@@ -136,6 +142,67 @@ class StableAdapterReportTests(unittest.TestCase):
             ),
         )
         self.assertNotEqual(stable, report)
+
+
+class V1CorpusAdapterTests(unittest.TestCase):
+    def test_locked_corpus_is_dispatched_in_one_java_invocation(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            input_dir = root / "reconstructed"
+            input_dir.mkdir()
+            classes = root / "classes" / "org" / "raaml" / "preservation"
+            classes.mkdir(parents=True)
+            for path in (
+                root / "java",
+                root / "adapter.jar",
+                classes / "ToolAdapter.class",
+            ):
+                path.write_bytes(b"fixture")
+
+            lock = load_lock(ROOT / "standards.lock.json")
+            filenames = {
+                artifact["filename"]
+                for artifact in lock["artifacts"]
+                if artifact["collection"] == "raaml-1.1-definitions"
+            }
+            for filename in filenames:
+                (input_dir / filename).write_text(
+                    '<?xml version="1.0" encoding="UTF-8"?><uml:Package '
+                    'xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML"/>',
+                    encoding="utf-8",
+                )
+
+            expected = {
+                "ok": True,
+                "results": [],
+            }
+            paths = {
+                "java": root / "java",
+                "jar": root / "adapter.jar",
+                "classes": root / "classes",
+            }
+            with (
+                patch(
+                    "raaml_preservation.adapters.tool_paths",
+                    return_value=paths,
+                ),
+                patch(
+                    "raaml_preservation.adapters._invoke_java_adapter",
+                    return_value=expected,
+                ) as invoke,
+            ):
+                actual = run_v1_corpus_adapter(ROOT, input_dir)
+
+            self.assertIs(actual, expected)
+            invoke.assert_called_once_with(
+                ROOT,
+                paths,
+                [
+                    "v1-corpus",
+                    str(input_dir),
+                    str(ROOT / "sources" / "cache"),
+                ],
+            )
 
 
 if __name__ == "__main__":
