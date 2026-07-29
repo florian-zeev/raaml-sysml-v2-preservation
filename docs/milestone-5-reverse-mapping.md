@@ -1,6 +1,6 @@
 # Milestone 5 full-corpus reverse mapping
 
-**Status:** Local gate passed; clean-environment evidence pending
+**Status:** Passed
 
 **Date started:** 2026-07-29
 
@@ -49,6 +49,11 @@ The local gate:
 
 The machine-readable local report is
 `reports/conformance/milestone-5.json`.
+
+The clean Linux and offline-container gate passed at commit
+`bb4098a8628a2b74099e2e19d1ecc651fa505e7a`. The host and container produced
+byte-identical Milestone 5 reports. See
+[Milestone 5 evidence](milestone-5-evidence.md).
 
 ## Complete SysML 1.6 reference chain
 

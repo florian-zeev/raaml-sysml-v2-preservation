@@ -10,9 +10,9 @@ support for arbitrary user-authored RAAML models.
 
 ## Current status
 
-**Draft Community Proposal v0.1. A fact-preserving round trip has been
-demonstrated for the Milestone 3 vertical slice, but not yet for the full
-17-file corpus.**
+**Draft Community Proposal v0.1. Deterministic full-corpus forward and reverse
+mapping now passes both mandatory validators, but exact canonical fact
+equality has not yet been demonstrated for the full 17-file corpus.**
 
 The implementation may claim a fact-preserving round trip only after the
 validation and publication gates in the reference implementation plan pass.
@@ -54,12 +54,13 @@ source files. The Linux host and offline container produced byte-identical
 evidence, and the mandatory validator reported zero errors in all five
 validation categories at commit `5f3131c`.
 
-Milestone 5 passes locally. It reconstructs all 17 v1 profile and library
-artifacts deterministically, preserves multi-package artifact structure, and
-loads every rebuilt artifact in the mandatory pinned v1 environment with zero
-required validation errors. Its injected fake-hash test proves that an ID
-collision stops reconstruction before partial output is written.
-Clean-environment host/container evidence is pending.
+Milestone 5 passed on 2026-07-29. It reconstructs all 17 v1 profile and
+library artifacts deterministically, preserves multi-package artifact
+structure, and loads every rebuilt artifact in the mandatory pinned v1
+environment with zero required validation errors. Its injected fake-hash
+test proves that an ID collision stops reconstruction before partial output
+is written. The Linux host and offline container produced byte-identical
+evidence at commit `bb4098a`.
 
 ## Foundation and transformation-analysis quick start
 
