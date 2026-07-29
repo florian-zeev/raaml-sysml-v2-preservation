@@ -1,6 +1,6 @@
 # Milestone 2 transformation analysis
 
-**Status:** Resolved locally; clean Linux/container run pending
+**Status:** Passed
 
 **Date started:** 2026-07-28
 
@@ -226,13 +226,13 @@ pdftotext -layout \
 ```
 
 Relevant machine rules can be located by XMI ID in
-`sources/cache/SysMLv1Tov2.xmi`. The final Milestone 2 gate will automate that
-check and fail if a cited rule is absent from the pinned model.
+`sources/cache/SysMLv1Tov2.xmi`. The Milestone 2 gate automates that check and
+fails if a cited rule is absent from the pinned model.
 
 ## Resolution status
 
-The matrix contains no `Open` rows. The remaining Milestone 2 work is to
-incorporate these decisions into the community proposal and normative
-encoding, validate the selected textual forms with the pinned SysML v2
-implementation, and freeze the version 0.1 mapping tables before the vertical
-slice.
+The matrix contains no `Open` rows. The decisions are incorporated into the
+community proposal and normative encoding, the selected textual forms pass
+the pinned SysML v2 implementation, and the version 0.1 mapping tables are
+frozen. See `docs/milestone-2-evidence.md` for the clean Linux and offline
+container evidence.

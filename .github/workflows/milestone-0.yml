@@ -1,4 +1,4 @@
-name: Milestones 0 and 1
+name: Milestones 0, 1, and 2
 
 on:
   push:
@@ -63,14 +63,14 @@ jobs:
             --no-cache \
             --platform linux/amd64 \
             --build-arg VCS_REF="$GITHUB_SHA" \
-            --tag raaml-preservation:milestone-1 \
+            --tag raaml-preservation:milestone-2 \
             .
           image_id="$(docker image inspect \
             --format '{{.Id}}' \
-            raaml-preservation:milestone-1)"
+            raaml-preservation:milestone-2)"
           echo "Container image ID: $image_id"
           {
-            echo "### Milestone 1 container"
+            echo "### Milestone 2 container"
             echo
             echo "- Git commit: \`$GITHUB_SHA\`"
             echo "- Image ID: \`$image_id\`"
@@ -88,7 +88,7 @@ jobs:
             --platform linux/amd64 \
             --volume "$PWD/sources/cache:/workspace/sources/cache:ro" \
             --volume "$PWD/container-evidence:/evidence" \
-            raaml-preservation:milestone-1 \
+            raaml-preservation:milestone-2 \
             sh -ec '
               ./raaml sources verify
               ./raaml tooling bootstrap
@@ -139,9 +139,13 @@ jobs:
             cut -d ' ' -f 1
           )"
           {
-            echo "### Milestone 1 canonical facts"
+            echo "### Milestones 1 and 2 evidence"
             echo
             echo "- Canonical SHA-256: \`$canonical_sha\`"
             echo "- Host/container byte comparison: identical"
             echo "- OCL expressions parsed and resolved: 33"
+            echo "- Transformation matrix rows: 35"
+            echo "- Open transformation rows: 0"
+            echo "- Properties classified: 267"
+            echo "- Constraint OpaqueExpressions classified: 60"
           } >> "$GITHUB_STEP_SUMMARY"

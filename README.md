@@ -32,7 +32,15 @@ Linux host and offline container produced byte-identical canonical facts at
 commit `cc7714d`. This establishes the source baseline; it still does not
 demonstrate a SysML v2 round trip.
 
-## Foundation and fact-baseline quick start
+Milestone 2 passed on 2026-07-29. The repository now has a complete,
+machine-checkable transformation matrix with 35 resolved rows and no open
+mapping decisions. It classifies all 267 UML Properties and all 60 constraint
+OpaqueExpressions, validates the selected SysML v2 textual carriers, and
+reproduces the analysis byte for byte on the Linux host and in the offline
+container at commit `5a2bef4`. This closes the transformation design analysis;
+it still does not demonstrate a SysML v2 round trip.
+
+## Foundation and transformation-analysis quick start
 
 Python 3.14.4 is the tested orchestration runtime. On macOS Apple silicon:
 
@@ -71,7 +79,8 @@ remain ignored. See the ADRs for exact versions and known limitations.
 | [`docs/milestone-0-evidence.md`](docs/milestone-0-evidence.md) | Frozen foundation evidence and claim boundary |
 | [`docs/milestone-1-evidence.md`](docs/milestone-1-evidence.md) | Frozen source-fact baseline and reproducibility evidence |
 | [`docs/milestone-1-coverage.md`](docs/milestone-1-coverage.md) | Fact-category coverage, golden examples, and negative cases |
-| [`docs/milestone-2-transformation-analysis.md`](docs/milestone-2-transformation-analysis.md) | In-progress comparison with the official SysML v1-to-v2 transformation |
+| [`docs/milestone-2-evidence.md`](docs/milestone-2-evidence.md) | Frozen transformation-analysis and reproducibility evidence |
+| [`docs/milestone-2-transformation-analysis.md`](docs/milestone-2-transformation-analysis.md) | Resolved comparison with the official SysML v1-to-v2 transformation |
 | [`analysis/corpus-transformation-surface-v0.1.json`](analysis/corpus-transformation-surface-v0.1.json) | Reproducible inventory of SysML v1 applications that select specialized transformation rules |
 | [`analysis/property-transformation-surface-v0.1.json`](analysis/property-transformation-surface-v0.1.json) | Total official-rule classification of all 267 UML Properties |
 | [`analysis/constraint-transformation-surface-v0.1.json`](analysis/constraint-transformation-surface-v0.1.json) | Total split of all 60 constraint OpaqueExpressions by official mapping fidelity |
