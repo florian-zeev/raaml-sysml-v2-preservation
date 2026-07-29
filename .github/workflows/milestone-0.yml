@@ -1,4 +1,4 @@
-name: Milestones 0 through 5
+name: Milestones 0 through 6
 
 on:
   push:
@@ -65,6 +65,9 @@ jobs:
       - name: Reconstruct and validate Milestone 5 v1 corpus
         run: ./raaml tests milestone-5
 
+      - name: Run Milestone 6 full conformance and adversarial suite
+        run: ./raaml tests milestone-6
+
       - name: Build digest-pinned container
         run: |
           docker build \
@@ -72,14 +75,14 @@ jobs:
             --no-cache \
             --platform linux/amd64 \
             --build-arg VCS_REF="$GITHUB_SHA" \
-            --tag raaml-preservation:milestone-5 \
+            --tag raaml-preservation:milestone-6 \
             .
           image_id="$(docker image inspect \
             --format '{{.Id}}' \
-            raaml-preservation:milestone-5)"
+            raaml-preservation:milestone-6)"
           echo "Container image ID: $image_id"
           {
-            echo "### Milestone 5 container"
+            echo "### Milestone 6 container"
             echo
             echo "- Git commit: \`$GITHUB_SHA\`"
             echo "- Image ID: \`$image_id\`"
@@ -97,7 +100,7 @@ jobs:
             --platform linux/amd64 \
             --volume "$PWD/sources/cache:/workspace/sources/cache:ro" \
             --volume "$PWD/container-evidence:/evidence" \
-            raaml-preservation:milestone-5 \
+            raaml-preservation:milestone-6 \
             sh -ec '
               ./raaml sources verify
               ./raaml tooling bootstrap
@@ -136,9 +139,14 @@ jobs:
               ./raaml tests milestone-5 \
                 --output /evidence/milestone-5.json \
                 --diagnostics /evidence/tests-milestone-5.json
+              ./raaml tests milestone-6 \
+                --output /evidence/milestone-6.json \
+                --comparison-output \
+                  /evidence/milestone-6-comparison.json \
+                --diagnostics /evidence/tests-milestone-6.json
             '
 
-      - name: Compare host and container canonical facts
+      - name: Compare host and container evidence
         run: |
           cmp \
             reports/facts/canonical-raaml-facts.json \
@@ -161,12 +169,30 @@ jobs:
           cmp \
             reports/conformance/milestone-5.json \
             container-evidence/milestone-5.json
+          cmp \
+            reports/conformance/milestone-6.json \
+            container-evidence/milestone-6.json
+          cmp \
+            reports/conformance/milestone-6-comparison.json \
+            container-evidence/milestone-6-comparison.json
           canonical_sha="$(
             sha256sum reports/facts/canonical-raaml-facts.json |
             cut -d ' ' -f 1
           )"
+          milestone_six_differences="$(
+            jq -r '.summary.differences' \
+              reports/conformance/milestone-6.json
+          )"
+          milestone_six_cases="$(
+            jq -r '.summary.adversarialCases' \
+              reports/conformance/milestone-6.json
+          )"
+          milestone_six_failures="$(
+            jq -r '.summary.failedAdversarialCases' \
+              reports/conformance/milestone-6.json
+          )"
           {
-            echo "### Milestones 1 through 5 evidence"
+            echo "### Milestones 1 through 6 evidence"
             echo
             echo "- Canonical SHA-256: \`$canonical_sha\`"
             echo "- Host/container byte comparison: identical"
@@ -184,4 +210,7 @@ jobs:
             echo "- Milestone 5 artifacts reconstructed: 17"
             echo "- Milestone 5 v1 validation errors: 0"
             echo "- Milestone 5 deterministic collision gate: passed"
+            echo "- Milestone 6 canonical fact differences: $milestone_six_differences"
+            echo "- Milestone 6 adversarial cases: $milestone_six_cases"
+            echo "- Milestone 6 failed adversarial cases: $milestone_six_failures"
           } >> "$GITHUB_STEP_SUMMARY"

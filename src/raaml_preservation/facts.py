@@ -467,13 +467,11 @@ def _extract_declaration(
         _extract_property(child)
         for child in element
         if _local_name(child.tag) == "ownedAttribute"
-        and child.get(XMI_TYPE) in {"uml:Property", "uml:Port"}
     ]
     owned_ends = [
         _extract_property(child)
         for child in element
         if _local_name(child.tag) == "ownedEnd"
-        and child.get(XMI_TYPE) == "uml:Property"
     ]
     return {
         "sourceHandle": _source_handle(element),

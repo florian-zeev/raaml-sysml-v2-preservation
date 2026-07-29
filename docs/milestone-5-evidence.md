@@ -65,3 +65,18 @@ claimed to be preserved.
 
 The clean run is independent of the maintainer's local environment, but it is
 not yet an independent reproduction by another person or organization.
+
+## Subsequent Milestone 6 finding
+
+Milestone 6's exact fact comparison later found that the Milestone 5
+reconstructor at evidence commit `bb4098a` omitted 94 UML Connectors. The
+artifacts still loaded in the mandatory v1 environment, so the Milestone 5
+loader and determinism claims remain valid, but loadability did not prove
+complete semantic preservation.
+
+Connector reconstruction, including ordered role and `partWithPort`
+references, was added at commit `31048c4`. GitHub Actions run
+[`30465366933`](https://github.com/florian-zeev/raaml-sysml-v2-preservation/actions/runs/30465366933)
+then passed with zero full-corpus canonical fact differences. This correction
+is recorded explicitly rather than rewriting the historical Milestone 5
+evidence.

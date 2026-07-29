@@ -12,6 +12,7 @@ import unittest
 import xml.etree.ElementTree as ET
 
 from . import __version__
+from .conformance import ConformanceError, run_adversarial_suite
 from .adapters import (
     AdapterError,
     bootstrap_tooling,
@@ -619,6 +620,150 @@ def _tests_milestone_five(args: argparse.Namespace) -> int:
     report = {
         "schemaVersion": "0.1.0",
         "command": "tests milestone-5",
+        "ok": not diagnostics,
+        "summary": {"checked": checked, "failed": len(diagnostics)},
+        "diagnostics": diagnostics,
+    }
+    _write_json_atomic(args.diagnostics, report)
+    return 0 if report["ok"] else 1
+
+
+def _tests_milestone_six(args: argparse.Namespace) -> int:
+    diagnostics: list[dict[str, str]] = []
+    checked = 0
+    try:
+        with tempfile.TemporaryDirectory(prefix="raaml-m6-") as temporary:
+            root = Path(temporary)
+            forward = forward_full_corpus(REPOSITORY_ROOT, root / "forward")
+            checked += 18
+
+            v2_report = run_adapter(
+                REPOSITORY_ROOT,
+                "v2",
+                forward["v2"],
+            )
+            checked += 1
+            if not v2_report["ok"]:
+                raise RoundTripError(
+                    "FULL_CORPUS_V2_INVALID",
+                    "generated full-corpus SysML v2 is invalid",
+                )
+
+            reconstructed = root / "reconstructed"
+            paths = reverse_full_corpus(
+                root / "forward" / "manifests",
+                forward["v2"],
+                reconstructed,
+            )
+            checked += len(paths)
+
+            v1_report = run_v1_corpus_adapter(
+                REPOSITORY_ROOT,
+                reconstructed,
+            )
+            checked += v1_report["summary"]["checked"]
+            if not v1_report["ok"]:
+                raise RoundTripError(
+                    "FULL_CORPUS_V1_INVALID",
+                    "reconstructed full corpus is invalid",
+                )
+
+            comparison = compare_full_corpus(
+                REPOSITORY_ROOT,
+                reconstructed,
+            )
+            validate_instance_against_schema(
+                comparison,
+                REPOSITORY_ROOT
+                / "schemas"
+                / "full-corpus-comparison-report.schema.json",
+            )
+            _write_json_atomic(args.comparison_output, comparison)
+            checked += 1
+            if not comparison["ok"]:
+                raise RoundTripError(
+                    "FULL_CORPUS_FACT_DIFFERENCE",
+                    f"{comparison['summary']['differences']} canonical "
+                    "fact difference(s)",
+                )
+
+            adversarial_cases = run_adversarial_suite(
+                REPOSITORY_ROOT,
+                root / "adversarial",
+                forward,
+                reconstructed,
+                comparison,
+            )
+            checked += len(adversarial_cases)
+            failed_cases = sum(
+                not item["passed"] for item in adversarial_cases
+            )
+            stable_v1_results = [
+                stable_adapter_report(result)
+                for result in v1_report["results"]
+            ]
+            stable_v2 = stable_adapter_report(v2_report)
+            published = {
+                "schemaVersion": "0.1.0",
+                "documentKind": "milestone-6-conformance-report",
+                "implementationVersion": __version__,
+                "scopeId": "milestone-6-full-corpus-conformance",
+                "ok": failed_cases == 0,
+                "sourceDigests": {
+                    artifact["filename"]: artifact["sha256"]
+                    for artifact in forward["facts"]["artifacts"]
+                },
+                "tools": {
+                    "mandatoryV1Validator": stable_v1_results[0][
+                        "adapterVersion"
+                    ],
+                    "mandatoryV2Validator": stable_v2["adapterVersion"],
+                },
+                "summary": {
+                    "artifacts": 17,
+                    "canonicalFactsSha256": comparison["summary"][
+                        "sourceFactsSha256"
+                    ],
+                    "differences": comparison["summary"]["differences"],
+                    "adversarialCases": len(adversarial_cases),
+                    "failedAdversarialCases": failed_cases,
+                    "v1ValidationErrors": sum(
+                        result["summary"]["failed"]
+                        for result in stable_v1_results
+                    ),
+                    "v2ValidationErrors": stable_v2["summary"]["failed"],
+                },
+                "sourceCounts": comparison["sourceCounts"],
+                "reconstructedCounts": comparison["reconstructedCounts"],
+                "perArtifact": comparison["perArtifact"],
+                "adversarialCases": adversarial_cases,
+            }
+            validate_instance_against_schema(
+                published,
+                REPOSITORY_ROOT
+                / "schemas"
+                / "milestone-6-conformance-report.schema.json",
+            )
+            _write_json_atomic(args.output, published)
+    except (
+        AdapterError,
+        ConformanceError,
+        FactExtractionError,
+        RoundTripError,
+        SchemaValidationError,
+        OSError,
+        json.JSONDecodeError,
+    ) as error:
+        diagnostics.append(
+            {
+                "severity": "error",
+                "code": getattr(error, "code", "MILESTONE_SIX_FAILURE"),
+                "message": str(error),
+            }
+        )
+    report = {
+        "schemaVersion": "0.1.0",
+        "command": "tests milestone-6",
         "ok": not diagnostics,
         "summary": {"checked": checked, "failed": len(diagnostics)},
         "diagnostics": diagnostics,
@@ -1797,6 +1942,38 @@ def build_parser() -> argparse.ArgumentParser:
         / "tests-milestone-5.json",
     )
     milestone_five.set_defaults(handler=_tests_milestone_five)
+    milestone_six = test_commands.add_parser(
+        "milestone-6",
+        help="run full-corpus equality, both validators, and adversarial cases",
+    )
+    milestone_six.add_argument(
+        "--output",
+        type=_path,
+        default=REPOSITORY_ROOT
+        / "reports"
+        / "conformance"
+        / "milestone-6.json",
+    )
+    milestone_six.add_argument(
+        "--diagnostics",
+        type=_path,
+        default=REPOSITORY_ROOT
+        / "reports"
+        / "diagnostics"
+        / "tests-milestone-6.json",
+    )
+    milestone_six.add_argument(
+        "--comparison-output",
+        type=_path,
+        default=REPOSITORY_ROOT
+        / "reports"
+        / "conformance"
+        / "milestone-6-comparison.json",
+        help=(
+            "write source/reconstructed facts, counts, and exact differences"
+        ),
+    )
+    milestone_six.set_defaults(handler=_tests_milestone_six)
 
     tooling = commands.add_parser("tooling", help="build pinned tool adapters")
     tooling_commands = tooling.add_subparsers(dest="tooling_command", required=True)

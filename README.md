@@ -10,9 +10,10 @@ support for arbitrary user-authored RAAML models.
 
 ## Current status
 
-**Draft Community Proposal v0.1. Deterministic full-corpus forward and reverse
-mapping now passes both mandatory validators, but exact canonical fact
-equality has not yet been demonstrated for the full 17-file corpus.**
+**Draft Community Proposal v0.1. The local Milestone 6 gate now reports exact
+canonical fact equality across the full 17-file round trip, zero errors from
+both mandatory validators, and 36 passing adversarial cases. Independent
+Linux host/container confirmation is pending.**
 
 The implementation may claim a fact-preserving round trip only after the
 validation and publication gates in the reference implementation plan pass.
@@ -62,6 +63,12 @@ test proves that an ID collision stops reconstruction before partial output
 is written. The Linux host and offline container produced byte-identical
 evidence at commit `bb4098a`.
 
+Milestone 6 implementation is complete locally. It compares every canonical
+fact category across every source and reconstructed artifact, reports zero
+differences, and passes 36 explicit positive and negative adversarial cases.
+It will be marked passed only after the Linux host and offline container
+produce byte-identical Milestone 6 reports.
+
 ## Foundation and transformation-analysis quick start
 
 Python 3.14.4 is the tested orchestration runtime. On macOS Apple silicon:
@@ -79,6 +86,7 @@ Python 3.14.4 is the tested orchestration runtime. On macOS Apple silicon:
 ./raaml tests milestone-3
 ./raaml tests milestone-4
 ./raaml tests milestone-5
+./raaml tests milestone-6
 ./raaml transformation surface
 ./raaml transformation properties
 ./raaml transformation constraints
@@ -110,6 +118,7 @@ remain ignored. See the ADRs for exact versions and known limitations.
 | [`docs/milestone-4-full-corpus.md`](docs/milestone-4-full-corpus.md) | Full-corpus generation, per-source manifests, validation evidence, and claim boundary |
 | [`docs/milestone-4-evidence.md`](docs/milestone-4-evidence.md) | Frozen clean-environment evidence and claim boundary for full-corpus v2 generation |
 | [`docs/milestone-5-reverse-mapping.md`](docs/milestone-5-reverse-mapping.md) | Full-corpus v1 reconstruction, stable-ID collision gate, loader evidence, and claim boundary |
+| [`docs/milestone-6-conformance.md`](docs/milestone-6-conformance.md) | Full-corpus fact equality, adversarial coverage, reports, and claim boundary |
 | [`analysis/corpus-transformation-surface-v0.1.json`](analysis/corpus-transformation-surface-v0.1.json) | Reproducible inventory of SysML v1 applications that select specialized transformation rules |
 | [`analysis/property-transformation-surface-v0.1.json`](analysis/property-transformation-surface-v0.1.json) | Total official-rule classification of all 267 UML Properties |
 | [`analysis/constraint-transformation-surface-v0.1.json`](analysis/constraint-transformation-surface-v0.1.json) | Total split of all 60 constraint OpaqueExpressions by official mapping fidelity |

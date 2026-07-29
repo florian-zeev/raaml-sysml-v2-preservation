@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/florian-zeev/raaml-sysml-v2-preservation/schemas/milestone-6-conformance-report.schema.json",
+  "title": "Milestone 6 full-corpus conformance report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "documentKind",
+    "implementationVersion",
+    "scopeId",
+    "ok",
+    "sourceDigests",
+    "tools",
+    "summary",
+    "sourceCounts",
+    "reconstructedCounts",
+    "perArtifact",
+    "adversarialCases"
+  ],
+  "properties": {
+    "schemaVersion": {"const": "0.1.0"},
+    "documentKind": {"const": "milestone-6-conformance-report"},
+    "implementationVersion": {"type": "string", "minLength": 1},
+    "scopeId": {"const": "milestone-6-full-corpus-conformance"},
+    "ok": {"const": true},
+    "sourceDigests": {
+      "type": "object",
+      "minProperties": 17,
+      "maxProperties": 17,
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$"
+      }
+    },
+    "tools": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mandatoryV1Validator", "mandatoryV2Validator"],
+      "properties": {
+        "mandatoryV1Validator": {"type": "string", "minLength": 1},
+        "mandatoryV2Validator": {"type": "string", "minLength": 1}
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifacts",
+        "canonicalFactsSha256",
+        "differences",
+        "adversarialCases",
+        "failedAdversarialCases",
+        "v1ValidationErrors",
+        "v2ValidationErrors"
+      ],
+      "properties": {
+        "artifacts": {"const": 17},
+        "canonicalFactsSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "differences": {"const": 0},
+        "adversarialCases": {"type": "integer", "minimum": 25},
+        "failedAdversarialCases": {"const": 0},
+        "v1ValidationErrors": {"const": 0},
+        "v2ValidationErrors": {"const": 0}
+      }
+    },
+    "sourceCounts": {"type": "object"},
+    "reconstructedCounts": {"type": "object"},
+    "perArtifact": {
+      "type": "array",
+      "minItems": 17,
+      "maxItems": 17,
+      "items": {"type": "object"}
+    },
+    "adversarialCases": {
+      "type": "array",
+      "minItems": 25,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "requirement",
+          "kind",
+          "expectedDiagnostic",
+          "observedDiagnostic",
+          "detail",
+          "passed"
+        ],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "requirement": {"type": "string", "minLength": 1},
+          "kind": {
+            "enum": ["positive-witness", "negative-fixture"]
+          },
+          "expectedDiagnostic": {
+            "type": ["string", "null"]
+          },
+          "observedDiagnostic": {
+            "type": ["string", "null"]
+          },
+          "detail": {"type": "string", "minLength": 1},
+          "passed": {"const": true}
+        }
+      }
+    }
+  }
+}

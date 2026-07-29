@@ -14,6 +14,7 @@ from raaml_preservation.facts import (
     FactExtractionError,
     canonicalize_facts,
     count_facts,
+    extract_artifact_set,
     extract_facts,
     serialize_facts,
 )
@@ -106,6 +107,37 @@ class FactExtractionTests(unittest.TestCase):
             "cannot resolve local target",
         ):
             canonicalize_facts(changed)
+
+    def test_unsupported_owned_attribute_kind_fails_at_extraction(self) -> None:
+        source = REPOSITORY_ROOT / "sources" / "cache" / "CoreRAAML.xmi"
+        changed = source.read_text(encoding="utf-8").replace(
+            'xmi:type="uml:Property"',
+            'xmi:type="uml:Operation"',
+            1,
+        )
+        descriptor = next(
+            artifact
+            for artifact in self.canonical["artifacts"]
+            if artifact["filename"] == source.name
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            (directory / source.name).write_text(changed, encoding="utf-8")
+            with self.assertRaisesRegex(
+                FactExtractionError,
+                "unsupported property type 'uml:Operation'",
+            ):
+                extract_artifact_set(
+                    REPOSITORY_ROOT,
+                    [
+                        {
+                            "id": descriptor["artifactId"],
+                            "filename": source.name,
+                            "sha256": descriptor["sha256"],
+                        }
+                    ],
+                    directory,
+                )
 
     def test_removing_top_level_category_fails_schema_validation(self) -> None:
         changed = copy.deepcopy(self.canonical)
