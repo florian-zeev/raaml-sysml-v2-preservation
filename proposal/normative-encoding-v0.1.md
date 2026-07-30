@@ -1,7 +1,7 @@
 # RAAML 1.1 on SysML v2: a preservation encoding for the normative definitions
 
 **Status:** Draft Community Proposal v0.1
-**Author:** Florian Wolf, M45 Engineering
+**Author:** Florian Wolf
 **Intended license:** Creative Commons Attribution 4.0 International (CC BY 4.0), subject to a separate review of incorporated or redistributed third-party artifacts
 **Standing:** Independent community proposal; not an OMG specification, submission, or endorsement
 
@@ -21,7 +21,13 @@ This document proposes a translation for the 17 official RAAML 1.1 definition fi
 
 The document lists the facts that must survive a trip from v1 to v2 and back. They include stereotype definitions, the kinds of UML elements they extend, inheritance, properties, OCL constraints, icons, library classes, associations, Ports, connectors, enumerations, imports, and the stereotype applications already contained in the official library files.
 
-The proposal does **not** cover RAAML models created by users, and no implementation has yet proved that the proposed translation works. Version 0.1 defines the test: read the listed facts from each official v1 file, translate the file to v2, rebuild v1 XMI, and confirm that the same facts are still present. Spacing, XML element order, and tool-generated XMI IDs are not part of that test.
+The proposal does **not** cover RAAML models created by users. Version 0.1
+defines a narrower test: read the listed facts from each official v1 file,
+translate the file to v2, rebuild v1 XMI, and confirm that the same facts are
+still present. At the signed candidate tag `v0.9.0-rc.1`, the reference
+implementation passed that test for all 17 official files with zero
+differences in the defined fact set. Spacing, XML element order, and
+tool-generated XMI IDs are not part of the test.
 
 This is an **independent community proposal** for technical review. It does not define RAAML 2.0 and should not decide questions that belong to future OMG work. Its purpose is narrower: keep the existing definitions usable while v1 and v2 tools coexist.
 
@@ -36,7 +42,7 @@ This is an **independent community proposal** for technical review. It does not 
 - Use a familiar v2 form only when doing so does not erase a listed v1 fact. Section 11 shows shortcuts that are forbidden.
 - When several v2 forms seem possible, use one fixed selection rule and record every source fact needed for reversal.
 - Generate repeatable XMI IDs with a specified SHA-256 rule. Repeatable IDs do not make the whole XML file byte-for-byte identical.
-- Do not claim success until an implementation shows that every listed fact survives all 17 official files.
+- Require an implementation to show that every listed fact survives all 17 official files. The signed candidate has passed this test; Section “Implementation evidence” states the limits of that result.
 
 **Readership map.**
 
@@ -46,6 +52,29 @@ This is an **independent community proposal** for technical review. It does not 
 - *Implementing the reverse mapper* — Section 10.
 - *Designing test coverage* — Section 10.7 (fact-diff conformance).
 - *Why the encoding takes the shape it does* — Section 11 (what preservation forbids).
+
+## Implementation evidence
+
+The reference implementation at signed tag `v0.9.0-rc.1` reports:
+
+- 17 source artifacts and 17 preservation manifests;
+- 343 generated native v2 targets;
+- zero SysML v2 validation errors with the pinned validator;
+- 17 reconstructed v1 artifacts and zero v1 validation errors;
+- zero differences in the complete canonical fact comparison;
+- 33 OCL expressions parsed and name-resolved;
+- 36 passing adversarial cases; and
+- byte-identical 49-file release directories from a clean Linux host and an
+  offline pinned container.
+
+The complete evidence identity and verification command are in
+[`docs/milestone-7-evidence.md`](../docs/milestone-7-evidence.md).
+
+This evidence supports only the preservation contract defined here. It does
+not cover arbitrary user-authored RAAML models, prove equivalent OCL
+evaluation, show acceptance by a second SysML v2 implementation, or constitute
+independent external reproduction. The encoding remains a community proposal,
+not an OMG standard.
 
 ## Reference inputs
 
@@ -106,8 +135,9 @@ The SysML v2 fragments below are **illustrative pseudocode** that defines the
 intended information shape. They are not accepted concrete syntax unless a
 block is explicitly labeled as validated syntax. The reference
 implementation's generated `.sysml` files are the parser-tested concrete
-encoding. Before release, every generated official definition must be written
-in accepted v2 syntax and parsed successfully.
+encoding. At the signed candidate tag, every generated official definition was
+written in the repository's accepted v2 syntax and passed the pinned
+validator. A second implementation has not yet performed this check.
 
 The base payload, applied to every generated `Raaml_*` metadata def:
 
@@ -400,7 +430,7 @@ Each stored constraint also lists the RAAML names found in its text. The test ca
 ]
 ```
 
-**Generation.** A real OCL 2.4 parser must produce `referencedNames`. It reads the expression as OCL syntax, finds names used as variables or types, and resolves each name using the imports visible to the owning profile. If more than one declaration could match, it records every candidate and reports the ambiguity. Version 0.1 does not claim that this parser has already been built.
+**Generation.** A real OCL 2.4 parser must produce `referencedNames`. It reads the expression as OCL syntax, finds names used as variables or types, and resolves each name using the imports visible to the owning profile. If more than one declaration could match, it records every candidate and reports the ambiguity. The reference implementation parsed and resolved all 33 OCL expressions in the official corpus at the signed candidate tag.
 
 A text search is not enough. OCL contains nested navigation, `closure(...)`, `.allInstances()`, and conditional expressions. A search can mistake a keyword for a name or miss a name because it appears inside a larger expression.
 

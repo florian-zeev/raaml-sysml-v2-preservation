@@ -1,7 +1,7 @@
 # Why RAAML 1.1 needs a preservation path into SysML v2
 
 **Status:** Companion article draft for the Draft Community Proposal v0.1
-**Author:** Florian Wolf, M45 Engineering
+**Author:** Florian Wolf
 
 RAAML gives safety and reliability concepts a precise form that software can inspect. A hazard, unsafe control action, fault-tree gate, or assurance claim is not just text on a diagram. It has a type, properties, and defined links to other parts of the system model. RAAML covers methods including STPA, fault trees, FMEA, reliability block diagrams, GSN assurance cases, ISO 26262 analysis, and security analysis.
 
@@ -40,12 +40,11 @@ Those facts include:
 - Ports, connectors, connector ends, imports, profile applications, and namespace metadata;
 - stereotype applications that occur inside the official library files.
 
-The proposal does not yet cover RAAML models created by users. The reference
-implementation has passed the round-trip test for a six-artifact vertical
-slice and generated parser-valid SysML v2 carriers for the complete official
-definition corpus. It has not yet passed the round-trip test for all 17 files.
-Version 0.1 says what must survive; the remaining implementation milestones
-must show whether it does across the full corpus.
+The proposal does not cover RAAML models created by users. At the signed
+candidate tag `v0.9.0-rc.1`, the reference implementation passed the defined
+round-trip test for all 17 official files with zero differences in the
+specified fact set. That is a result within a deliberately narrow boundary,
+not proof that arbitrary RAAML models can be converted safely.
 
 ## Why a simple one-to-one rewrite is not enough
 
@@ -88,8 +87,9 @@ Information that belongs to the whole source file—its profile name, URI, comme
 
 The generated full-corpus SysML v2 text is accepted by the mandatory pinned
 SysML v2 implementation with zero errors in all five validation categories.
-It has not been tested with a second implementation, and parser acceptance
-does not by itself prove that the v1 facts can all be reconstructed.
+The reverse mapper also reconstructed all 17 v1 files with zero canonical
+fact differences. The generated v2 text has not been tested with a second
+implementation, and no outside team has yet reproduced the result.
 
 ## Choosing one v2 form without discarding the source
 
@@ -124,7 +124,7 @@ Parsing and name resolution are required; evaluating the constraint is outside t
 
 The rebuilt XMI does not need the source file's spacing, XML element order, or MagicDraw-assigned IDs. It must contain the same facts listed by the proposal.
 
-The planned test is:
+The test is:
 
 ```text
 official RAAML XMI
@@ -140,7 +140,21 @@ standard reconstructed fact list
 no listed fact is missing, added, unresolved, or changed
 ```
 
-The reference implementation should publish the before-and-after counts for every kind of fact. Stable generated IDs make links repeatable, but stable IDs do not make the surrounding XML byte-for-byte identical.
+The signed candidate reports:
+
+| Measure | Result |
+| --- | ---: |
+| Official files mapped and reconstructed | 17 |
+| Canonical fact differences | 0 |
+| Generated native v2 targets | 343 |
+| OCL expressions parsed and resolved | 33 |
+| Adversarial tests | 36 passed, 0 failed |
+| Release files reproduced on host and offline container | 49, byte-identical |
+
+Stable generated IDs make links repeatable, but stable IDs do not make the
+surrounding XML byte-for-byte identical. The
+[signed evidence record](milestone-7-evidence.md) identifies the exact commit,
+container, canonical fact hash, CI run, and verification command.
 
 ## Where this fits in the wider digital-engineering transition
 
@@ -159,14 +173,15 @@ That can support:
 
 ## What comes next
 
-The Draft Community Proposal v0.1 should be reviewed before implementation claims are made. The next steps are:
+The implementation result makes review more useful: reviewers can now inspect
+specific files, rules, and failures rather than discuss a hypothetical
+conversion. The next steps are:
 
-1. finalize the standard fact-list format and the JSON preservation manifest;
-2. validate the proposed SysML v2 notation with available parsers;
-3. implement forward mapping, reverse mapping, and fact comparison;
-4. run all 17 official RAAML files plus small tests designed to expose edge cases;
-5. publish the implementation and results in a neutral open-source repository;
-6. invite review from RAAML, SysML v2, CASCaRA, and digital-certification practitioners.
+1. complete the third-party rights review and open the standalone repository;
+2. ask an outside team to reproduce the signed candidate;
+3. test the generated corpus with a second SysML v2 implementation;
+4. have RAAML and SysML v2 specialists challenge the fact boundary and mapping choices;
+5. revise the proposal and publish a new signed candidate with the review findings.
 
 The goal is not to declare the future shape of RAAML. It is to replace a vague promise of “conversion” with files, rules, and tests that anyone can inspect.
 
@@ -177,4 +192,5 @@ The goal is not to declare the future shape of RAAML. It is to replace a vague p
 - Object Management Group, [Kernel Modeling Language 1.0](https://www.omg.org/spec/KerML/1.0), September 2025.
 - Object Management Group, [Object Constraint Language 2.4](https://www.omg.org/spec/OCL/2.4), February 2014.
 - GfSE and project partners, [CASCaRA](https://cascara.gfse.org/).
-- EUROCAE, [Working Groups](https://www.eurocae.net/working-groups/).
+- EUROCAE, [WG-136: Digital Regulations and Certification Framework](https://www.eurocae.net/new-working-group-wg-136-digital-regulations-and-certification-framework/).
+- Reference implementation, [Milestone 7 evidence](milestone-7-evidence.md).

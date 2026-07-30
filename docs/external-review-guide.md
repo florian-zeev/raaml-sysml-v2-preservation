@@ -1,0 +1,108 @@
+# External review guide
+
+## Purpose
+
+This repository contains a Draft Community Proposal v0.1 for preserving the
+normative RAAML 1.1 definitions through a SysML v2 representation. It is not
+an OMG specification, a proposal for RAAML 2.0, or a claim that arbitrary
+user-authored RAAML models are supported.
+
+The most useful review is not “does this look plausible?” It is:
+
+> Does the stated fact boundary capture the information needed to preserve the
+> 17 official RAAML 1.1 definition files, and does the evidence support the
+> claims made within that boundary?
+
+## Suggested reading order
+
+1. [`executive-summary.md`](executive-summary.md) — the motivation and result
+   in plain language.
+2. [`community-proposal-v0.1.md`](../proposal/community-proposal-v0.1.md) —
+   the paper and its claim boundary.
+3. [`normative-encoding-v0.1.md`](../proposal/normative-encoding-v0.1.md) —
+   the detailed encoding and reverse-mapping rules.
+4. [`milestone-7-evidence.md`](milestone-7-evidence.md) — the signed
+   candidate identity, results, and limitations.
+
+## What the candidate demonstrates
+
+At signed tag `v0.9.0-rc.1`:
+
+- all 17 normative RAAML 1.1 definition artifacts were mapped to the proposed
+  v2 representation and reconstructed as v1 artifacts;
+- the before-and-after canonical fact comparison found zero differences;
+- all 343 generated native v2 targets passed the pinned v2 validator;
+- all 17 reconstructed v1 artifacts passed the pinned v1 validation;
+- all 33 OCL expressions were parsed and their referenced names resolved;
+- 36 adversarial cases passed;
+- a clean Linux host and an offline pinned container produced byte-identical
+  49-file release directories.
+
+## What the candidate does not demonstrate
+
+- support for arbitrary user-authored RAAML models;
+- behavioral equivalence of source OCL and any native v2 constraint;
+- acceptance by a second SysML v2 implementation;
+- independent reproduction by someone outside the project;
+- that the proposed encoding is the best design for a future native RAAML on
+  SysML v2;
+- permission to redistribute all third-party source material.
+
+## Questions for reviewers
+
+### RAAML specialists
+
+- Is any normative fact in the 17 official artifacts missing from the
+  preservation contract?
+- Does the contract preserve distinctions that matter to RAAML tools?
+- Does it preserve any file detail that should instead be explicitly
+  non-normative?
+
+### SysML v2 and KerML specialists
+
+- Are the chosen native v2 forms useful and understandable?
+- Where does the encoding depart unnecessarily from the official SysML v1 to
+  v2 transformation?
+- Which preservation fields should remain compatibility metadata, and which
+  should have a more direct v2 expression?
+
+### Tool implementers
+
+- Can the candidate be reproduced from the signed tag?
+- Are any rules dependent on behavior found only in the pinned validators?
+- Are diagnostics clear enough to prevent silent information loss?
+- Can another implementation produce the same canonical facts and stable IDs?
+
+### Safety, assurance, and certification practitioners
+
+- Is the evidence precise enough to support a review or migration decision?
+- Which additional provenance, baseline, signature, or approval records would
+  be needed in a controlled engineering environment?
+- Are the stated non-goals and limits easy to find and difficult to
+  misinterpret?
+
+## Verify the signed candidate
+
+From a checkout containing the tag:
+
+```text
+git -c gpg.format=ssh \
+    -c gpg.ssh.allowedSignersFile=.github/allowed_signers \
+    tag -v v0.9.0-rc.1
+```
+
+The tag must point to commit
+`3e2bb9fa6c8165bb0fab581619ebb60c8b6e2aea`. The complete reproduction
+identity and expected signature are recorded in
+[`milestone-7-evidence.md`](milestone-7-evidence.md).
+
+## Publication gates still open
+
+Before the repository and paper are presented as a public release:
+
+1. complete the third-party rights review;
+2. obtain and record one independent reproduction;
+3. test the generated corpus with a second SysML v2 implementation, or state
+   clearly that this remains open;
+4. resolve review findings against the proposal and encoding;
+5. create a new signed candidate that includes the final publication text.

@@ -10,13 +10,17 @@ support for arbitrary user-authored RAAML models.
 
 ## Current status
 
-**Draft Community Proposal v0.1. Milestone 6 now demonstrates exact canonical
-fact equality across the full 17-file round trip, zero errors from both
-mandatory validators, and 36 passing adversarial cases. The Linux host and
-offline container produced byte-identical reports.**
+**Draft Community Proposal v0.1. The signed candidate tag `v0.9.0-rc.1`
+demonstrates exact canonical fact equality across the full 17-file round trip,
+zero errors from both mandatory validators, and 36 passing adversarial cases.
+A clean Linux host and an offline pinned container produced byte-identical
+49-file release directories.**
 
-The implementation may claim a fact-preserving round trip only after the
-validation and publication gates in the reference implementation plan pass.
+This establishes the defined preservation claim for the normative 17-file
+corpus. It does not establish support for arbitrary user-authored models,
+independent external reproduction, interoperability with a second SysML v2
+implementation, or readiness for standardization. The repository remains
+private while third-party redistribution rights are reviewed.
 
 Milestone 0 passed on 2026-07-27. The repository
 verifies the 17 official RAAML definition files and the complete standards
@@ -118,6 +122,7 @@ remain ignored. See the ADRs for exact versions and known limitations.
 | [`proposal/community-proposal-v0.1.md`](proposal/community-proposal-v0.1.md) | Short formal proposal and claim boundary |
 | [`proposal/normative-encoding-v0.1.md`](proposal/normative-encoding-v0.1.md) | Detailed preservation contract and mapping rules |
 | [`docs/executive-summary.md`](docs/executive-summary.md) | Higher-level explanation |
+| [`docs/external-review-guide.md`](docs/external-review-guide.md) | Reviewer reading order, claim boundary, questions, and open publication gates |
 | [`docs/reference-implementation-plan.md`](docs/reference-implementation-plan.md) | Evidence plan, milestones, and release gates |
 | [`docs/milestone-0-evidence.md`](docs/milestone-0-evidence.md) | Frozen foundation evidence and claim boundary |
 | [`docs/milestone-1-evidence.md`](docs/milestone-1-evidence.md) | Frozen source-fact baseline and reproducibility evidence |

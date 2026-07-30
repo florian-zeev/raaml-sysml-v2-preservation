@@ -2,10 +2,10 @@
 
 ## Draft Community Proposal v0.1
 
-**Author:** Florian Wolf, M45 Engineering
+**Author:** Florian Wolf
 **Status:** Draft for community review; not an OMG specification or submission
 **Intended document license:** Creative Commons Attribution 4.0 International (CC BY 4.0), subject to separate review of third-party material
-**Planned reference-implementation license:** Apache License 2.0
+**Reference-implementation license:** Apache License 2.0
 
 ## Abstract
 
@@ -15,13 +15,18 @@ The difficulty is that RAAML 1.1 was built for SysML v1, while SysML v2 is built
 
 This paper proposes a conservative way to carry the 17 official RAAML 1.1 definition files—nine profiles and eight libraries—through SysML v2. Each RAAML definition receives a useful v2 form. A separate preservation record keeps the v1 facts that this form does not express clearly enough on its own. Information that belongs to the whole source file, such as imports and OCL constraints, is stored once in a JSON manifest beside the v2 model.
 
-Version 0.1 defines what must be preserved and how to test it. The open
-reference implementation has demonstrated the complete round trip on a
-six-artifact vertical slice and has generated parser-valid SysML v2 carriers
-for all 17 official definition files. It does not yet claim a fact-preserving
-round trip for the full corpus. It does not cover arbitrary user models, and
-it does not attempt to design RAAML 2.0. The remaining test is to rebuild all
-17 v1 files and report every fact that changed or disappeared.
+Version 0.1 defines what must be preserved and how to test it. At the signed
+candidate tag `v0.9.0-rc.1`, the reference implementation completed the
+round trip for all 17 files with zero differences in the defined fact set.
+It also passed 36 tests designed to expose unsupported or ambiguous cases.
+The result has been reproduced on a clean GitHub-hosted Linux runner and in
+an offline pinned container, which produced byte-identical release
+directories.
+
+These results support the preservation claim within the stated scope. They do
+not cover arbitrary user models, prove equivalent OCL behavior, establish
+interoperability with a second SysML v2 implementation, or define RAAML 2.0.
+No outside team has yet reproduced the result.
 
 ## 1. The problem
 
@@ -69,7 +74,7 @@ In SysML v1, a profile adds specialized meanings to existing UML elements. For e
 
 The OMG published formal SysML 2.0 and KerML 1.0 in September 2025. KerML defines the basic concepts on which SysML v2 is built, much as UML provides the foundation used by SysML v1. Because the foundations differ, the two languages do not store or extend models in the same way.
 
-SysML v2 includes metadata definitions, definitions and usages, standard libraries, textual notation, and new interchange formats. Its formal publication also includes a general transformation from SysML v1 to SysML v2. Before mapping begins, the reference implementation will compare every transformation rule needed by the RAAML corpus with that official transformation and publish where it reuses, specializes, supplements, or deliberately differs from it.
+SysML v2 includes metadata definitions, definitions and usages, standard libraries, textual notation, and new interchange formats. Its formal publication also includes a general transformation from SysML v1 to SysML v2. The reference implementation compared the transformation rules needed by the RAAML corpus with that official transformation. Its published transformation matrix records where the implementation reuses, specializes, supplements, or deliberately differs from the official rules.
 
 ### 3.3 The wider tool problem
 
@@ -202,18 +207,18 @@ The official files contain several useful tests:
 
 These details do not all carry deep safety meaning. Some are simply part of the source model. But if the proposal claims to reconstruct that model, it must preserve them or explicitly exclude them.
 
-## 8. How the proposal will be tested
+## 8. How the proposal was tested
 
-The planned open-source implementation has four stages:
+The reference implementation performs four stages:
 
 1. Read each official v1 XMI file and extract its fact list.
 2. Produce SysML v2 definitions and a preservation manifest.
 3. Parse that v2 output and reconstruct v1 XMI.
 4. Extract the reconstructed fact list and compare it with the original.
 
-### 8.1 What the report must show
+### 8.1 What the report shows
 
-For every file and every fact category, the report will show:
+For every file and every fact category, the report records:
 
 - how many source facts were found;
 - how many reconstructed facts were found;
@@ -221,17 +226,57 @@ For every file and every fact category, the report will show:
 - which facts changed, disappeared, appeared unexpectedly, or could not be resolved;
 - which parser and standard versions were used.
 
-The test fails on any missing, additional, changed, or unresolved in-scope fact.
+The test fails on any missing, additional, changed, or unresolved in-scope
+fact. At `v0.9.0-rc.1`, the full-corpus comparison reported zero such
+differences.
 
-### 8.2 Additional test cases
+### 8.2 Results
 
-The official files are not enough by themselves. Small test files should also cover duplicate names under different owners, cross-file references, URI variants, inherited bases, association-end ownership, Ports, connector roles, missing manifests, and deliberately unsupported inputs.
+| Measure | Result |
+| --- | ---: |
+| Official source artifacts | 17 |
+| Preservation manifests | 17 |
+| Generated native v2 targets | 343 |
+| SysML v2 validation errors | 0 |
+| Reconstructed v1 artifacts | 17 |
+| SysML v1/UML validation errors | 0 |
+| Canonical fact differences after round trip | 0 |
+| OCL expressions parsed and resolved | 33 |
+| Adversarial cases | 36 |
+| Failed adversarial cases | 0 |
+| Release artifacts covered by checksums | 49 |
+
+The canonical source fact list has SHA-256
+`5203f5704cf086e43605a36c10f4a00182e6d2c75a2584031a3d701514a33967`.
+The signed evidence record identifies the exact commit, validator inputs,
+container image, clean CI run, and reproduction commands.
+
+### 8.3 Additional test cases
+
+The official files are not enough by themselves. The conformance suite also
+covers duplicate names under different owners, cross-file references, URI
+variants, inherited bases, association-end ownership, Ports, connector roles,
+missing manifests, deterministic-ID collisions, and deliberately unsupported
+inputs.
 
 Supported inputs must survive. Unsupported inputs must fail clearly. They must never be accepted while silently losing data.
 
-### 8.3 Testing the SysML v2 text
+### 8.4 Testing the SysML v2 text
 
 Every generated SysML v2 file must parse with a named, documented implementation. Testing with a second implementation is preferable. One parser accepting a file proves only that the file is acceptable to that parser; it does not by itself prove that another tool will read it the same way.
+
+The candidate passed the repository's pinned SysML v2 validator with zero
+errors in all five reported validation categories. A second SysML v2
+implementation has not yet tested the generated corpus.
+
+### 8.5 Reproducibility
+
+The signed candidate tag `v0.9.0-rc.1` points to commit
+`3e2bb9fa6c8165bb0fab581619ebb60c8b6e2aea`. A GitHub-hosted
+`ubuntu-24.04` runner and an offline pinned `linux/amd64` container produced
+byte-identical 49-file release directories. This demonstrates reproducibility
+in two controlled environments maintained by the project. It is not yet an
+independent external reproduction.
 
 ## 9. Limits of the evidence
 
@@ -257,11 +302,19 @@ Each release must name the exact RAAML, SysML, KerML, and OCL versions it suppor
 
 ## 10. Open project and community review
 
-The proposal should live in a neutral public repository. The repository should contain public issues, versioned documents and schemas, repeatable test reports, contribution guidance, and a clear record of design decisions.
+The proposal and implementation live in a standalone repository whose scope
+is this compatibility problem, rather than an M45 product repository. The
+repository is private while the third-party rights review is completed. The
+intended next step is to open it with public issues, versioned documents and
+schemas, repeatable test reports, contribution guidance, and a clear record
+of design decisions.
 
 Original documentation is intended to use CC BY 4.0. Implementation code is intended to use Apache-2.0. OMG specifications, official XMI files, icons, and other third-party material are not relicensed by this project; their use and redistribution need a separate review.
 
-M45 Engineering may author and maintain the first version without making the format proprietary. The useful outcome is a common compatibility layer that others can inspect, criticize, and implement independently.
+The work began at M45 Engineering, but the proposal is intended as a neutral
+community artifact rather than a proprietary M45 format. The useful outcome
+is a common compatibility layer that others can inspect, criticize, reproduce,
+and implement independently.
 
 Reviewers should challenge concrete questions:
 
@@ -275,9 +328,15 @@ Reviewers should challenge concrete questions:
 
 RAAML 1.1 and SysML v2 use different foundations. Similar names do not guarantee equivalent model elements, and details that look unimportant may still be needed to rebuild the source.
 
-This draft defines a limited, testable goal: carry the 17 official RAAML 1.1 definition files through a SysML v2 representation and recover the same listed facts. It explains what must be stored, how difficult cases are handled, and what evidence an implementation must publish.
+This draft defines a limited, testable goal: carry the 17 official RAAML 1.1
+definition files through a SysML v2 representation and recover the same listed
+facts. The reference implementation has passed that test for the complete
+official corpus at the signed candidate tag.
 
-The immediate goal is review, not standard status. The next milestone is an open implementation that either passes the test or shows exactly where the proposal is wrong.
+The immediate goal remains review, not standard status. The next work is to
+complete the rights review, open the repository, obtain an independent
+reproduction, test the generated corpus with a second SysML v2
+implementation, and revise the proposal in response to community findings.
 
 ## References
 
@@ -289,4 +348,5 @@ The immediate goal is review, not standard status. The next milestone is an open
 6. Object Management Group, [XML Metadata Interchange 2.5.1](https://www.omg.org/spec/XMI/2.5.1), June 2015.
 7. National Institute of Standards and Technology, [FIPS PUB 180-4: Secure Hash Standard](https://doi.org/10.6028/NIST.FIPS.180-4), August 2015.
 8. GfSE and project partners, [CASCaRA](https://cascara.gfse.org/).
-9. EUROCAE, [Working Groups](https://www.eurocae.net/working-groups/).
+9. EUROCAE, [WG-136: Digital Regulations and Certification Framework](https://www.eurocae.net/new-working-group-wg-136-digital-regulations-and-certification-framework/).
+10. Reference implementation, [Milestone 7 evidence](../docs/milestone-7-evidence.md).
