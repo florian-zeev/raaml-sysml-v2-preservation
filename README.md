@@ -85,17 +85,18 @@ fingerprint.
 ## Independent clean-room reproduction
 
 A reviewer working from a source-only archive does not have the repository's
-Git history or signed tags. For that case, install host Python 3.14.4 and
-Docker with `linux/amd64` support, then run:
+Git history or signed tags. For that case, install Docker with
+`linux/amd64` support, then run:
 
 ```text
 ./review-reproduce
 ```
 
-This command explicitly fetches and verifies the locked official inputs,
-builds the digest-pinned validation container, and runs the semantic
-reproduction with networking disabled. It checks the expected canonical hash,
-zero fact differences, both validators, and the adversarial suite.
+This command builds the digest-pinned validation container, uses that container
+to fetch the locked official inputs, and then runs the semantic reproduction
+in a second container with networking disabled. It checks the expected
+canonical hash, zero fact differences, both validators, and the adversarial
+suite. No host Python or Java installation is required.
 
 The command writes only the aggregate reviewer result and diagnostics to the
 ignored `review-evidence/` directory. It does not retain the generated SysML

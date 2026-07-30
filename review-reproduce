@@ -10,14 +10,6 @@ REPOSITORY_ROOT=$(
 )
 cd "$REPOSITORY_ROOT"
 
-if ! command -v python3 >/dev/null 2>&1; then
-    echo "Python 3.14.4 is required on the host." >&2
-    exit 1
-fi
-if [ "$(python3 --version 2>&1)" != "Python 3.14.4" ]; then
-    echo "Expected host Python 3.14.4; found $(python3 --version 2>&1)." >&2
-    exit 1
-fi
 if ! command -v docker >/dev/null 2>&1; then
     echo "Docker with linux/amd64 support is required." >&2
     exit 1
@@ -28,11 +20,6 @@ if [ -e "$OUTPUT_DIR" ]; then
     exit 1
 fi
 
-echo "Fetching and verifying locked inputs..."
-./raaml sources fetch
-./raaml sources verify
-chmod -R a+rX sources/cache
-
 echo "Building the pinned validation container..."
 docker build \
     --pull \
@@ -42,6 +29,16 @@ docker build \
     --build-arg SOURCE_STATE=review-snapshot \
     --tag "$IMAGE_NAME" \
     .
+
+chmod 0777 sources/cache
+
+echo "Fetching locked inputs through the pinned container..."
+docker run \
+    --rm \
+    --platform linux/amd64 \
+    --volume "$REPOSITORY_ROOT/sources/cache:/workspace/sources/cache" \
+    "$IMAGE_NAME" \
+    ./raaml sources fetch
 
 mkdir -p "$OUTPUT_DIR"
 chmod 0777 "$OUTPUT_DIR"

@@ -90,7 +90,13 @@ class ContainerDefinitionTests(unittest.TestCase):
             "sources/cache:/workspace/sources/cache:ro",
             script,
         )
-        self.assertIn("chmod -R a+rX sources/cache", script)
+        self.assertIn("./raaml sources fetch", script)
+        self.assertLess(
+            script.index("./raaml sources fetch"),
+            script.index("--network none"),
+        )
+        self.assertNotIn("command -v python3", script)
+        self.assertNotIn("python3 --version", script)
         self.assertIn("EXPECTED_CANONICAL_SHA256=", script)
         self.assertIn(
             "--comparison-output /tmp/full-corpus-comparison.json",

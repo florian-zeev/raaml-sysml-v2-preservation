@@ -101,16 +101,16 @@ identity and expected signature are recorded in
 The source-only review package intentionally contains no Git history, official
 standards files, tool archives, generated corpus, or reconstructed XMI.
 
-On a clean machine with Python 3.14.4 and Docker configured for
-`linux/amd64`, run:
+On a clean machine with Docker configured for `linux/amd64`, run:
 
 ```text
 ./review-reproduce
 ```
 
-The command fetches each locked input from its recorded authoritative URL,
-verifies its size and SHA-256, builds the pinned container, and then disables
-networking for the reproduction itself. A passing run creates:
+The command builds the pinned container, uses it to fetch each locked input
+from its recorded authoritative URL, verifies every size and SHA-256, and then
+disables networking for the reproduction itself. No host Python or Java
+installation is required. A passing run creates:
 
 - `review-evidence/review-result.json` — aggregate conformance results;
 - `review-evidence/review-diagnostics.json` — command diagnostics.
