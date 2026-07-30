@@ -100,6 +100,7 @@ def reproduce_release(
             commit=commit,
             source_state=source_state,
         )
+        normalize_release_modes(temporary)
         os.replace(temporary, output_dir)
         return report
     except BaseException:
@@ -292,6 +293,20 @@ def write_checksums(root: Path) -> list[dict[str, str]]:
         newline="\n",
     )
     return records
+
+
+def normalize_release_modes(root: Path) -> None:
+    paths = [root, *sorted(root.rglob("*"))]
+    for path in paths:
+        if path.is_symlink():
+            raise ReleaseError(
+                "RELEASE_SYMLINK",
+                f"release output must not contain symbolic links: {path}",
+            )
+        if path.is_dir():
+            path.chmod(0o755)
+        elif path.is_file():
+            path.chmod(0o644)
 
 
 def _build_release(

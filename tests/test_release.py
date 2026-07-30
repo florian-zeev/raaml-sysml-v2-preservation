@@ -8,6 +8,7 @@ import unittest
 from raaml_preservation.facts import extract_facts
 from raaml_preservation.release import (
     build_controlled_diff,
+    normalize_release_modes,
     repository_identity,
     write_checksums,
 )
@@ -47,6 +48,26 @@ class ReleaseFoundationTests(unittest.TestCase):
             )
             checksums = (root / "SHA256SUMS").read_text(encoding="utf-8")
             self.assertNotIn("SHA256SUMS", checksums)
+
+    def test_release_tree_is_readable_and_traversable_by_other_users(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            parent = Path(temporary)
+            root = parent / "release"
+            nested = root / "nested"
+            nested.mkdir(parents=True, mode=0o700)
+            artifact = nested / "artifact.json"
+            artifact.write_text("{}\n", encoding="utf-8")
+            root.chmod(0o700)
+            nested.chmod(0o700)
+            artifact.chmod(0o600)
+
+            normalize_release_modes(root)
+
+            self.assertEqual(root.stat().st_mode & 0o777, 0o755)
+            self.assertEqual(nested.stat().st_mode & 0o777, 0o755)
+            self.assertEqual(artifact.stat().st_mode & 0o777, 0o644)
 
 
 @unittest.skipUnless(
