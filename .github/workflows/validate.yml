@@ -296,21 +296,3 @@ jobs:
             echo "- Release files: $release_files"
             echo "- Host/container comparison: identical"
           } >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Retain development-build evidence
-        if: github.ref_type != 'tag'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          name: raaml-development-${{ github.sha }}
-          path: release-host
-          if-no-files-found: error
-          retention-days: 30
-
-      - name: Retain tagged-candidate evidence
-        if: github.ref_type == 'tag'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          name: raaml-${{ github.ref_name }}-${{ github.sha }}
-          path: release-host
-          if-no-files-found: error
-          retention-days: 30

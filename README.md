@@ -42,6 +42,7 @@ completed.
 | [`proposal/community-proposal-v0.1.md`](proposal/community-proposal-v0.1.md) | Draft paper and claim boundary |
 | [`proposal/normative-encoding-v0.1.md`](proposal/normative-encoding-v0.1.md) | Detailed preservation and reconstruction rules |
 | [`docs/validation-report-v0.9.0-rc.1.md`](docs/validation-report-v0.9.0-rc.1.md) | Consolidated validation, reproducibility, and signed evidence |
+| [`docs/third-party-rights-audit.md`](docs/third-party-rights-audit.md) | Publication boundary and remaining permission request |
 | [`docs/external-review-guide.md`](docs/external-review-guide.md) | Reviewer questions and remaining publication gates |
 | [`docs/fact-contract-v0.1.md`](docs/fact-contract-v0.1.md) | Canonical fact identity and comparison contract |
 | [`docs/transformation-analysis-v0.1.md`](docs/transformation-analysis-v0.1.md) | Comparison with the official SysML v1-to-v2 transformation |

@@ -70,16 +70,14 @@ class ContainerDefinitionTests(unittest.TestCase):
         self.assertNotIn("--release-tag v0.9.0-rc.1", workflow)
         self.assertIn("### Consolidated validation result", workflow)
 
-    def test_upload_action_uses_pinned_node24_release(self) -> None:
+    def test_workflow_does_not_publish_derived_corpus(self) -> None:
         workflow = (
             self.repository_root / ".github" / "workflows" / "validate.yml"
         ).read_text(encoding="utf-8")
 
-        pinned_upload = (
-            "actions/upload-artifact@"
-            "043fb46d1a93c77aae656e7c1c64a875d1fc6a0a"
-        )
-        self.assertEqual(workflow.count(pinned_upload), 2)
+        self.assertNotIn("actions/upload-artifact@", workflow)
+        self.assertNotIn("Retain development-build evidence", workflow)
+        self.assertNotIn("Retain tagged-candidate evidence", workflow)
 
 
 if __name__ == "__main__":

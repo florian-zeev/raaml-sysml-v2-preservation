@@ -24,6 +24,10 @@ Current policy decisions:
 - official OMG XMI remains ignored and uncommitted;
 - the SysML v2 Pilot Implementation and Temurin archives remain ignored and
   uncommitted;
+- canonical fact extractions, generated SysML v2 representations,
+  preservation manifests, and reconstructed XMI derived from official RAAML
+  definitions are not retained as downloadable CI or release artifacts until
+  their redistribution status is resolved;
 - `sources fetch` is an explicit user action and never runs as a side effect of
   parsing, testing, validation, or bootstrap;
 - downloaded bytes must match `standards.lock.json` before use;
@@ -32,3 +36,6 @@ Current policy decisions:
 
 A public release must enumerate every distributed third-party item and the
 basis on which it is distributed.
+
+The current audit and the permission question that remains open are recorded
+in `docs/third-party-rights-audit.md`.
