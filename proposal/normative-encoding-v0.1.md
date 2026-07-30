@@ -29,7 +29,7 @@ implementation passed that test for all 17 official files with zero
 differences in the defined fact set. Spacing, XML element order, and
 tool-generated XMI IDs are not part of the test.
 
-This is an **independent community proposal** for technical review. It does not define RAAML 2.0 and should not decide questions that belong to future OMG work. Its purpose is narrower: keep the existing definitions usable while v1 and v2 tools coexist.
+This is an **independent community proposal** for technical review. It does not define a new version of RAAML and should not decide questions that belong to future OMG work. Its purpose is narrower: keep the existing RAAML 1.1 definitions usable while v1 and v2 tools coexist.
 
 ## Executive summary
 
@@ -899,7 +899,7 @@ The following shortcuts may look cleaner in v2, but each would erase or add a li
 
 ## 12. Non-goals
 
-- Not an OMG specification or a claim to define RAAML 2.0. It is an independent community proposal intended to inform discussion.
+- Not an OMG specification and not a proposal for a new version of RAAML. It is an independent community proposal intended to inform discussion.
 - Not a redesign of RAAML for natural, native use in v2. When a cleaner v2 form would lose a listed v1 fact, version 0.1 keeps the fact.
 - Not support for arbitrary user-created RAAML or pure-v2 models. Version 0.1 covers only the 17 official definition files.
 - Not a promise tied to one v2 tool. The generated text must name the parsers used for testing.

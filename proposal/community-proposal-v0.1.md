@@ -25,8 +25,8 @@ directories.
 
 These results support the preservation claim within the stated scope. They do
 not cover arbitrary user models, prove equivalent OCL behavior, establish
-interoperability with a second SysML v2 implementation, or define RAAML 2.0.
-No outside team has yet reproduced the result.
+interoperability with a second SysML v2 implementation, or define a new
+version of RAAML. No outside team has yet reproduced the result.
 
 ## 1. The problem
 
@@ -110,7 +110,7 @@ Version 0.1 does not promise to preserve:
 - the original XMI IDs, whitespace, or ordering of unrelated XML elements;
 - diagram layout;
 - identical behavior in every OCL engine;
-- a native RAAML 2.0 design.
+- a redesigned RAAML standard for native SysML v2 use.
 
 It also makes no claim of approval or endorsement by OMG, EUROCAE, CASCaRA, or any other group.
 

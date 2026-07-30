@@ -25,9 +25,9 @@ Git is not tamper-proof. A repository owner can rewrite history and present the 
 
 The reason for this proposal is therefore not that every organization should migrate immediately. It is that when a system model moves to SysML v2, its safety meaning should be able to move with it.
 
-## The proposal is a compatibility layer, not RAAML 2.0
+## The proposal is a compatibility layer, not a redesign of RAAML
 
-A future RAAML designed directly for SysML v2 should be free to choose the v2 elements, notation, libraries, and analysis behavior that best express its meaning. Those choices belong in an open standards process.
+A future OMG effort to define RAAML directly for SysML v2 should be free to choose the v2 elements, notation, libraries, and analysis behavior that best express its meaning. Those choices belong in an open standards process.
 
 This proposal has a narrower job. It asks whether the 17 official RAAML 1.1 definition files—nine profiles and eight libraries—can pass through SysML v2 while retaining a written, testable list of v1 facts. Here, “official” means that the file is part of the machine-readable material published by the OMG.
 

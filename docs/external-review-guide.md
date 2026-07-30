@@ -4,8 +4,8 @@
 
 This repository contains a Draft Community Proposal v0.1 for preserving the
 normative RAAML 1.1 definitions through a SysML v2 representation. It is not
-an OMG specification, a proposal for RAAML 2.0, or a claim that arbitrary
-user-authored RAAML models are supported.
+an OMG specification, a proposal for a new version of RAAML, or a claim that
+arbitrary user-authored RAAML models are supported.
 
 The most useful review is not “does this look plausible?” It is:
 

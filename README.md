@@ -4,9 +4,10 @@ This repository contains a community proposal and reference implementation
 for carrying the 17 normative RAAML 1.1 definition files through SysML v2
 without losing a defined set of source facts.
 
-The project is deliberately narrower than RAAML 2.0. It does not redesign
-RAAML for native SysML v2 use and does not claim support for arbitrary
-user-authored RAAML models.
+The project does not define a new version of RAAML or redesign RAAML for
+native SysML v2 use. Its narrower purpose is to preserve the normative RAAML
+1.1 definitions, and it does not claim support for arbitrary user-authored
+RAAML models.
 
 ## Result
 
