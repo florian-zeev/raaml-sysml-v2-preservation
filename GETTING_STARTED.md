@@ -192,7 +192,7 @@ No software setup is required to review the written proposal. Read:
    for the proposal and its claim boundary;
 3. [`proposal/normative-encoding-v0.1.md`](proposal/normative-encoding-v0.1.md)
    for the detailed mapping and reconstruction rules; and
-4. [`docs/validation-report-v0.9.0-rc.1.md`](docs/validation-report-v0.9.0-rc.1.md)
+4. [`docs/validation-report-v0.9.0-rc.2.md`](docs/validation-report-v0.9.0-rc.2.md)
    for the evidence and limitations.
 
 This is an independent community draft. It is not an OMG specification or an
@@ -220,23 +220,22 @@ The complete implementation is more than a schema. It must also:
 - extract and resolve OCL names; and
 - invoke the pinned SysML v1 and SysML v2 validators.
 
-Python is the language of this reference implementation. It is not a
-requirement of the proposal.
+Python is the language of the reference command-line implementation. It is
+not a requirement of the proposal.
 
-A TypeScript application has two practical choices:
+The repository also contains a native TypeScript implementation under
+[`typescript/`](typescript/). It performs fact extraction, canonicalization,
+forward mapping, reverse reconstruction, and the equality check directly in
+Node.js. It does not call the Python implementation at runtime. See
+[`typescript/README.md`](typescript/README.md) for exact build and integration
+steps.
 
-1. **Call the current command-line tool.** Run the Python implementation
-   through the pinned Docker container and exchange files and JSON with it.
-   This reuses the implementation that produced the published evidence.
-2. **Build an independent TypeScript implementation.** Use the JSON Schemas
-   and normative rules as the contract, then run the same conformance cases
-   and require the same canonical facts. This would be especially valuable
-   evidence because it would test whether the proposal can be implemented
-   independently of the Python code.
-
-There is currently no TypeScript package or language-neutral library API in
-this repository. Do not treat validating a JSON document against the schemas
-as equivalent to performing the RAAML-to-SysML-v2 transformation.
+The Python and TypeScript implementations are maintained by the same project.
+Their agreement is useful cross-language evidence, but it is not an external
+independent reproduction. An implementation in another language can use the
+schemas and normative rules as its contract and must pass the same
+conformance requirements. Validating JSON against the schemas alone is not
+equivalent to performing the transformation.
 
 ## What a passing reproduction does not prove
 

@@ -1,6 +1,6 @@
 # Canonical RAAML fact contract v0.1
 
-**Status:** Implemented and validated for the signed candidate `v0.9.0-rc.1`
+**Status:** Implemented and validated for candidate `v0.9.0-rc.2`
 
 **Corpus:** the 17 artifacts in the `raaml-1.1-definitions` collection of
 `standards.lock.json`
@@ -214,4 +214,4 @@ This contract does not establish that:
 
 Those claims are separate from this contract. The complete
 forward-and-reverse validation result is recorded in
-[`validation-report-v0.9.0-rc.1.md`](validation-report-v0.9.0-rc.1.md).
+[`validation-report-v0.9.0-rc.2.md`](validation-report-v0.9.0-rc.2.md).

@@ -1,6 +1,6 @@
 # RAAML preservation transformation analysis v0.1
 
-**Status:** Implemented and validated for the signed candidate `v0.9.0-rc.1`
+**Status:** Implemented and validated for candidate `v0.9.0-rc.2`
 
 **Date started:** 2026-07-28
 
@@ -236,5 +236,5 @@ The matrix contains no `Open` rows. The decisions are incorporated into the
 community proposal and normative encoding, the selected textual forms pass
 the pinned SysML v2 implementation, and the version 0.1 mapping tables are
 frozen. See
-[`validation-report-v0.9.0-rc.1.md`](validation-report-v0.9.0-rc.1.md) for
+[`validation-report-v0.9.0-rc.2.md`](validation-report-v0.9.0-rc.2.md) for
 the clean Linux and offline-container evidence.

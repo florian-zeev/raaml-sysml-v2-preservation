@@ -15,10 +15,11 @@ The difficulty is that RAAML 1.1 was built for SysML v1, while SysML v2 is built
 
 This paper proposes a conservative way to carry the 17 official RAAML 1.1 definition files—nine profiles and eight libraries—through SysML v2. Each RAAML definition receives a useful v2 form. A separate preservation record keeps the v1 facts that this form does not express clearly enough on its own. Information that belongs to the whole source file, such as imports and OCL constraints, is stored once in a JSON manifest beside the v2 model.
 
-Version 0.1 defines what must be preserved and how to test it. At the signed
-candidate tag `v0.9.0-rc.1`, the reference implementation completed the
-round trip for all 17 files with zero differences in the defined fact set.
-It also passed 36 tests designed to expose unsupported or ambiguous cases.
+Version 0.1 defines what must be preserved and how to test it. At candidate
+tag `v0.9.0-rc.2`, the Python reference implementation and native TypeScript
+implementation completed the round trip for all 17 files with zero
+differences in the defined fact set. The reference conformance suite also
+passed 36 tests designed to expose unsupported or ambiguous cases.
 The result has been reproduced on a clean GitHub-hosted Linux runner and in
 an offline pinned container, which produced byte-identical release
 directories.
@@ -209,7 +210,7 @@ These details do not all carry deep safety meaning. Some are simply part of the 
 
 ## 8. How the proposal was tested
 
-The reference implementation performs four stages:
+Both implementations perform four stages:
 
 1. Read each official v1 XMI file and extract its fact list.
 2. Produce SysML v2 definitions and a preservation manifest.
@@ -227,7 +228,7 @@ For every file and every fact category, the report records:
 - which parser and standard versions were used.
 
 The test fails on any missing, additional, changed, or unresolved in-scope
-fact. At `v0.9.0-rc.1`, the full-corpus comparison reported zero such
+fact. At `v0.9.0-rc.2`, both language implementations reported zero such
 differences.
 
 ### 8.2 Results
@@ -244,6 +245,7 @@ differences.
 | OCL expressions parsed and resolved | 33 |
 | Adversarial cases | 36 |
 | Failed adversarial cases | 0 |
+| Native TypeScript canonical equality gate | Passed |
 | Release artifacts covered by checksums | 49 |
 
 The canonical source fact list has SHA-256
@@ -271,11 +273,12 @@ implementation has not yet tested the generated corpus.
 
 ### 8.5 Reproducibility
 
-The signed candidate tag `v0.9.0-rc.1` points to commit
-`3e2bb9fa6c8165bb0fab581619ebb60c8b6e2aea`. A GitHub-hosted
-`ubuntu-24.04` runner and an offline pinned `linux/amd64` container produced
-byte-identical 49-file release directories. This demonstrates reproducibility
-in two controlled environments maintained by the project. It is not yet an
+The candidate is tested on a GitHub-hosted `ubuntu-24.04` runner and in an
+offline pinned `linux/amd64` container. Those environments produce
+byte-identical 49-file release directories. The native TypeScript
+implementation separately performs the bounded round trip and reaches the
+same canonical hash and generated SysML v2 hash. Both implementations and
+both environments are maintained by this project; this is not yet an
 independent external reproduction.
 
 ## 9. Limits of the evidence
@@ -349,4 +352,4 @@ implementation, and revise the proposal in response to community findings.
 7. National Institute of Standards and Technology, [FIPS PUB 180-4: Secure Hash Standard](https://doi.org/10.6028/NIST.FIPS.180-4), August 2015.
 8. GfSE and project partners, [CASCaRA](https://cascara.gfse.org/).
 9. EUROCAE, [WG-136: Digital Regulations and Certification Framework](https://www.eurocae.net/new-working-group-wg-136-digital-regulations-and-certification-framework/).
-10. Reference implementation, [Validation report for `v0.9.0-rc.1`](../docs/validation-report-v0.9.0-rc.1.md).
+10. Reference implementations, [Validation report for `v0.9.0-rc.2`](../docs/validation-report-v0.9.0-rc.2.md).

@@ -8,7 +8,7 @@ The project has a signed reference candidate and is preparing for external
 review. Contributions should reproduce, challenge, or improve the stated
 preservation contract without broadening its claims silently. Start with the
 [`external review guide`](docs/external-review-guide.md) and
-[`validation report`](docs/validation-report-v0.9.0-rc.1.md).
+[`validation report`](docs/validation-report-v0.9.0-rc.2.md).
 
 ## Contribution rules
 

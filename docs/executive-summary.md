@@ -40,11 +40,12 @@ Those facts include:
 - Ports, connectors, connector ends, imports, profile applications, and namespace metadata;
 - stereotype applications that occur inside the official library files.
 
-The proposal does not cover RAAML models created by users. At the signed
-candidate tag `v0.9.0-rc.1`, the reference implementation passed the defined
-round-trip test for all 17 official files with zero differences in the
-specified fact set. That is a result within a deliberately narrow boundary,
-not proof that arbitrary RAAML models can be converted safely.
+The proposal does not cover RAAML models created by users. At candidate tag
+`v0.9.0-rc.2`, the Python reference implementation and native TypeScript
+implementation passed the defined round-trip test for all 17 official files
+with zero differences in the specified fact set. That is a result within a
+deliberately narrow boundary, not proof that arbitrary RAAML models can be
+converted safely.
 
 ## Why a simple one-to-one rewrite is not enough
 
@@ -149,11 +150,12 @@ The signed candidate reports:
 | Generated native v2 targets | 343 |
 | OCL expressions parsed and resolved | 33 |
 | Adversarial tests | 36 passed, 0 failed |
+| Native TypeScript canonical equality gate | Passed |
 | Release files reproduced on host and offline container | 49, byte-identical |
 
 Stable generated IDs make links repeatable, but stable IDs do not make the
 surrounding XML byte-for-byte identical. The
-[validation report](validation-report-v0.9.0-rc.1.md) identifies the exact commit,
+[validation report](validation-report-v0.9.0-rc.2.md) identifies the exact commit,
 container, canonical fact hash, CI run, and verification command.
 
 ## Where this fits in the wider digital-engineering transition
@@ -193,4 +195,4 @@ The goal is not to declare the future shape of RAAML. It is to replace a vague p
 - Object Management Group, [Object Constraint Language 2.4](https://www.omg.org/spec/OCL/2.4), February 2014.
 - GfSE and project partners, [CASCaRA](https://cascara.gfse.org/).
 - EUROCAE, [WG-136: Digital Regulations and Certification Framework](https://www.eurocae.net/new-working-group-wg-136-digital-regulations-and-certification-framework/).
-- Reference implementation, [Validation report for `v0.9.0-rc.1`](validation-report-v0.9.0-rc.1.md).
+- Reference implementations, [Validation report for `v0.9.0-rc.2`](validation-report-v0.9.0-rc.2.md).

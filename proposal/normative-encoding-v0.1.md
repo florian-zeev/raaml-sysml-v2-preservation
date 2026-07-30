@@ -24,8 +24,9 @@ The document lists the facts that must survive a trip from v1 to v2 and back. Th
 The proposal does **not** cover RAAML models created by users. Version 0.1
 defines a narrower test: read the listed facts from each official v1 file,
 translate the file to v2, rebuild v1 XMI, and confirm that the same facts are
-still present. At the signed candidate tag `v0.9.0-rc.1`, the reference
-implementation passed that test for all 17 official files with zero
+still present. At candidate tag `v0.9.0-rc.2`, the Python reference
+implementation and native TypeScript implementation passed that test for all
+17 official files with zero
 differences in the defined fact set. Spacing, XML element order, and
 tool-generated XMI IDs are not part of the test.
 
@@ -55,7 +56,7 @@ This is an **independent community proposal** for technical review. It does not 
 
 ## Implementation evidence
 
-The reference implementation at signed tag `v0.9.0-rc.1` reports:
+The implementations at candidate tag `v0.9.0-rc.2` report:
 
 - 17 source artifacts and 17 preservation manifests;
 - 343 generated native v2 targets;
@@ -63,12 +64,13 @@ The reference implementation at signed tag `v0.9.0-rc.1` reports:
 - 17 reconstructed v1 artifacts and zero v1 validation errors;
 - zero differences in the complete canonical fact comparison;
 - 33 OCL expressions parsed and name-resolved;
-- 36 passing adversarial cases; and
+- 36 passing adversarial cases in the reference conformance suite;
+- a passing native TypeScript canonical equality gate; and
 - byte-identical 49-file release directories from a clean Linux host and an
   offline pinned container.
 
 The complete evidence identity and verification command are in
-[`docs/validation-report-v0.9.0-rc.1.md`](../docs/validation-report-v0.9.0-rc.1.md).
+[`docs/validation-report-v0.9.0-rc.2.md`](../docs/validation-report-v0.9.0-rc.2.md).
 
 This evidence supports only the preservation contract defined here. It does
 not cover arbitrary user-authored RAAML models, prove equivalent OCL

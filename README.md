@@ -11,13 +11,16 @@ RAAML models.
 
 ## Result
 
-The signed candidate `v0.9.0-rc.1` completed the full 17-file round trip with:
+The `v0.9.0-rc.2` candidate completes the full 17-file round trip with:
 
 - zero differences in the defined canonical fact set;
 - zero errors from the pinned SysML v1 and SysML v2 validators;
 - all 33 source OCL expressions parsed and name-resolved;
 - 36 adversarial cases passed;
 - 343 source identities bound to generated native v2 targets; and
+- a native TypeScript implementation that separately executes the same
+  fact extraction, forward mapping, reverse mapping, and canonical equality
+  check without calling Python, Java, Docker, or a service at runtime; and
 - byte-identical 49-file release directories from a clean Linux host and an
   offline pinned container.
 
@@ -27,10 +30,11 @@ The candidate supports a bounded preservation claim:
 canonicalFacts(reverse(forward(x))) == canonicalFacts(x)
 ```
 
-It does not establish interoperability with a second SysML v2
-implementation, independent external reproduction, behavioral equivalence of
-OCL, certification suitability, or permission to redistribute all
-third-party source material.
+The TypeScript port is a second language implementation maintained by this
+project. It is not a second SysML v2 validator and is not an external
+independent reproduction. The candidate also does not establish behavioral
+equivalence of OCL, certification suitability, or permission to redistribute
+all third-party source material.
 
 The repository remains private while the third-party rights review is
 completed.
@@ -44,7 +48,7 @@ completed.
 | [`docs/executive-summary.md`](docs/executive-summary.md) | Plain-language motivation and result |
 | [`proposal/community-proposal-v0.1.md`](proposal/community-proposal-v0.1.md) | Draft paper and claim boundary |
 | [`proposal/normative-encoding-v0.1.md`](proposal/normative-encoding-v0.1.md) | Detailed preservation and reconstruction rules |
-| [`docs/validation-report-v0.9.0-rc.1.md`](docs/validation-report-v0.9.0-rc.1.md) | Consolidated validation, reproducibility, and signed evidence |
+| [`docs/validation-report-v0.9.0-rc.2.md`](docs/validation-report-v0.9.0-rc.2.md) | Consolidated validation, reproducibility, and TypeScript evidence |
 | [`docs/third-party-rights-audit.md`](docs/third-party-rights-audit.md) | Publication boundary and remaining permission request |
 | [`docs/external-review-guide.md`](docs/external-review-guide.md) | Reviewer questions and remaining publication gates |
 | [`docs/fact-contract-v0.1.md`](docs/fact-contract-v0.1.md) | Canonical fact identity and comparison contract |
@@ -64,7 +68,7 @@ the network.
 ./raaml tooling bootstrap
 ./raaml reproduce --clean \
   --container-digest sha256:<container-image-id> \
-  --release-tag v0.9.0-rc.1 \
+  --release-tag v0.9.0-rc.2 \
   --output-dir generated/release-candidate
 ```
 
@@ -78,10 +82,10 @@ Verify the candidate tag:
 ```text
 git -c gpg.format=ssh \
     -c gpg.ssh.allowedSignersFile=.github/allowed_signers \
-    tag -v v0.9.0-rc.1
+    tag -v v0.9.0-rc.2
 ```
 
-See the [validation report](docs/validation-report-v0.9.0-rc.1.md) for the
+See the [validation report](docs/validation-report-v0.9.0-rc.2.md) for the
 expected commit, container image, canonical fact hash, and signature
 fingerprint.
 

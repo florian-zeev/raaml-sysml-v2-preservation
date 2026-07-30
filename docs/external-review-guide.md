@@ -24,12 +24,12 @@ For installation and command-by-command reproduction instructions, start with
    the paper and its claim boundary.
 3. [`normative-encoding-v0.1.md`](../proposal/normative-encoding-v0.1.md) —
    the detailed encoding and reverse-mapping rules.
-4. [`validation-report-v0.9.0-rc.1.md`](validation-report-v0.9.0-rc.1.md) —
+4. [`validation-report-v0.9.0-rc.2.md`](validation-report-v0.9.0-rc.2.md) —
    the signed candidate identity, results, and limitations.
 
 ## What the candidate demonstrates
 
-At signed tag `v0.9.0-rc.1`:
+At candidate tag `v0.9.0-rc.2`:
 
 - all 17 normative RAAML 1.1 definition artifacts were mapped to the proposed
   v2 representation and reconstructed as v1 artifacts;
@@ -38,6 +38,8 @@ At signed tag `v0.9.0-rc.1`:
 - all 17 reconstructed v1 artifacts passed the pinned v1 validation;
 - all 33 OCL expressions were parsed and their referenced names resolved;
 - 36 adversarial cases passed;
+- the native TypeScript implementation reproduced the canonical hash,
+  generated SysML v2 hash, and zero-difference round trip; and
 - a clean Linux host and an offline pinned container produced byte-identical
   49-file release directories.
 
@@ -91,13 +93,12 @@ From a checkout containing the tag:
 ```text
 git -c gpg.format=ssh \
     -c gpg.ssh.allowedSignersFile=.github/allowed_signers \
-    tag -v v0.9.0-rc.1
+    tag -v v0.9.0-rc.2
 ```
 
-The tag must point to commit
-`3e2bb9fa6c8165bb0fab581619ebb60c8b6e2aea`. The complete reproduction
-identity and expected signature are recorded in
-[`validation-report-v0.9.0-rc.1.md`](validation-report-v0.9.0-rc.1.md).
+The complete reproduction identity, tag target, and expected signature are
+recorded in
+[`validation-report-v0.9.0-rc.2.md`](validation-report-v0.9.0-rc.2.md).
 
 ## Reproduce from a source-only review package
 
