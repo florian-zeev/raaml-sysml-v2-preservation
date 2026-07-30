@@ -1,22 +1,58 @@
-name: Milestones 0 through 7
+name: RAAML preservation validation
 
 on:
   push:
     branches:
       - main
+    tags:
+      - "v*"
   pull_request:
 
 permissions:
   contents: read
 
 jobs:
-  foundation-and-facts:
+  validate:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
 
     steps:
       - name: Check out repository
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          fetch-depth: 0
+
+      - name: Define build identity
+        shell: bash
+        run: |
+          commit="$(git rev-parse HEAD)"
+          short_commit="${commit:0:12}"
+
+          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
+            if [[ ! "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+              echo "Unsupported release tag: $GITHUB_REF_NAME" >&2
+              exit 1
+            fi
+            tagged_commit="$(git rev-parse "$GITHUB_REF_NAME^{commit}")"
+            if [[ "$tagged_commit" != "$commit" ]]; then
+              echo "Tag $GITHUB_REF_NAME does not point to $commit" >&2
+              exit 1
+            fi
+            release_tag="$GITHUB_REF_NAME"
+            release_dir="raaml-$GITHUB_REF_NAME"
+            build_label="Tagged candidate $GITHUB_REF_NAME"
+          else
+            release_tag="v0.0.0-dev.$short_commit"
+            release_dir="raaml-development-$short_commit"
+            build_label="Development build $short_commit"
+          fi
+
+          {
+            echo "RAAML_GIT_COMMIT=$commit"
+            echo "RAAML_RELEASE_TAG=$release_tag"
+            echo "RAAML_RELEASE_DIR_NAME=$release_dir"
+            echo "RAAML_BUILD_LABEL=$build_label"
+          } >> "$GITHUB_ENV"
 
       - name: Install pinned Python
         uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
@@ -46,57 +82,60 @@ jobs:
       - name: Run dependency-free unit tests
         run: ./raaml tests unit
 
-      - name: Run paired Milestone 0 fixtures
+      - name: Run paired validator fixtures
         run: ./raaml tests milestone-0
 
-      - name: Extract and audit Milestone 1 facts
+      - name: Extract and audit canonical facts
         run: |
           ./raaml facts extract --all --check-determinism
           ./raaml oracle audit --all
           ./raaml validate-ocl --all
           ./raaml tests milestone-1
 
-      - name: Run Milestone 3 vertical slice
+      - name: Run thin vertical slice
         run: ./raaml tests milestone-3
 
-      - name: Generate and validate Milestone 4 full corpus
+      - name: Generate and validate full v2 corpus
         run: ./raaml tests milestone-4
 
-      - name: Reconstruct and validate Milestone 5 v1 corpus
+      - name: Reconstruct and validate full v1 corpus
         run: ./raaml tests milestone-5
 
-      - name: Run Milestone 6 full conformance and adversarial suite
+      - name: Run full conformance and adversarial suite
         run: ./raaml tests milestone-6
 
-      - name: Build digest-pinned container
+      - name: Build digest-identified validation container
         run: |
           docker build \
             --pull \
             --no-cache \
             --platform linux/amd64 \
-            --build-arg VCS_REF="$GITHUB_SHA" \
+            --build-arg VCS_REF="$RAAML_GIT_COMMIT" \
             --build-arg SOURCE_STATE=clean \
-            --tag raaml-preservation:milestone-7 \
+            --tag raaml-preservation:validation \
             .
-          image_id="$(docker image inspect \
-            --format '{{.Id}}' \
-            raaml-preservation:milestone-7)"
+          image_id="$(
+            docker image inspect \
+              --format '{{.Id}}' \
+              raaml-preservation:validation
+          )"
           echo "Container image ID: $image_id"
           echo "RAAML_CONTAINER_DIGEST=$image_id" >> "$GITHUB_ENV"
           {
-            echo "### Milestone 7 container"
+            echo "### RAAML preservation container"
             echo
-            echo "- Git commit: \`$GITHUB_SHA\`"
+            echo "- Build: $RAAML_BUILD_LABEL"
+            echo "- Git commit: \`$RAAML_GIT_COMMIT\`"
             echo "- Image ID: \`$image_id\`"
             echo "- Target platform: \`linux/amd64\`"
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Reproduce release candidate on host
+      - name: Reproduce validation package on host
         run: |
           ./raaml reproduce \
             --clean \
             --container-digest "$RAAML_CONTAINER_DIGEST" \
-            --release-tag v0.9.0-rc.1 \
+            --release-tag "$RAAML_RELEASE_TAG" \
             --output-dir release-host \
             --diagnostics reports/diagnostics/reproduce-host.json
 
@@ -112,10 +151,12 @@ jobs:
             --network none \
             --platform linux/amd64 \
             --env RAAML_CONTAINER_DIGEST="$RAAML_CONTAINER_DIGEST" \
+            --env RAAML_RELEASE_TAG="$RAAML_RELEASE_TAG" \
+            --env RAAML_RELEASE_DIR_NAME="$RAAML_RELEASE_DIR_NAME" \
             --volume "$PWD/sources/cache:/workspace/sources/cache:ro" \
             --volume "$PWD/container-evidence:/evidence" \
             --volume "$PWD/release-container:/release" \
-            raaml-preservation:milestone-7 \
+            raaml-preservation:validation \
             sh -ec '
               ./raaml sources verify
               ./raaml tooling bootstrap
@@ -162,8 +203,8 @@ jobs:
               ./raaml reproduce \
                 --clean \
                 --container-digest "$RAAML_CONTAINER_DIGEST" \
-                --release-tag v0.9.0-rc.1 \
-                --output-dir /release/raaml-v0.9.0-rc.1 \
+                --release-tag "$RAAML_RELEASE_TAG" \
+                --output-dir "/release/$RAAML_RELEASE_DIR_NAME" \
                 --diagnostics /evidence/reproduce-container.json
             '
 
@@ -198,61 +239,78 @@ jobs:
             container-evidence/milestone-6-comparison.json
           diff -qr \
             release-host \
-            release-container/raaml-v0.9.0-rc.1
+            "release-container/$RAAML_RELEASE_DIR_NAME"
           (
             cd release-host
             sha256sum --check SHA256SUMS
           )
           (
-            cd release-container/raaml-v0.9.0-rc.1
+            cd "release-container/$RAAML_RELEASE_DIR_NAME"
             sha256sum --check SHA256SUMS
           )
+
           canonical_sha="$(
             sha256sum reports/facts/canonical-raaml-facts.json |
             cut -d ' ' -f 1
           )"
-          milestone_six_differences="$(
+          differences="$(
             jq -r '.summary.differences' \
               reports/conformance/milestone-6.json
           )"
-          milestone_six_cases="$(
+          cases="$(
             jq -r '.summary.adversarialCases' \
               reports/conformance/milestone-6.json
           )"
-          milestone_six_failures="$(
+          failures="$(
             jq -r '.summary.failedAdversarialCases' \
               reports/conformance/milestone-6.json
           )"
+          v1_errors="$(
+            jq -r '.summary.v1ValidationErrors' \
+              reports/conformance/milestone-6.json
+          )"
+          v2_errors="$(
+            jq -r '.summary.v2ValidationErrors' \
+              reports/conformance/milestone-6.json
+          )"
+          native_targets="$(
+            jq -r '.summary.nativeTargets' \
+              reports/conformance/milestone-4.json
+          )"
+          release_files="$(wc -l < release-host/SHA256SUMS)"
+
           {
-            echo "### Milestones 1 through 7 evidence"
+            echo "### Consolidated validation result"
             echo
+            echo "- Build: $RAAML_BUILD_LABEL"
             echo "- Canonical SHA-256: \`$canonical_sha\`"
-            echo "- Host/container byte comparison: identical"
+            echo "- Source and reconstructed artifacts: 17 / 17"
+            echo "- Canonical fact differences: $differences"
+            echo "- SysML v1 validation errors: $v1_errors"
+            echo "- SysML v2 validation errors: $v2_errors"
             echo "- OCL expressions parsed and resolved: 33"
-            echo "- Transformation matrix rows: 35"
-            echo "- Open transformation rows: 0"
-            echo "- Properties classified: 267"
-            echo "- Constraint OpaqueExpressions classified: 60"
-            echo "- Milestone 3 artifacts reconstructed: 6"
-            echo "- Milestone 3 canonical fact differences: 0"
-            echo "- Milestone 4 source artifacts: 17"
-            echo "- Milestone 4 preservation manifests: 17"
-            echo "- Milestone 4 native targets: 343"
-            echo "- Milestone 4 v2 validation errors: 0"
-            echo "- Milestone 5 artifacts reconstructed: 17"
-            echo "- Milestone 5 v1 validation errors: 0"
-            echo "- Milestone 5 deterministic collision gate: passed"
-            echo "- Milestone 6 canonical fact differences: $milestone_six_differences"
-            echo "- Milestone 6 adversarial cases: $milestone_six_cases"
-            echo "- Milestone 6 failed adversarial cases: $milestone_six_failures"
-            echo "- Milestone 7 release artifacts: $(wc -l < release-host/SHA256SUMS)"
-            echo "- Milestone 7 host/container release comparison: identical"
+            echo "- Transformation decisions: 35 resolved / 0 open"
+            echo "- Native v2 targets: $native_targets"
+            echo "- Adversarial cases: $cases"
+            echo "- Failed adversarial cases: $failures"
+            echo "- Release files: $release_files"
+            echo "- Host/container comparison: identical"
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Retain private release-candidate evidence
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      - name: Retain development-build evidence
+        if: github.ref_type != 'tag'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: raaml-v0.9.0-rc.1-${{ github.sha }}
+          name: raaml-development-${{ github.sha }}
+          path: release-host
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Retain tagged-candidate evidence
+        if: github.ref_type == 'tag'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: raaml-${{ github.ref_name }}-${{ github.sha }}
           path: release-host
           if-no-files-found: error
           retention-days: 30

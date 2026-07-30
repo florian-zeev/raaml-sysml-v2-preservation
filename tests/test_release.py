@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+from contextlib import redirect_stderr
+from io import StringIO
 import json
 from pathlib import Path
 import tempfile
 import unittest
 
 from raaml_preservation.facts import extract_facts
+from raaml_preservation.cli import build_parser
 from raaml_preservation.release import (
     build_controlled_diff,
     normalize_release_modes,
@@ -21,6 +24,18 @@ CORPUS_AVAILABLE = (
 
 
 class ReleaseFoundationTests(unittest.TestCase):
+    def test_release_tag_is_required(self) -> None:
+        parser = build_parser()
+        with redirect_stderr(StringIO()):
+            with self.assertRaises(SystemExit):
+                parser.parse_args(
+                    [
+                        "reproduce",
+                        "--container-digest",
+                        "sha256:" + ("a" * 64),
+                    ]
+                )
+
     def test_packaged_repository_identity_requires_explicit_provenance(
         self,
     ) -> None:

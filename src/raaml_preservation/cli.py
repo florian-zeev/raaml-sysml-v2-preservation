@@ -2092,7 +2092,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     reproduce = commands.add_parser(
         "reproduce",
-        help="create the deterministic Milestone 7 release directory",
+        help="create a deterministic validation or candidate package",
     )
     reproduce.add_argument(
         "--output-dir",
@@ -2102,7 +2102,11 @@ def build_parser() -> argparse.ArgumentParser:
     reproduce.add_argument("--container-digest", required=True)
     reproduce.add_argument(
         "--release-tag",
-        default="v0.9.0-rc.1",
+        required=True,
+        help=(
+            "candidate tag or explicit development identifier recorded in "
+            "the release report"
+        ),
     )
     reproduce.add_argument(
         "--clean",
