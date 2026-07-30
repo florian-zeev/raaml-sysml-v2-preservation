@@ -121,13 +121,13 @@
         "artifact": "GeneralRAAML.xmi",
         "owner": "Undeveloped",
         "format": "SVG",
-        "location": "C:\\Users\\andarm\\Documents\\Trainings and Consultations\\2018-09-24 OMG TC Ottawa\\FTA\\FTA icons\\undeveloped-event-node-96.svg",
+        "locationSha256": "9d2a43eb586579d9c3306f45aecdc817effa85bfa18f6a7aa3356d2305181bc9",
         "contentSha256": "ae993c656e4b4bf95c43753a7da1b40a0ff45c572bee96725361c5c25b2d6fa2"
       },
       "comment": {
         "artifact": "CoreRAAML.xmi",
         "owner": "Situation",
-        "body": "A situation is a SysML v1.6 Block. The situation reuses the following functionality from the Block concept: Generalizations, Parts, Value properties, and Parametrics. The situation stereotype is only needed to distinguish situations from other types of blocks. See AnySituation for the definition of a situation concept.",
+        "bodySha256": "d805f972b074815b5ce570a2494e5ebad45c5b71abc49bd965bdb6dbaa40ab8a",
         "annotatedElement": "raaml-1.1-core-profile::Core Profile::Stereotype::Situation"
       },
       "machinery": {

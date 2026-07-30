@@ -443,7 +443,9 @@ def _representative_projection(
             "artifact": "GeneralRAAML.xmi",
             "owner": "Undeveloped",
             "format": icon["format"]["value"],
-            "location": icon["location"]["value"],
+            "locationSha256": hashlib.sha256(
+                icon["location"]["value"].encode("utf-8")
+            ).hexdigest(),
             "contentSha256": hashlib.sha256(
                 icon["content"].encode("utf-8")
             ).hexdigest(),
@@ -451,7 +453,9 @@ def _representative_projection(
         "comment": {
             "artifact": "CoreRAAML.xmi",
             "owner": "Situation",
-            "body": comment["body"],
+            "bodySha256": hashlib.sha256(
+                comment["body"].encode("utf-8")
+            ).hexdigest(),
             "annotatedElement": comment["annotatedElements"][0]["target"],
         },
         "machinery": {

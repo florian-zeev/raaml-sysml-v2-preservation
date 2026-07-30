@@ -389,7 +389,7 @@ Constraint store schema (one entry per v1 `uml:Constraint`):
         "name": "Tree"
       },
       "name": "TreeIsFTATree",                      // constraint name from v1
-      "oclText": "self.base_Class.closure(...)",    // verbatim
+      "oclText": "self.base_Class.closure(...)",    // illustrative; exact source text at runtime
       "constrainedElements": [                      // item 7 of Section 1
         { "kind": "stereotype",
           "profileOrLibrary": "FTA",
@@ -415,8 +415,11 @@ The final number distinguishes repeated constraints with the same owner and name
 
 **Names inside OCL must still resolve.** The source constraints refer to RAAML declarations by name in several forms:
 
-- Library-class names: `self.base_Class->closure(general).name->includes('FTATree')` (FTA, RBD).
-- Profile stereotype names as `.allInstances()` call receivers: `GSNArgumentNode.allInstances()`, `Strategy.allInstances()`, `Goal.allInstances()`, `Undeveloped.allInstances()`, `ContextualInformation.allInstances()`, `GSNNode.allInstances()` (GSN.xmi:109-166).
+- Library-class names: FTA and RBD expressions traverse `base_Class`
+  generalizations and test for the class name `FTATree`.
+- Profile stereotype names: GSN expressions invoke `allInstances()` on
+  `GSNArgumentNode`, `Strategy`, `Goal`, `Undeveloped`,
+  `ContextualInformation`, and `GSNNode` (GSN.xmi:109-166).
 - Library association / enumeration names when navigated by name.
 
 The mapper therefore keeps the names of referenced classes, stereotypes, associations, and enumerations unchanged. Renaming one without rewriting and rechecking its OCL would leave the constraint pointing at the wrong thing or at nothing.

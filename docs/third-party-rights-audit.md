@@ -85,7 +85,7 @@ archive is used as a validator and is not redistributed by this project:
 | SysML v2 Pilot Implementation and JDK archives | No | Downloaded to ignored tool cache | Do not publish from this repository |
 | Source URLs, versions, hashes, and byte sizes | Yes | Recorded in `standards.lock.json` | Publishable as provenance metadata |
 | Aggregate counts and transformation decisions | Yes | Committed as analysis and evidence | Review notices; likely part of the independent proposal |
-| Small golden fact samples and source comments | Yes | Committed in tests/oracle data | Requires explicit excerpt review or permission |
+| Golden technical identifiers and source-text hashes | Yes | Committed in tests/oracle data without verbatim source prose | Publish with the project notices |
 | Full canonical/raw fact sets | No; generated in CI | Used ephemerally | Do not retain or publish without permission |
 | Generated full SysML v2 corpus and manifests | No; generated in CI | Used ephemerally | Do not retain or publish without permission |
 | Reconstructed 17-file XMI corpus | No; generated in CI | Used ephemerally | Do not retain or publish without permission |
