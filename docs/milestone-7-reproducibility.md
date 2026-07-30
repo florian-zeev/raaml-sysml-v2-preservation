@@ -1,9 +1,10 @@
 # Milestone 7 reproducibility and release evidence
 
-**Status:** Implementation complete; clean-environment evidence and signed
-candidate tag pending
+**Status:** Passed
 
 **Candidate tag:** `v0.9.0-rc.1`
+
+**Evidence:** [`milestone-7-evidence.md`](milestone-7-evidence.md)
 
 ## Purpose
 
@@ -90,16 +91,16 @@ CI:
 The release report explicitly says that independent reproduction by a person
 outside the project has not yet occurred.
 
-## Signed tag boundary
+## Signed tag
 
-The candidate tag must not be created before the clean-environment gate
-passes. After it passes, the project will:
+The clean-environment gate passed before the candidate tag was created. The
+project then:
 
-1. freeze the successful commit and run identity;
-2. create a cryptographically signed annotated tag `v0.9.0-rc.1`;
-3. verify the tag signature;
-4. retain the tag and `SHA256SUMS` through the chosen release channel; and
-5. record the signer and verification method without exposing private key
+1. froze the successful commit and run identity;
+2. created the cryptographically signed annotated tag `v0.9.0-rc.1`;
+3. verified the tag signature against the published Ed25519 public key;
+4. retained the tag and private CI release artifact; and
+5. recorded the signer and verification method without exposing private key
    material.
 
 Publication remains subject to the third-party rights review.

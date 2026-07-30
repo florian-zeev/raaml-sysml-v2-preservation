@@ -69,11 +69,12 @@ and passes 36 explicit positive and negative adversarial cases. The Linux
 host and offline container produced byte-identical conformance and complete
 comparison reports at commit `81791c6`.
 
-Milestone 7 is implemented locally and awaiting clean-environment evidence.
-The `reproduce` command builds a checksummed release directory containing the
-complete generated corpus, reconstructed artifacts, reports, controlled
-one-fact diff, and validated STPA walkthrough. The signed candidate tag will
-be created only after the host/offline-container byte-comparison gate passes.
+Milestone 7 passed on 2026-07-30. The `reproduce` command builds a
+checksummed release directory containing the complete generated corpus,
+reconstructed artifacts, reports, controlled one-fact diff, and validated
+STPA walkthrough. The host and offline container produced byte-identical
+49-file release directories at commit `3e2bb9f`, which is bound by the signed
+candidate tag `v0.9.0-rc.1`.
 
 ## Foundation and transformation-analysis quick start
 
@@ -130,6 +131,7 @@ remain ignored. See the ADRs for exact versions and known limitations.
 | [`docs/milestone-6-conformance.md`](docs/milestone-6-conformance.md) | Full-corpus fact equality, adversarial coverage, reports, and claim boundary |
 | [`docs/milestone-6-evidence.md`](docs/milestone-6-evidence.md) | Frozen clean-environment evidence and claim boundary for full-corpus conformance |
 | [`docs/milestone-7-reproducibility.md`](docs/milestone-7-reproducibility.md) | Deterministic release directory, controlled diff, STPA walkthrough, and signed-tag boundary |
+| [`docs/milestone-7-evidence.md`](docs/milestone-7-evidence.md) | Frozen clean-environment, checksum, container, and signed-tag evidence |
 | [`analysis/corpus-transformation-surface-v0.1.json`](analysis/corpus-transformation-surface-v0.1.json) | Reproducible inventory of SysML v1 applications that select specialized transformation rules |
 | [`analysis/property-transformation-surface-v0.1.json`](analysis/property-transformation-surface-v0.1.json) | Total official-rule classification of all 267 UML Properties |
 | [`analysis/constraint-transformation-surface-v0.1.json`](analysis/constraint-transformation-surface-v0.1.json) | Total split of all 60 constraint OpaqueExpressions by official mapping fidelity |
