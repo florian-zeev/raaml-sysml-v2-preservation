@@ -69,6 +69,12 @@ and passes 36 explicit positive and negative adversarial cases. The Linux
 host and offline container produced byte-identical conformance and complete
 comparison reports at commit `81791c6`.
 
+Milestone 7 is implemented locally and awaiting clean-environment evidence.
+The `reproduce` command builds a checksummed release directory containing the
+complete generated corpus, reconstructed artifacts, reports, controlled
+one-fact diff, and validated STPA walkthrough. The signed candidate tag will
+be created only after the host/offline-container byte-comparison gate passes.
+
 ## Foundation and transformation-analysis quick start
 
 Python 3.14.4 is the tested orchestration runtime. On macOS Apple silicon:
@@ -87,6 +93,9 @@ Python 3.14.4 is the tested orchestration runtime. On macOS Apple silicon:
 ./raaml tests milestone-4
 ./raaml tests milestone-5
 ./raaml tests milestone-6
+./raaml reproduce --clean \
+  --container-digest sha256:<container-image-id> \
+  --release-tag v0.9.0-rc.1
 ./raaml transformation surface
 ./raaml transformation properties
 ./raaml transformation constraints
@@ -120,6 +129,7 @@ remain ignored. See the ADRs for exact versions and known limitations.
 | [`docs/milestone-5-reverse-mapping.md`](docs/milestone-5-reverse-mapping.md) | Full-corpus v1 reconstruction, stable-ID collision gate, loader evidence, and claim boundary |
 | [`docs/milestone-6-conformance.md`](docs/milestone-6-conformance.md) | Full-corpus fact equality, adversarial coverage, reports, and claim boundary |
 | [`docs/milestone-6-evidence.md`](docs/milestone-6-evidence.md) | Frozen clean-environment evidence and claim boundary for full-corpus conformance |
+| [`docs/milestone-7-reproducibility.md`](docs/milestone-7-reproducibility.md) | Deterministic release directory, controlled diff, STPA walkthrough, and signed-tag boundary |
 | [`analysis/corpus-transformation-surface-v0.1.json`](analysis/corpus-transformation-surface-v0.1.json) | Reproducible inventory of SysML v1 applications that select specialized transformation rules |
 | [`analysis/property-transformation-surface-v0.1.json`](analysis/property-transformation-surface-v0.1.json) | Total official-rule classification of all 267 UML Properties |
 | [`analysis/constraint-transformation-surface-v0.1.json`](analysis/constraint-transformation-surface-v0.1.json) | Total split of all 60 constraint OpaqueExpressions by official mapping fidelity |

@@ -40,6 +40,7 @@ from .roundtrip import (
 )
 from .oracle import EXPECTED_TOTALS, audit_corpus
 from .ocl_validation import validate_ocl_corpus
+from .release import ReleaseError, reproduce_release
 from .sources import LockError, fetch_sources, load_lock, verify_sources
 from .transformation import (
     analyze_constraint_transformation_surface,
@@ -1312,6 +1313,52 @@ def _schemas_validate(args: argparse.Namespace) -> int:
     return 0 if report["ok"] else 1
 
 
+def _reproduce(args: argparse.Namespace) -> int:
+    diagnostics: list[dict[str, str]] = []
+    checked = 0
+    try:
+        report = reproduce_release(
+            REPOSITORY_ROOT,
+            args.output_dir,
+            container_digest=args.container_digest,
+            release_tag=args.release_tag,
+            require_clean=args.clean,
+            supplied_commit=args.git_commit,
+            supplied_state=args.source_state,
+        )
+        checked = report["publishedArtifacts"]
+    except (
+        AdapterError,
+        ConformanceError,
+        FactExtractionError,
+        LockError,
+        ReleaseError,
+        RoundTripError,
+        SchemaValidationError,
+        OSError,
+        ValueError,
+    ) as error:
+        diagnostics.append(
+            {
+                "severity": "error",
+                "code": getattr(error, "code", "REPRODUCE_FAILED"),
+                "message": str(error),
+            }
+        )
+    diagnostic_report = {
+        "schemaVersion": "0.1.0",
+        "command": "reproduce",
+        "ok": not diagnostics,
+        "summary": {
+            "checked": checked,
+            "failed": len(diagnostics),
+        },
+        "diagnostics": diagnostics,
+    }
+    _write_json_atomic(args.diagnostics, diagnostic_report)
+    return 0 if diagnostic_report["ok"] else 1
+
+
 def _facts_extract(args: argparse.Namespace) -> int:
     diagnostics: list[dict[str, str]] = []
     try:
@@ -2043,6 +2090,43 @@ def build_parser() -> argparse.ArgumentParser:
         handler=_validate_ocl_command,
         parser=validate_ocl,
     )
+    reproduce = commands.add_parser(
+        "reproduce",
+        help="create the deterministic Milestone 7 release directory",
+    )
+    reproduce.add_argument(
+        "--output-dir",
+        type=_path,
+        default=REPOSITORY_ROOT / "generated" / "release-candidate",
+    )
+    reproduce.add_argument("--container-digest", required=True)
+    reproduce.add_argument(
+        "--release-tag",
+        default="v0.9.0-rc.1",
+    )
+    reproduce.add_argument(
+        "--clean",
+        action="store_true",
+        help="fail unless the source tree is clean",
+    )
+    reproduce.add_argument(
+        "--git-commit",
+        help="commit identity for a packaged source tree without .git",
+    )
+    reproduce.add_argument(
+        "--source-state",
+        choices=("clean", "dirty"),
+        help="source state for a packaged source tree without .git",
+    )
+    reproduce.add_argument(
+        "--diagnostics",
+        type=_path,
+        default=REPOSITORY_ROOT
+        / "reports"
+        / "diagnostics"
+        / "reproduce.json",
+    )
+    reproduce.set_defaults(handler=_reproduce)
     return parser
 
 

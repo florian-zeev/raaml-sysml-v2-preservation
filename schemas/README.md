@@ -29,6 +29,8 @@ All schemas use JSON Schema draft 2020-12 and reject undeclared fields.
   evidence.
 - `milestone-6-conformance-report.schema.json` defines exact full-corpus
   canonical equality, mandatory validator results, and adversarial cases.
+- `release-report.schema.json` defines the reproducible release identity,
+  source and schema hashes, tool versions, and Milestone 7 result summary.
 
 The fact schemas implement
 [`docs/milestone-1-fact-contract.md`](../docs/milestone-1-fact-contract.md).

@@ -7,6 +7,8 @@
 !/generated/.gitkeep
 /reports/*
 !/reports/.gitkeep
+/release-host/
+/release-container/
 
 # Build and editor output
 .DS_Store

@@ -1,4 +1,4 @@
-name: Milestones 0 through 6
+name: Milestones 0 through 7
 
 on:
   push:
@@ -75,32 +75,47 @@ jobs:
             --no-cache \
             --platform linux/amd64 \
             --build-arg VCS_REF="$GITHUB_SHA" \
-            --tag raaml-preservation:milestone-6 \
+            --build-arg SOURCE_STATE=clean \
+            --tag raaml-preservation:milestone-7 \
             .
           image_id="$(docker image inspect \
             --format '{{.Id}}' \
-            raaml-preservation:milestone-6)"
+            raaml-preservation:milestone-7)"
           echo "Container image ID: $image_id"
+          echo "RAAML_CONTAINER_DIGEST=$image_id" >> "$GITHUB_ENV"
           {
-            echo "### Milestone 6 container"
+            echo "### Milestone 7 container"
             echo
             echo "- Git commit: \`$GITHUB_SHA\`"
             echo "- Image ID: \`$image_id\`"
             echo "- Target platform: \`linux/amd64\`"
           } >> "$GITHUB_STEP_SUMMARY"
 
+      - name: Reproduce release candidate on host
+        run: |
+          ./raaml reproduce \
+            --clean \
+            --container-digest "$RAAML_CONTAINER_DIGEST" \
+            --release-tag v0.9.0-rc.1 \
+            --output-dir release-host \
+            --diagnostics reports/diagnostics/reproduce-host.json
+
       - name: Exercise container offline
         run: |
           chmod -R a+rX sources/cache
           mkdir -p container-evidence
           chmod 777 container-evidence
+          mkdir -p release-container
+          chmod 777 release-container
           docker run \
             --rm \
             --network none \
             --platform linux/amd64 \
+            --env RAAML_CONTAINER_DIGEST="$RAAML_CONTAINER_DIGEST" \
             --volume "$PWD/sources/cache:/workspace/sources/cache:ro" \
             --volume "$PWD/container-evidence:/evidence" \
-            raaml-preservation:milestone-6 \
+            --volume "$PWD/release-container:/release" \
+            raaml-preservation:milestone-7 \
             sh -ec '
               ./raaml sources verify
               ./raaml tooling bootstrap
@@ -144,6 +159,12 @@ jobs:
                 --comparison-output \
                   /evidence/milestone-6-comparison.json \
                 --diagnostics /evidence/tests-milestone-6.json
+              ./raaml reproduce \
+                --clean \
+                --container-digest "$RAAML_CONTAINER_DIGEST" \
+                --release-tag v0.9.0-rc.1 \
+                --output-dir /release/raaml-v0.9.0-rc.1 \
+                --diagnostics /evidence/reproduce-container.json
             '
 
       - name: Compare host and container evidence
@@ -175,6 +196,17 @@ jobs:
           cmp \
             reports/conformance/milestone-6-comparison.json \
             container-evidence/milestone-6-comparison.json
+          diff -qr \
+            release-host \
+            release-container/raaml-v0.9.0-rc.1
+          (
+            cd release-host
+            sha256sum --check SHA256SUMS
+          )
+          (
+            cd release-container/raaml-v0.9.0-rc.1
+            sha256sum --check SHA256SUMS
+          )
           canonical_sha="$(
             sha256sum reports/facts/canonical-raaml-facts.json |
             cut -d ' ' -f 1
@@ -192,7 +224,7 @@ jobs:
               reports/conformance/milestone-6.json
           )"
           {
-            echo "### Milestones 1 through 6 evidence"
+            echo "### Milestones 1 through 7 evidence"
             echo
             echo "- Canonical SHA-256: \`$canonical_sha\`"
             echo "- Host/container byte comparison: identical"
@@ -213,4 +245,14 @@ jobs:
             echo "- Milestone 6 canonical fact differences: $milestone_six_differences"
             echo "- Milestone 6 adversarial cases: $milestone_six_cases"
             echo "- Milestone 6 failed adversarial cases: $milestone_six_failures"
+            echo "- Milestone 7 release artifacts: $(wc -l < release-host/SHA256SUMS)"
+            echo "- Milestone 7 host/container release comparison: identical"
           } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Retain private release-candidate evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: raaml-v0.9.0-rc.1-${{ github.sha }}
+          path: release-host
+          if-no-files-found: error
+          retention-days: 30

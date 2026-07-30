@@ -5,6 +5,8 @@ sources/cache/*
 tooling/cache
 tooling/java/build
 reports/*
+release-host
+release-container
 !reports/.gitkeep
 generated/*
 !generated/.gitkeep

@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/florian-zeev/raaml-sysml-v2-preservation/schemas/release-report.schema.json",
+  "title": "RAAML preservation release report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "documentKind",
+    "implementationVersion",
+    "releaseTag",
+    "git",
+    "container",
+    "standardsLockSha256",
+    "sourceHashes",
+    "schemas",
+    "tools",
+    "summary",
+    "independentReproduction",
+    "publishedArtifacts"
+  ],
+  "properties": {
+    "schemaVersion": {"const": "0.1.0"},
+    "documentKind": {"const": "raaml-preservation-release-report"},
+    "implementationVersion": {"type": "string", "minLength": 1},
+    "releaseTag": {
+      "type": "string",
+      "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z.-]+)?$"
+    },
+    "git": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["commit", "state"],
+      "properties": {
+        "commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "state": {"enum": ["clean", "dirty"]}
+      }
+    },
+    "container": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["digest", "targetPlatform"],
+      "properties": {
+        "digest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "targetPlatform": {"const": "linux/amd64"}
+      }
+    },
+    "standardsLockSha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "sourceHashes": {
+      "type": "object",
+      "minProperties": 42,
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$"
+      }
+    },
+    "schemas": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["filename", "draft", "id", "sha256"],
+        "properties": {
+          "filename": {"type": "string", "minLength": 1},
+          "draft": {"const": "https://json-schema.org/draft/2020-12/schema"},
+          "id": {"type": "string", "minLength": 1},
+          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        }
+      }
+    },
+    "tools": {"type": "object"},
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceArtifacts",
+        "reconstructedArtifacts",
+        "canonicalFactsSha256",
+        "canonicalDifferences",
+        "adversarialCases",
+        "failedAdversarialCases",
+        "v1ValidationErrors",
+        "v2ValidationErrors",
+        "oclExpressions",
+        "walkthroughValidationErrors",
+        "controlledInputFactsChanged"
+      ],
+      "properties": {
+        "sourceArtifacts": {"const": 17},
+        "reconstructedArtifacts": {"const": 17},
+        "canonicalFactsSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "canonicalDifferences": {"const": 0},
+        "adversarialCases": {"type": "integer", "minimum": 1},
+        "failedAdversarialCases": {"const": 0},
+        "v1ValidationErrors": {"const": 0},
+        "v2ValidationErrors": {"const": 0},
+        "oclExpressions": {"const": 33},
+        "walkthroughValidationErrors": {"const": 0},
+        "controlledInputFactsChanged": {"const": 1}
+      }
+    },
+    "independentReproduction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "statement"],
+      "properties": {
+        "status": {"const": "not-yet-performed"},
+        "statement": {"type": "string", "minLength": 1}
+      }
+    },
+    "publishedArtifacts": {"type": "integer", "minimum": 1}
+  }
+}
