@@ -4,11 +4,11 @@ This project welcomes technical review and implementation contributions.
 
 ## Current phase
 
-The project is in the design and evidence-planning phase. Before production
-mapping code begins, Milestone 0 in
-[`docs/reference-implementation-plan.md`](docs/reference-implementation-plan.md)
-must establish the pinned standards, validators, OCL parser, source policy,
-secure XML behavior, and reproducible toolchain.
+The project has a signed reference candidate and is preparing for external
+review. Contributions should reproduce, challenge, or improve the stated
+preservation contract without broadening its claims silently. Start with the
+[`external review guide`](docs/external-review-guide.md) and
+[`validation report`](docs/validation-report-v0.9.0-rc.1.md).
 
 ## Contribution rules
 

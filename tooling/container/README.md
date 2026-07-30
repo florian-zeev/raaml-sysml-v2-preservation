@@ -1,7 +1,7 @@
-# Milestone 0 container
+# Reproducible validation container
 
 The container is a clean, Linux/x86-64 execution environment for the
-Milestone 0 gates. Its official Python base image is pinned by immutable OCI
+validation gates. Its official Python base image is pinned by immutable OCI
 index digest in `Dockerfile`.
 
 The image contains only this project's original source and documentation plus

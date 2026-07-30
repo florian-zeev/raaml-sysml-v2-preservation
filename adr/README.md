@@ -1,6 +1,6 @@
 # Architecture decision records
 
-Milestone 0 decision records are stored here. A decision is accepted only when
+Technical decision records are stored here. A decision is accepted only when
 its alternatives, evidence, decision, consequences, and validation commands
 are documented.
 

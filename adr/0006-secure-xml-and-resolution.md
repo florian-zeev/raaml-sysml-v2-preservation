@@ -1,6 +1,6 @@
 # ADR 0006: secure XML and reference resolution
 
-**Status:** Accepted for Milestone 0
+**Status:** Accepted
 
 **Date:** 2026-07-27
 
@@ -48,5 +48,4 @@ Network fetching is never a validation fallback.
 
 `./raaml tests unit` covers DTD/entity, XInclude, unpinned network references,
 file references, traversal, symlinks, byte limits, and depth limits. Further
-adversarial resource-exhaustion variants remain part of the full Milestone 0
-fixture set.
+adversarial resource-exhaustion variants remain part of the full fixture set.

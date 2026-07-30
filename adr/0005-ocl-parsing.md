@@ -1,6 +1,6 @@
 # ADR 0005: OCL parsing
 
-**Status:** Accepted and implemented for Milestones 0 and 1
+**Status:** Accepted and implemented
 
 **Date:** 2026-07-27
 
@@ -11,7 +11,7 @@ validator distribution, for OCL parsing and AST traversal.
 
 The adapter parses in a typed Ecore context and obtains referenced classifiers,
 properties, operations, and iterators from the OCL AST. It does not use regular
-expressions to infer names. The Milestone 0 fixture exercises navigation,
+expressions to infer names. The parser fixture exercises navigation,
 `allInstances()`, and `closure(...)`; a malformed expression must fail.
 
 For the official corpus, the adapter constructs a parser scaffold from the
@@ -32,7 +32,7 @@ claim behavioral equivalence between OCL engines. RAAML source strings labeled
 
 ## Consequences
 
-- Milestone 1 validates all 33 source bodies labeled as OCL. The other 26
+- The full-corpus gate validates all 33 source bodies labeled as OCL. The other 26
   stored bodies are labeled JavaScript and remain preserved facts rather than
   OCL parser inputs.
 - Parser acceptance is reported separately from evaluation, which is not part

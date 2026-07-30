@@ -1,6 +1,6 @@
 # ADR 0001: orchestration and adapter toolchain
 
-**Status:** Accepted for Milestone 0
+**Status:** Accepted
 
 **Date:** 2026-07-27
 
@@ -12,8 +12,8 @@ for narrow adapters over the official SysML v2 Pilot Implementation
 distribution and its bundled Eclipse UML and OCL runtimes.
 
 The stable entry point is `./raaml`. Java implementation classes remain behind
-the adapter boundary and return JSON. Mapping code in later milestones is not
-required to use Java or the pilot implementation's internal object model.
+the adapter boundary and return JSON. Mapping code is not required to use Java
+or the pilot implementation's internal object model.
 
 No Python package installation is required. The checked-in Java source is
 compiled against a verified, ignored upstream distribution by:
@@ -23,13 +23,13 @@ compiled against a verified, ignored upstream distribution by:
 ./raaml tooling bootstrap
 ```
 
-The Milestone 0 tested platforms are macOS on Apple silicon and the
+The tested platforms are macOS on Apple silicon and the
 `ubuntu-24.04` GitHub-hosted runner on x86-64. Both use pinned Eclipse Temurin
 21.0.11+10 archives. The GitHub Actions workflow pins action revisions by
 commit, fetches only locked inputs, and runs the same repository commands as a
 local checkout.
 
-The Milestone 0 container uses the official
+The reproducible validation container uses the official
 `python:3.14.4-slim-bookworm` OCI index pinned at:
 
 ```text
@@ -44,7 +44,7 @@ content-addressed image ID against the Git commit.
 
 The image is not pushed to a registry during private incubation. A published
 container digest and registry retention policy remain release work, not
-Milestone 0 validation prerequisites.
+validation prerequisites.
 
 The clean workflow and offline container gate passed at commit
 `77cfaffda1d95fb7cc4a1a63f32d6132bd6588cc`. The built image ID was

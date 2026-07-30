@@ -56,14 +56,14 @@ synthetic-ID collision stops the run.
 ## Consequences
 
 - The original MagicDraw XMI IDs are deliberately excluded.
-- Milestone 1 schemas must carry enough owner, kind, ordering, and resolved
+- The fact schemas must carry enough owner, kind, ordering, and resolved
   target information to implement every key above.
 - The 30 unnamed ordinary Associations, 94 unnamed Connectors, 27 unnamed
   Constraints, and 37 unnamed Properties in the locked corpus cannot be keyed
   by a guessed label.
 - Every fact category needs an ambiguity and collision test before mapping.
 
-## Verification required in Milestone 1
+## Verification
 
 - two extractions of the verified corpus are byte-identical;
 - same local names under different owners remain distinct;

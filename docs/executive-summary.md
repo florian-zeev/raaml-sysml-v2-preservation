@@ -153,7 +153,7 @@ The signed candidate reports:
 
 Stable generated IDs make links repeatable, but stable IDs do not make the
 surrounding XML byte-for-byte identical. The
-[signed evidence record](milestone-7-evidence.md) identifies the exact commit,
+[validation report](validation-report-v0.9.0-rc.1.md) identifies the exact commit,
 container, canonical fact hash, CI run, and verification command.
 
 ## Where this fits in the wider digital-engineering transition
@@ -193,4 +193,4 @@ The goal is not to declare the future shape of RAAML. It is to replace a vague p
 - Object Management Group, [Object Constraint Language 2.4](https://www.omg.org/spec/OCL/2.4), February 2014.
 - GfSE and project partners, [CASCaRA](https://cascara.gfse.org/).
 - EUROCAE, [WG-136: Digital Regulations and Certification Framework](https://www.eurocae.net/new-working-group-wg-136-digital-regulations-and-certification-framework/).
-- Reference implementation, [Milestone 7 evidence](milestone-7-evidence.md).
+- Reference implementation, [Validation report for `v0.9.0-rc.1`](validation-report-v0.9.0-rc.1.md).

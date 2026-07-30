@@ -1,12 +1,12 @@
-# Milestone 2 transformation analysis
+# RAAML preservation transformation analysis v0.1
 
-**Status:** Passed
+**Status:** Implemented and validated for the signed candidate `v0.9.0-rc.1`
 
 **Date started:** 2026-07-28
 
 ## Purpose
 
-Milestone 2 compares the RAAML preservation proposal with the official SysML
+This analysis compares the RAAML preservation proposal with the official SysML
 v1-to-v2 transformation before mapper code is written. The comparison has two
 separate questions:
 
@@ -31,7 +31,7 @@ not committed or redistributed by this project.
 
 ## Corpus surface that requires a decision
 
-The frozen Milestone 1 baseline contains:
+The frozen canonical baseline contains:
 
 | Source construct | Count |
 | --- | ---: |
@@ -51,7 +51,7 @@ The frozen Milestone 1 baseline contains:
 | Normative RAAML stereotype applications | 108 |
 
 The source also contains 263 root-level SysML v1 stereotype applications.
-Milestone 1 intentionally excluded them from the RAAML application comparison,
+The fact contract intentionally excluded them from the RAAML application comparison,
 but they select specialized official transformation rules and therefore belong
 in this analysis:
 
@@ -173,15 +173,16 @@ without guessing a language and reports the missing native view.
 
 ### 5. Specialized SysML applications are part of the mapping surface
 
-The first matrix used only the Milestone 1 canonical RAAML application count
+The first matrix used only the canonical RAAML application count
 and incorrectly reported zero actual Block applications. The source corpus
 does contain transformation-relevant SysML applications. In particular,
 `RiskRealization` is an AssociationClass with Block applied, and four
 ValueTypes are also UML Enumerations.
 
 The analysis now inventories all 263 root-level SysML applications directly
-from the pinned source XMI. This does not change the Milestone 1 definition of
-a RAAML application fact; it prevents Milestone 2 from applying a generic rule
+from the pinned source XMI. This does not change the fact-contract definition
+of a RAAML application fact; it prevents the transformation analysis from
+applying a generic rule
 where an official specialized rule has been selected.
 
 ### 6. Property aggregation does not choose the v2 kind
@@ -226,7 +227,7 @@ pdftotext -layout \
 ```
 
 Relevant machine rules can be located by XMI ID in
-`sources/cache/SysMLv1Tov2.xmi`. The Milestone 2 gate automates that check and
+`sources/cache/SysMLv1Tov2.xmi`. The transformation audit automates that check and
 fails if a cited rule is absent from the pinned model.
 
 ## Resolution status
@@ -234,5 +235,6 @@ fails if a cited rule is absent from the pinned model.
 The matrix contains no `Open` rows. The decisions are incorporated into the
 community proposal and normative encoding, the selected textual forms pass
 the pinned SysML v2 implementation, and the version 0.1 mapping tables are
-frozen. See `docs/milestone-2-evidence.md` for the clean Linux and offline
-container evidence.
+frozen. See
+[`validation-report-v0.9.0-rc.1.md`](validation-report-v0.9.0-rc.1.md) for
+the clean Linux and offline-container evidence.

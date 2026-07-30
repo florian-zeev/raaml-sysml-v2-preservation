@@ -1,15 +1,15 @@
-# Milestone 1 fact contract
+# Canonical RAAML fact contract v0.1
 
-**Status:** Frozen for implementation
+**Status:** Implemented and validated for the signed candidate `v0.9.0-rc.1`
 
 **Corpus:** the 17 artifacts in the `raaml-1.1-definitions` collection of
 `standards.lock.json`
 
 ## Purpose
 
-Milestone 1 turns the preservation list in the proposal into a testable data
-contract. It does not map RAAML to SysML v2. It defines what the later mapper
-must preserve and gives two independent implementations a common comparison
+This document turns the preservation list in the proposal into a testable data
+contract. It does not itself map RAAML to SysML v2. It defines what a mapper
+must preserve and gives independent implementations a common comparison
 surface.
 
 The production extractor emits two documents:
@@ -203,7 +203,7 @@ Every matrix row requires:
 The coverage gate fails if a category is removed from the schema, extractor,
 audit, golden set, or mutation suite.
 
-## Milestone boundary
+## Claim boundary
 
 This contract does not establish that:
 
@@ -212,6 +212,6 @@ This contract does not establish that:
 - a v1 artifact can be reconstructed;
 - OCL constraints have equivalent behavior in another language or engine.
 
-Those claims require later milestones. Milestone 1 establishes only a
-deterministic, independently audited preservation fact surface for the locked
-RAAML 1.1 definition corpus.
+Those claims are separate from this contract. The complete
+forward-and-reverse validation result is recorded in
+[`validation-report-v0.9.0-rc.1.md`](validation-report-v0.9.0-rc.1.md).

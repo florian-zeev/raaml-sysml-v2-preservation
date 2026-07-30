@@ -68,7 +68,7 @@ The reference implementation at signed tag `v0.9.0-rc.1` reports:
   offline pinned container.
 
 The complete evidence identity and verification command are in
-[`docs/milestone-7-evidence.md`](../docs/milestone-7-evidence.md).
+[`docs/validation-report-v0.9.0-rc.1.md`](../docs/validation-report-v0.9.0-rc.1.md).
 
 This evidence supports only the preservation contract defined here. It does
 not cover arbitrary user-authored RAAML models, prove equivalent OCL

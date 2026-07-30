@@ -349,4 +349,4 @@ implementation, and revise the proposal in response to community findings.
 7. National Institute of Standards and Technology, [FIPS PUB 180-4: Secure Hash Standard](https://doi.org/10.6028/NIST.FIPS.180-4), August 2015.
 8. GfSE and project partners, [CASCaRA](https://cascara.gfse.org/).
 9. EUROCAE, [WG-136: Digital Regulations and Certification Framework](https://www.eurocae.net/new-working-group-wg-136-digital-regulations-and-certification-framework/).
-10. Reference implementation, [Milestone 7 evidence](../docs/milestone-7-evidence.md).
+10. Reference implementation, [Validation report for `v0.9.0-rc.1`](../docs/validation-report-v0.9.0-rc.1.md).

@@ -1,8 +1,8 @@
 # Tooling adapters
 
-Milestone 0 uses dependency-free Python 3.14.4 for orchestration and narrow
-Java adapters over the pinned official SysML v2 Pilot Implementation
-distribution.
+The reference implementation uses dependency-free Python 3.14.4 for
+orchestration and narrow Java adapters over the pinned official SysML v2 Pilot
+Implementation distribution.
 
 The ignored cache layout after bootstrap is:
 

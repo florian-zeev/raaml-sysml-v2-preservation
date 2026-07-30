@@ -3,7 +3,7 @@
 Official standards artifacts are not committed to this repository until an
 item-specific rights review permits redistribution.
 
-Milestone 0 populates `standards.lock.json` with authoritative locations,
+`standards.lock.json` records authoritative locations,
 exact versions, OMG file identifiers where applicable, byte sizes, SHA-256
 digests, local filenames, normative or informative status, and redistribution
 status.
@@ -38,7 +38,7 @@ and malformed lock entries. A machine-readable report is written under
 `reports/diagnostics/`.
 
 To verify the complete current lock, including UML/SysML reference models and
-the Milestone 0 tool distributions:
+the validator tool distributions:
 
 ```text
 ./raaml sources verify

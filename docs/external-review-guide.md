@@ -21,8 +21,8 @@ The most useful review is not “does this look plausible?” It is:
    the paper and its claim boundary.
 3. [`normative-encoding-v0.1.md`](../proposal/normative-encoding-v0.1.md) —
    the detailed encoding and reverse-mapping rules.
-4. [`milestone-7-evidence.md`](milestone-7-evidence.md) — the signed
-   candidate identity, results, and limitations.
+4. [`validation-report-v0.9.0-rc.1.md`](validation-report-v0.9.0-rc.1.md) —
+   the signed candidate identity, results, and limitations.
 
 ## What the candidate demonstrates
 
@@ -94,7 +94,7 @@ git -c gpg.format=ssh \
 The tag must point to commit
 `3e2bb9fa6c8165bb0fab581619ebb60c8b6e2aea`. The complete reproduction
 identity and expected signature are recorded in
-[`milestone-7-evidence.md`](milestone-7-evidence.md).
+[`validation-report-v0.9.0-rc.1.md`](validation-report-v0.9.0-rc.1.md).
 
 ## Publication gates still open
 
