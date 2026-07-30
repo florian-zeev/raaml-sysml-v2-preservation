@@ -4,7 +4,8 @@ This repository contains:
 
 - a proposal for preserving the 17 normative RAAML 1.1 definition files in
   SysML v2;
-- a Python reference implementation of the forward and reverse mappings; and
+- a Python reference implementation of the forward and reverse mappings;
+- a native TypeScript implementation for use in Node.js applications; and
 - a reproducible test that checks whether the defined RAAML facts survive the
   complete round trip.
 
@@ -144,6 +145,13 @@ If the command fails, do not edit the generated evidence. Record:
 - `review-evidence/review-diagnostics.json`, if it exists;
 - the output of `docker version`; and
 - the step at which the failure occurred.
+
+## Use the TypeScript library
+
+The complete Docker reproduction above is for reviewing the scientific
+evidence. An application that uses the TypeScript library does not need
+Docker, Python, or Java. See [`typescript/README.md`](typescript/README.md) for
+the exact installation, build, test, and API steps.
 
 ## Run from a source-only archive
 

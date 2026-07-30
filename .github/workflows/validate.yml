@@ -59,6 +59,13 @@ jobs:
         with:
           python-version-file: .python-version
 
+      - name: Install pinned Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: typescript/package-lock.json
+
       - name: Fetch locked standards and tools
         run: ./raaml sources fetch
 
@@ -103,6 +110,11 @@ jobs:
 
       - name: Run full conformance and adversarial suite
         run: ./raaml tests milestone-6
+
+      - name: Run native TypeScript conformance tests
+        run: |
+          npm ci --prefix typescript
+          npm test --prefix typescript
 
       - name: Build digest-identified validation container
         run: |
@@ -293,6 +305,7 @@ jobs:
             echo "- Native v2 targets: $native_targets"
             echo "- Adversarial cases: $cases"
             echo "- Failed adversarial cases: $failures"
+            echo "- Native TypeScript canonical equality gate: passed"
             echo "- Release files: $release_files"
             echo "- Host/container comparison: identical"
           } >> "$GITHUB_STEP_SUMMARY"

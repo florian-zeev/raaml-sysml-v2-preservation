@@ -80,6 +80,16 @@ class ContainerDefinitionTests(unittest.TestCase):
         self.assertNotIn("Retain development-build evidence", workflow)
         self.assertNotIn("Retain tagged-candidate evidence", workflow)
 
+    def test_workflow_runs_native_typescript_conformance_tests(self) -> None:
+        workflow = (
+            self.repository_root / ".github" / "workflows" / "validate.yml"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn("actions/setup-node@", workflow)
+        self.assertIn('node-version: "24"', workflow)
+        self.assertIn("npm ci --prefix typescript", workflow)
+        self.assertIn("npm test --prefix typescript", workflow)
+
     def test_independent_review_runs_offline_and_retains_only_summary(self) -> None:
         script = (self.repository_root / "review-reproduce").read_text(
             encoding="utf-8"

@@ -40,6 +40,7 @@ completed.
 | Document | Purpose |
 | --- | --- |
 | [`GETTING_STARTED.md`](GETTING_STARTED.md) | Exact first-time setup, reproduction, and integration instructions |
+| [`typescript/README.md`](typescript/README.md) | Use the preservation mapping directly from TypeScript or a Node.js application |
 | [`docs/executive-summary.md`](docs/executive-summary.md) | Plain-language motivation and result |
 | [`proposal/community-proposal-v0.1.md`](proposal/community-proposal-v0.1.md) | Draft paper and claim boundary |
 | [`proposal/normative-encoding-v0.1.md`](proposal/normative-encoding-v0.1.md) | Detailed preservation and reconstruction rules |
@@ -112,9 +113,10 @@ This is a standalone community project. It does not depend on M45 product
 code, databases, authentication, or deployment infrastructure. Other tools
 may consume versioned releases without becoming part of this repository.
 
-The public interface is a deterministic command-line tool operating on files
-and producing SysML v2 text, JSON preservation records, reconstructed XMI,
-structured diagnostics, and conformance reports.
+The implementation provides a deterministic command-line tool and a native
+TypeScript library. The TypeScript library runs directly in Node.js; it does
+not start Python, Java, Docker, or a separate service. Both implementations
+operate on the same locked inputs and preservation contract.
 
 ## Source material
 
