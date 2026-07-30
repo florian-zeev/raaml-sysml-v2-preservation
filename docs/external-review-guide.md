@@ -13,6 +13,9 @@ The most useful review is not “does this look plausible?” It is:
 > 17 official RAAML 1.1 definition files, and does the evidence support the
 > claims made within that boundary?
 
+For installation and command-by-command reproduction instructions, start with
+[`GETTING_STARTED.md`](../GETTING_STARTED.md).
+
 ## Suggested reading order
 
 1. [`executive-summary.md`](executive-summary.md) — the motivation and result

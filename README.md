@@ -38,6 +38,7 @@ completed.
 
 | Document | Purpose |
 | --- | --- |
+| [`GETTING_STARTED.md`](GETTING_STARTED.md) | Exact first-time setup, reproduction, and integration instructions |
 | [`docs/executive-summary.md`](docs/executive-summary.md) | Plain-language motivation and result |
 | [`proposal/community-proposal-v0.1.md`](proposal/community-proposal-v0.1.md) | Draft paper and claim boundary |
 | [`proposal/normative-encoding-v0.1.md`](proposal/normative-encoding-v0.1.md) | Detailed preservation and reconstruction rules |
