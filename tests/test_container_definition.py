@@ -42,6 +42,13 @@ class ContainerDefinitionTests(unittest.TestCase):
             }.issubset(ignored)
         )
 
+    def test_build_context_includes_validation_workflow_for_unit_tests(self) -> None:
+        rules = (
+            self.repository_root / ".dockerignore"
+        ).read_text(encoding="utf-8").splitlines()
+
+        self.assertIn("!.github/workflows/validate.yml", rules)
+
     def test_image_build_has_no_time_dependent_run_layer(self) -> None:
         dockerfile = (self.repository_root / "Dockerfile").read_text(
             encoding="utf-8"
