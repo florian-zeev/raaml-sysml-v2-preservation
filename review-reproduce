@@ -1,0 +1,93 @@
+#!/bin/sh
+set -eu
+
+EXPECTED_CANONICAL_SHA256="5203f5704cf086e43605a36c10f4a00182e6d2c75a2584031a3d701514a33967"
+IMAGE_NAME="raaml-preservation:independent-review"
+OUTPUT_DIR="review-evidence"
+
+REPOSITORY_ROOT=$(
+    CDPATH= cd -- "$(dirname -- "$0")" && pwd
+)
+cd "$REPOSITORY_ROOT"
+
+if ! command -v python3 >/dev/null 2>&1; then
+    echo "Python 3.14.4 is required on the host." >&2
+    exit 1
+fi
+if [ "$(python3 --version 2>&1)" != "Python 3.14.4" ]; then
+    echo "Expected host Python 3.14.4; found $(python3 --version 2>&1)." >&2
+    exit 1
+fi
+if ! command -v docker >/dev/null 2>&1; then
+    echo "Docker with linux/amd64 support is required." >&2
+    exit 1
+fi
+if [ -e "$OUTPUT_DIR" ]; then
+    echo "Review output already exists: $OUTPUT_DIR" >&2
+    echo "Move or remove it before starting a new reproduction." >&2
+    exit 1
+fi
+
+echo "Fetching and verifying locked inputs..."
+./raaml sources fetch
+./raaml sources verify
+chmod -R a+rX sources/cache
+
+echo "Building the pinned validation container..."
+docker build \
+    --pull \
+    --no-cache \
+    --platform linux/amd64 \
+    --build-arg VCS_REF=independent-review \
+    --build-arg SOURCE_STATE=review-snapshot \
+    --tag "$IMAGE_NAME" \
+    .
+
+mkdir -p "$OUTPUT_DIR"
+chmod 0777 "$OUTPUT_DIR"
+
+echo "Running the semantic reproduction offline..."
+docker run \
+    --rm \
+    --network none \
+    --platform linux/amd64 \
+    --env EXPECTED_CANONICAL_SHA256="$EXPECTED_CANONICAL_SHA256" \
+    --volume "$REPOSITORY_ROOT/sources/cache:/workspace/sources/cache:ro" \
+    --volume "$REPOSITORY_ROOT/$OUTPUT_DIR:/evidence" \
+    "$IMAGE_NAME" \
+    sh -ec '
+        ./raaml sources verify
+        ./raaml tooling bootstrap
+        ./raaml schemas validate
+        ./raaml transformation surface
+        ./raaml transformation properties
+        ./raaml transformation constraints
+        ./raaml transformation audit --require-resolved
+        ./raaml oracle audit --all
+        ./raaml validate-ocl --all
+        ./raaml tests milestone-6 \
+            --output /evidence/review-result.json \
+            --comparison-output /tmp/full-corpus-comparison.json \
+            --diagnostics /evidence/review-diagnostics.json
+        python3 -c "
+import json
+from pathlib import Path
+
+result = json.loads(Path(\"/evidence/review-result.json\").read_text())
+summary = result[\"summary\"]
+assert result[\"ok\"] is True
+assert summary[\"canonicalFactsSha256\"] == \"${EXPECTED_CANONICAL_SHA256}\"
+assert summary[\"differences\"] == 0
+assert summary[\"v1ValidationErrors\"] == 0
+assert summary[\"v2ValidationErrors\"] == 0
+assert summary[\"failedAdversarialCases\"] == 0
+"
+    '
+
+chmod -R a+rX "$OUTPUT_DIR"
+
+echo
+echo "Independent reproduction passed."
+echo "Canonical SHA-256: $EXPECTED_CANONICAL_SHA256"
+echo "Reviewer result: $OUTPUT_DIR/review-result.json"
+echo "Diagnostics: $OUTPUT_DIR/review-diagnostics.json"

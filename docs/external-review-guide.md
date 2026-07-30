@@ -96,6 +96,39 @@ The tag must point to commit
 identity and expected signature are recorded in
 [`validation-report-v0.9.0-rc.1.md`](validation-report-v0.9.0-rc.1.md).
 
+## Reproduce from a source-only review package
+
+The source-only review package intentionally contains no Git history, official
+standards files, tool archives, generated corpus, or reconstructed XMI.
+
+On a clean machine with Python 3.14.4 and Docker configured for
+`linux/amd64`, run:
+
+```text
+./review-reproduce
+```
+
+The command fetches each locked input from its recorded authoritative URL,
+verifies its size and SHA-256, builds the pinned container, and then disables
+networking for the reproduction itself. A passing run creates:
+
+- `review-evidence/review-result.json` — aggregate conformance results;
+- `review-evidence/review-diagnostics.json` — command diagnostics.
+
+The reviewer should report:
+
+- the SHA-256 of the source archive received;
+- host operating system and architecture;
+- Docker version;
+- whether emulation was used for `linux/amd64`;
+- the complete `review-result.json`;
+- any setup issue or manual intervention.
+
+The expected canonical fact SHA-256 is
+`5203f5704cf086e43605a36c10f4a00182e6d2c75a2584031a3d701514a33967`.
+The result must report zero canonical differences, zero v1 validation errors,
+zero v2 validation errors, and zero failed adversarial cases.
+
 ## Publication gates still open
 
 Before the repository and paper are presented as a public release:

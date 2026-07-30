@@ -9,6 +9,7 @@
 !/reports/.gitkeep
 /release-host/
 /release-container/
+/review-evidence/
 
 # Build and editor output
 .DS_Store

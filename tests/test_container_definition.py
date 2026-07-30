@@ -39,6 +39,7 @@ class ContainerDefinitionTests(unittest.TestCase):
                 "tooling/java/build",
                 "reports/*",
                 "generated/*",
+                "review-evidence",
             }.issubset(ignored)
         )
 
@@ -78,6 +79,28 @@ class ContainerDefinitionTests(unittest.TestCase):
         self.assertNotIn("actions/upload-artifact@", workflow)
         self.assertNotIn("Retain development-build evidence", workflow)
         self.assertNotIn("Retain tagged-candidate evidence", workflow)
+
+    def test_independent_review_runs_offline_and_retains_only_summary(self) -> None:
+        script = (self.repository_root / "review-reproduce").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("--network none", script)
+        self.assertIn(
+            "sources/cache:/workspace/sources/cache:ro",
+            script,
+        )
+        self.assertIn("chmod -R a+rX sources/cache", script)
+        self.assertIn("EXPECTED_CANONICAL_SHA256=", script)
+        self.assertIn(
+            "--comparison-output /tmp/full-corpus-comparison.json",
+            script,
+        )
+        self.assertNotIn(
+            "--comparison-output /evidence/",
+            script,
+        )
+        self.assertNotIn("actions/upload-artifact@", script)
 
 
 if __name__ == "__main__":

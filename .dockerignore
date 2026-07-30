@@ -10,6 +10,7 @@ tooling/java/build
 reports/*
 release-host
 release-container
+review-evidence
 !reports/.gitkeep
 generated/*
 !generated/.gitkeep

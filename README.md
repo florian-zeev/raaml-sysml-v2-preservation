@@ -82,6 +82,27 @@ See the [validation report](docs/validation-report-v0.9.0-rc.1.md) for the
 expected commit, container image, canonical fact hash, and signature
 fingerprint.
 
+## Independent clean-room reproduction
+
+A reviewer working from a source-only archive does not have the repository's
+Git history or signed tags. For that case, install host Python 3.14.4 and
+Docker with `linux/amd64` support, then run:
+
+```text
+./review-reproduce
+```
+
+This command explicitly fetches and verifies the locked official inputs,
+builds the digest-pinned validation container, and runs the semantic
+reproduction with networking disabled. It checks the expected canonical hash,
+zero fact differences, both validators, and the adversarial suite.
+
+The command writes only the aggregate reviewer result and diagnostics to the
+ignored `review-evidence/` directory. It does not retain the generated SysML
+v2 corpus, preservation manifests, reconstructed XMI, or full comparison
+record. Reviewers should return `review-result.json` together with their
+platform and Docker version.
+
 ## Repository boundary
 
 This is a standalone community project. It does not depend on M45 product
