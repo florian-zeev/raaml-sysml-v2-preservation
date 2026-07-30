@@ -1,12 +1,12 @@
 # Milestone 6 full conformance
 
-**Status:** Implementation complete; clean-environment evidence pending
+**Status:** Passed
 
-**Date:** 2026-07-29
+**Date:** 2026-07-30
 
 ## Result
 
-The local Milestone 6 gate reconstructs all 17 official RAAML 1.1 definition
+The Milestone 6 gate reconstructs all 17 official RAAML 1.1 definition
 files and compares the canonical engineering facts in every reconstructed
 file with the facts in its verified source. The comparison reports:
 
@@ -23,9 +23,9 @@ The common source and reconstructed canonical-fact SHA-256 is:
 5203f5704cf086e43605a36c10f4a00182e6d2c75a2584031a3d701514a33967
 ```
 
-These are local results. This document must not mark Milestone 6 as passed
-until the Linux host and offline, digest-pinned container produce
-byte-identical Milestone 6 reports in GitHub Actions.
+The Linux host and offline, digest-pinned container produced byte-identical
+Milestone 6 reports at commit `81791c6`. The frozen run identity is recorded
+in [`milestone-6-evidence.md`](milestone-6-evidence.md).
 
 ## Command
 
