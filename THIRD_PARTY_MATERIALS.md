@@ -43,6 +43,6 @@ other material that may appear in limited source-grounded analysis.
 A public release must enumerate every distributed third-party item and the
 basis on which it is distributed.
 
-The current audit, remaining limited-material review, and hosted-output cleanup
-are recorded in `docs/third-party-rights-audit.md` and
+The current audit, publisher decision, and hosted-output cleanup are recorded
+in `docs/third-party-rights-audit.md` and
 `docs/public-release-checklist.md`.

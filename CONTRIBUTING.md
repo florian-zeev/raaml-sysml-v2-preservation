@@ -4,8 +4,8 @@ This project welcomes technical review and implementation contributions.
 
 ## Current phase
 
-The project has a signed reference candidate and is preparing for external
-review. Contributions should reproduce, challenge, or improve the stated
+The project has a signed reference candidate and is open for community review.
+Contributions should reproduce, challenge, or improve the stated
 preservation contract without broadening its claims silently. Start with the
 [`external review guide`](docs/external-review-guide.md) and
 [`validation report`](docs/validation-report-v0.9.0-rc.3.md).
@@ -26,3 +26,13 @@ preservation contract without broadening its claims silently. Start with the
 Contributions are accepted under the license that applies to the modified
 file. By submitting a contribution, you confirm that you have the right to
 provide it under that license.
+
+## Pull requests
+
+Changes to `main` must use a pull request and pass the required validation and
+code-scanning checks. Use a focused branch, complete the pull-request
+template, and keep unrelated changes separate.
+
+External workflow runs require maintainer approval. The maintainer will review
+the proposed diff, especially changes under `.github/workflows/`, before
+allowing the workflow to execute.

@@ -2,10 +2,20 @@
 
 ## Reporting
 
-Do not publish a security vulnerability in a public issue before the
-maintainer has had a reasonable opportunity to investigate it. Until a
-dedicated reporting address is published, contact the repository owner
-privately through GitHub.
+Do not publish a suspected security vulnerability in an issue, discussion,
+pull request, or other public channel. Use GitHub's
+[private vulnerability reporting](https://github.com/florian-zeev/raaml-sysml-v2-preservation/security/advisories/new)
+to send the report directly to the maintainer.
+
+Include the affected tag or commit, impact, reproduction steps, and a minimal
+project-authored test case when possible. Do not attach official standards
+files or excluded generated corpus material.
+
+## Supported versions
+
+Security fixes target the current `main` branch and the latest signed
+candidate. Historical release candidates are retained as immutable evidence
+and are not maintained as separate supported versions.
 
 ## Security boundary
 

@@ -1,0 +1,35 @@
+name: RAAML or SysML v2 semantic question
+description: Ask about a preservation choice, fact boundary, or mapping interpretation.
+title: "[Semantics]: "
+body:
+  - type: input
+    id: construct
+    attributes:
+      label: Construct or rule
+      description: Name the RAAML definition, SysML v2 form, fact category, or proposal section involved.
+    validations:
+      required: true
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: State the precise ambiguity or disagreement.
+    validations:
+      required: true
+  - type: textarea
+    id: interpretation
+    attributes:
+      label: Suggested interpretation
+      description: If you have one, explain the result you believe the proposal should produce and why.
+  - type: textarea
+    id: references
+    attributes:
+      label: Public references
+      description: Link to public specification pages, proposal sections, or project-authored examples. Do not paste restricted source material.
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope acknowledgement
+      options:
+        - label: I understand that this project preserves the 17 normative RAAML 1.1 definition files and does not define a new version of RAAML or claim support for arbitrary user models.
+          required: true

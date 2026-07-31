@@ -1,0 +1,61 @@
+name: Conformance defect
+description: Report a reproducible preservation, validation, or diagnostic failure.
+title: "[Conformance]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use a project-authored synthetic example whenever possible. Do not attach official OMG source files or derived full-corpus outputs.
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Identify the exact tag or commit where the defect occurs.
+      placeholder: v0.9.0-rc.3 or a full commit SHA
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Source acquisition or verification
+        - Fact extraction or canonicalization
+        - Forward mapping
+        - SysML v2 validation
+        - Reverse reconstruction
+        - SysML v1 validation
+        - Canonical equality comparison
+        - OCL parsing or name resolution
+        - TypeScript implementation
+        - Publication or reproducibility tooling
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Include the exact error and exit status where possible.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Provide commands and a minimal project-authored synthetic fixture or pseudocode example.
+    validations:
+      required: true
+  - type: checkboxes
+    id: boundary
+    attributes:
+      label: Publication boundary
+      options:
+        - label: This report does not attach third-party standards files or excluded generated corpus material.
+          required: true
