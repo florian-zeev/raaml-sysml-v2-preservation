@@ -40,8 +40,8 @@ Those facts include:
 - Ports, connectors, connector ends, imports, profile applications, and namespace metadata;
 - stereotype applications that occur inside the official library files.
 
-The proposal does not cover RAAML models created by users. In the
-`v0.9.0-rc.3` candidate preparation, the Python reference implementation and
+The proposal does not cover RAAML models created by users. At signed candidate
+tag `v0.9.0-rc.3`, the Python reference implementation and
 native TypeScript implementation passed the defined round-trip test for all 17 official files
 with zero differences in the specified fact set. That is a result within a
 deliberately narrow boundary, not proof that arbitrary RAAML models can be
@@ -142,7 +142,7 @@ standard reconstructed fact list
 no listed fact is missing, added, unresolved, or changed
 ```
 
-The current candidate preparation reports:
+The signed candidate reports:
 
 | Measure | Result |
 | --- | ---: |
@@ -157,8 +157,8 @@ The current candidate preparation reports:
 Stable generated IDs make links repeatable, but stable IDs do not make the
 surrounding XML byte-for-byte identical. The
 [validation report](validation-report-v0.9.0-rc.3.md) records the current
-evidence and will identify the exact signed commit, container, CI run, and
-verification command after the candidate tag passes.
+evidence and identifies the exact signed commit, containers, CI runs, and
+verification command.
 
 ## Where this fits in the wider digital-engineering transition
 

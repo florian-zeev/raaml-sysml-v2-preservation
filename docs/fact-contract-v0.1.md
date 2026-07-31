@@ -1,6 +1,6 @@
 # Canonical RAAML fact contract v0.1
 
-**Status:** Implemented and validated; `v0.9.0-rc.3` candidate under preparation
+**Status:** Implemented and validated for signed candidate `v0.9.0-rc.3`
 
 **Corpus:** the 17 artifacts in the `raaml-1.1-definitions` collection of
 `standards.lock.json`

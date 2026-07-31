@@ -1,29 +1,25 @@
 # Validation report for `v0.9.0-rc.3`
 
-**Status:** Candidate prepared; exact-commit validation and signed-tag identity pending
+**Status:** Passed
 
 **Date:** 2026-07-31
 
-**Candidate:** `v0.9.0-rc.3`
+**Signed candidate:** `v0.9.0-rc.3`
 
-## Current state
+## Evidence identity
 
-This report is part of the source state being prepared for `v0.9.0-rc.3`.
-The candidate commit, its immediate successful pre-tag run, the signed tag,
-and the clean tag-triggered run do not exist yet. They must be recorded here
-only after the exact source state passes the complete workflow.
-
-The latest successful preparation baseline before this publication-document
-update is:
+The signed tag points to the exact source state tested by both the successful
+pre-tag run and the clean tag-triggered run:
 
 | Field | Value |
 | --- | --- |
-| Preparation commit | [`0585cdaab493c158797c6973e9a6855a6bdca237`](https://github.com/florian-zeev/raaml-sysml-v2-preservation/commit/0585cdaab493c158797c6973e9a6855a6bdca237) |
-| Preparation run | [GitHub Actions run 30631038284](https://github.com/florian-zeev/raaml-sysml-v2-preservation/actions/runs/30631038284) |
-| Preparation container image ID | `sha256:ff959fa2313aa1a3e070e1fff29fedd89fa58f21258c8cee2fc625ef9fc82e4c` |
-
-That run is evidence for the preceding source state. It is not the final
-`v0.9.0-rc.3` identity.
+| Signed tag | `v0.9.0-rc.3` |
+| Candidate commit | [`87ba4930dbd112d2b04f979d7e67f9b7e6c5254f`](https://github.com/florian-zeev/raaml-sysml-v2-preservation/commit/87ba4930dbd112d2b04f979d7e67f9b7e6c5254f) |
+| Successful immediate pre-tag run | [GitHub Actions run 30633213467](https://github.com/florian-zeev/raaml-sysml-v2-preservation/actions/runs/30633213467) |
+| Pre-tag container image ID | `sha256:f2e1989b34662662dbce2458d0b73037fd7a129a0a981a2170446c3b627f8a7b` |
+| Clean tag-triggered run | [GitHub Actions run 30634149648](https://github.com/florian-zeev/raaml-sysml-v2-preservation/actions/runs/30634149648) |
+| Tag-triggered container image ID | `sha256:a00a6b83908eec6b9a9b830d461c798c49f263bc9d4da7081e1958f1d3bc7443` |
+| Target platform | `linux/amd64` |
 
 ## Claim tested
 
@@ -55,9 +51,9 @@ Both implementations are maintained by this project, and the TypeScript
 version is a port of the Python rules. Agreement between them is useful
 cross-language evidence, but it is not an external independent reproduction.
 
-## Most recent complete preparation result
+## Result
 
-The successful preparation run reported:
+The clean tag-triggered run reported:
 
 | Measure | Result |
 | --- | ---: |
@@ -92,7 +88,7 @@ f9fc79f0fc8c8fb1a816edaec5913513a3a58d3c44f492eb952193ace54e2268
 
 ## Publication-boundary evidence
 
-The preparation baseline also passed the automated conservative-publication
+The candidate also passed the automated conservative-publication
 audit. The repository records that:
 
 - official standards files and generated full-corpus outputs are excluded
@@ -109,6 +105,16 @@ The manual decisions and their limits are recorded in
 [`public-release-checklist.md`](public-release-checklist.md). They are a
 publisher decision, not an external legal opinion or permission from the OMG.
 
+The source-only archive produced from the candidate commit was inspected
+before signing. Its 120-file list exactly matched the tracked files at the
+candidate commit. It contained no official RAAML corpus, generated SysML v2
+corpus, preservation manifests, reconstructed XMI, specification PDFs, tool
+archives, release directories, or CI artifacts. Its SHA-256 was:
+
+```text
+4ad4b572e95d456790b8e58d38605ec276b5fd0de76414ac43d08da03deaf2e2
+```
+
 ## Supplemental SysML v2 interoperability observation
 
 After `v0.9.0-rc.2` was signed, the exact generated SysML v2 text was opened
@@ -121,26 +127,10 @@ not performed by an independent reviewer, and does not establish semantic
 equivalence across tools. See
 [`syside-editor-check-v0.9.0-rc.2.md`](syside-editor-check-v0.9.0-rc.2.md).
 
-## Identity to record after validation and signing
+## Signed candidate
 
-Before this report may be marked **Passed**, replace the pending values below
-with evidence from the exact candidate commit and tag-triggered workflow:
-
-| Field | Value |
-| --- | --- |
-| Signed tag | Pending: `v0.9.0-rc.3` |
-| Candidate commit | Pending |
-| Successful immediate pre-tag run | Pending |
-| Clean tag-triggered run | Pending |
-| Tag-triggered container image ID | Pending |
-| Target platform | Expected: `linux/amd64` |
-| Canonical fact SHA-256 | Expected: `5203f5704cf086e43605a36c10f4a00182e6d2c75a2584031a3d701514a33967` |
-| TypeScript SysML v2 SHA-256 | Expected: `f9fc79f0fc8c8fb1a816edaec5913513a3a58d3c44f492eb952193ace54e2268` |
-| Release files | Expected: `49` |
-| Host/container comparison | Expected: byte-identical |
-
-The tag must point exactly to the successful candidate commit. After it is
-created, verify it with:
+The annotated tag points exactly to the successful candidate commit. Verify
+it with:
 
 ```text
 git -c gpg.format=ssh \
@@ -148,7 +138,7 @@ git -c gpg.format=ssh \
     tag -v v0.9.0-rc.3
 ```
 
-The expected maintainer signing identity is:
+The verified maintainer signing identity is:
 
 ```text
 Signer:      florian@zeev.tech
@@ -157,11 +147,10 @@ Fingerprint: SHA256:YO5/2TLch9cNypEqm5q7fPhzWUBz977jHjWp2AcdgFo
 
 ## What the evidence supports
 
-Within the defined fact contract, the successful preparation evidence
+Within the defined fact contract, the signed-candidate evidence
 supports the claim that both project implementations preserve the normative
 RAAML 1.1 definition corpus through the proposed SysML v2 representation and
-back. The exact `v0.9.0-rc.3` claim remains pending until the candidate commit
-and tag-triggered run pass.
+back.
 
 ## What the evidence does not support
 

@@ -2,7 +2,7 @@
 
 **Audit date:** July 31, 2026
 **Status:** Conservative source-only boundary and maintainer publication
-decision recorded; hosted-output cleanup complete; final candidate pending
+decision recorded; hosted-output cleanup and final candidate complete
 **Purpose:** Engineering publication review, not legal advice
 
 ## Result
@@ -165,11 +165,10 @@ Florian Wolf
 6. Run `./raaml publication audit` and retain its pass result in the workflow
    log. This audits Git and known workflow publishing mechanisms, not hosted
    GitHub storage or legal rights.
-7. Completed for the earlier source state: full validation passed and
-   `v0.9.0-rc.2` was created as a signed candidate. Do not move or replace
-   `v0.9.0-rc.1` or `v0.9.0-rc.2`. The publication files have since changed;
-   run the full validation again and create the signed `v0.9.0-rc.3`
-   candidate only after the exact publication commit passes.
+7. Completed July 31, 2026: the exact publication commit passed the pre-tag
+   and tag-triggered workflows, its source-only archive was inspected, and
+   `v0.9.0-rc.3` was created as a signed candidate. Do not move or replace
+   `v0.9.0-rc.1`, `v0.9.0-rc.2`, or `v0.9.0-rc.3`.
 
 The operational sequence and sign-off record are in
 [`public-release-checklist.md`](public-release-checklist.md).
@@ -180,7 +179,6 @@ The intended public repository contains the original paper, mapping design,
 schemas, source code, provenance lock, aggregate validation counts, and
 instructions. The complete fact sets, generated v2 model, manifests, and
 reconstructed XMI remain local outputs produced only after each user obtains
-the official inputs. The remaining engineering gates are a passing complete
-workflow on the final publication text, review of the source-only archive, and
-the signed `v0.9.0-rc.3` candidate. This document does not provide legal advice or
-clearance.
+the official inputs. The complete workflow, source-only archive review, and
+signed `v0.9.0-rc.3` candidate are complete. This document does not provide
+legal advice or clearance.

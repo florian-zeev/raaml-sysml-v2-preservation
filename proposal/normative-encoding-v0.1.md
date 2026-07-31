@@ -24,7 +24,7 @@ The document lists the facts that must survive a trip from v1 to v2 and back. Th
 The proposal does **not** cover RAAML models created by users. Version 0.1
 defines a narrower test: read the listed facts from each official v1 file,
 translate the file to v2, rebuild v1 XMI, and confirm that the same facts are
-still present. In the `v0.9.0-rc.3` candidate preparation, the Python reference
+still present. At signed candidate tag `v0.9.0-rc.3`, the Python reference
 implementation and native TypeScript implementation passed that test for all
 17 official files with zero
 differences in the defined fact set. Spacing, XML element order, and
@@ -43,7 +43,7 @@ This is an **independent community proposal** for technical review. It does not 
 - Use a familiar v2 form only when doing so does not erase a listed v1 fact. Section 11 shows shortcuts that are forbidden.
 - When several v2 forms seem possible, use one fixed selection rule and record every source fact needed for reversal.
 - Generate repeatable XMI IDs with a specified SHA-256 rule. Repeatable IDs do not make the whole XML file byte-for-byte identical.
-- Require an implementation to show that every listed fact survives all 17 official files. The current candidate preparation has passed this test; Section “Implementation evidence” states the limits of that result.
+- Require an implementation to show that every listed fact survives all 17 official files. The signed candidate has passed this test; Section “Implementation evidence” states the limits of that result.
 
 **Readership map.**
 
@@ -56,7 +56,7 @@ This is an **independent community proposal** for technical review. It does not 
 
 ## Implementation evidence
 
-The implementations in the `v0.9.0-rc.3` candidate preparation report:
+The implementations at signed candidate tag `v0.9.0-rc.3` report:
 
 - 17 source artifacts and 17 preservation manifests;
 - 343 generated native v2 targets;
@@ -139,7 +139,7 @@ The SysML v2 fragments below are **illustrative pseudocode** that defines the
 intended information shape. They are not accepted concrete syntax unless a
 block is explicitly labeled as validated syntax. The reference
 implementation's generated `.sysml` files are the parser-tested concrete
-encoding. In the current candidate preparation, every generated official
+encoding. At the signed candidate tag, every generated official
 definition was written in the repository's accepted v2 syntax and passed the
 pinned validator. After `v0.9.0-rc.2` was signed, the exact full-corpus text
 also produced no reported problems in a manual Sensmetry Syside Editor 0.10.3 check. That observation is
@@ -439,7 +439,7 @@ Each stored constraint also lists the RAAML names found in its text. The test ca
 ]
 ```
 
-**Generation.** A real OCL 2.4 parser must produce `referencedNames`. It reads the expression as OCL syntax, finds names used as variables or types, and resolves each name using the imports visible to the owning profile. If more than one declaration could match, it records every candidate and reports the ambiguity. The reference implementation parsed and resolved all 33 OCL expressions in the official corpus in the current candidate preparation.
+**Generation.** A real OCL 2.4 parser must produce `referencedNames`. It reads the expression as OCL syntax, finds names used as variables or types, and resolves each name using the imports visible to the owning profile. If more than one declaration could match, it records every candidate and reports the ambiguity. The reference implementation parsed and resolved all 33 OCL expressions in the official corpus at the signed candidate tag.
 
 A text search is not enough. OCL contains nested navigation, `closure(...)`, `.allInstances()`, and conditional expressions. A search can mistake a keyword for a name or miss a name because it appears inside a larger expression.
 

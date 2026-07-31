@@ -25,11 +25,11 @@ For installation and command-by-command reproduction instructions, start with
 3. [`normative-encoding-v0.1.md`](../proposal/normative-encoding-v0.1.md) —
    the detailed encoding and reverse-mapping rules.
 4. [`validation-report-v0.9.0-rc.3.md`](validation-report-v0.9.0-rc.3.md) —
-   the current candidate preparation, results, and limitations.
+   the signed candidate identity, results, and limitations.
 
 ## What the candidate demonstrates
 
-In the `v0.9.0-rc.3` candidate preparation:
+At signed candidate tag `v0.9.0-rc.3`:
 
 - all 17 normative RAAML 1.1 definition artifacts were mapped to the proposed
   v2 representation and reconstructed as v1 artifacts;
@@ -94,8 +94,7 @@ maintainer-operated observation is recorded separately in
 
 ## Verify the signed candidate
 
-After `v0.9.0-rc.3` has been signed, verify it from a checkout containing the
-tag:
+From a checkout containing the tag:
 
 ```text
 git -c gpg.format=ssh \
@@ -103,8 +102,8 @@ git -c gpg.format=ssh \
     tag -v v0.9.0-rc.3
 ```
 
-The complete reproduction identity, tag target, and expected signature will
-be recorded after the tag passes in
+The complete reproduction identity, tag target, and verified signature are
+recorded in
 [`validation-report-v0.9.0-rc.3.md`](validation-report-v0.9.0-rc.3.md).
 
 ## Reproduce from a source-only review package

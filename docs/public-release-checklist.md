@@ -2,9 +2,8 @@
 
 **Publication route:** Conservative source-only community proposal
 
-**Status:** Repository safeguards and manual publication decisions complete;
-`v0.9.0-rc.3` documentation is being prepared; exact-commit validation,
-source-archive review, and signing remain
+**Status:** Pre-publication engineering and cleanup gates complete; public
+visibility and publication remain
 
 **Last reviewed:** July 31, 2026
 
@@ -159,6 +158,11 @@ After the manual decisions above are recorded:
 7. Publish the paper and blog article as **Draft Community Proposal v0.1**.
 8. Invite independent reproduction and domain-specialist review as the next
    evidence phase.
+
+Steps 1 through 5 are complete for `v0.9.0-rc.3`. Its exact commit passed the
+pre-tag and tag-triggered workflows, its 120-file source-only archive was
+inspected, its tag signature was verified, and its workflow published no
+artifact.
 
 ## Claims allowed at first publication
 
