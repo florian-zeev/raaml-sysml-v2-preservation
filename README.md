@@ -11,7 +11,8 @@ RAAML models.
 
 ## Result
 
-The signed candidate `v0.9.0-rc.2` completes the full 17-file round trip with:
+The `v0.9.0-rc.3` candidate under preparation carries forward a full 17-file
+round trip with:
 
 - zero differences in the defined canonical fact set;
 - zero errors from the pinned SysML v1 and SysML v2 validators;
@@ -36,17 +37,18 @@ independent reproduction. The candidate also does not establish behavioral
 equivalence of OCL, certification suitability, or permission to redistribute
 all third-party source material.
 
-After the candidate was signed, the exact generated SysML v2 text was also
+After `v0.9.0-rc.2` was signed, the exact generated SysML v2 text was also
 opened with Sensmetry Syside Editor 0.10.3. Active validation was confirmed
 with a deliberate negative smoke test, and the candidate file produced no
 reported problems. This was a manual maintainer-operated check, not part of
-the signed candidate or an external reproduction. See the
+an automated conformance gate or an external reproduction. It is supplemental
+evidence for the unchanged generated text carried into `rc.3`. See the
 [manual Syside record](docs/syside-editor-check-v0.9.0-rc.2.md).
 
-The repository remains private while the limited source-grounded material is
-reviewed and historical hosted outputs are removed. The project has selected
-a conservative source-only publication boundary; complete generated corpus
-outputs will remain local. See the
+The limited source-grounded material review and historical hosted-output
+cleanup are complete. The repository remains private until the exact `rc.3`
+commit passes, its source-only archive is inspected, and its signed tag passes.
+Complete generated corpus outputs will remain local. See the
 [public-release checklist](docs/public-release-checklist.md).
 
 ## Start here
@@ -58,9 +60,9 @@ outputs will remain local. See the
 | [`docs/executive-summary.md`](docs/executive-summary.md) | Plain-language motivation and result |
 | [`proposal/community-proposal-v0.1.md`](proposal/community-proposal-v0.1.md) | Draft paper and claim boundary |
 | [`proposal/normative-encoding-v0.1.md`](proposal/normative-encoding-v0.1.md) | Detailed preservation and reconstruction rules |
-| [`docs/validation-report-v0.9.0-rc.2.md`](docs/validation-report-v0.9.0-rc.2.md) | Consolidated validation, reproducibility, and TypeScript evidence |
+| [`docs/validation-report-v0.9.0-rc.3.md`](docs/validation-report-v0.9.0-rc.3.md) | Current candidate preparation, validation, reproducibility, and TypeScript evidence |
 | [`docs/syside-editor-check-v0.9.0-rc.2.md`](docs/syside-editor-check-v0.9.0-rc.2.md) | Post-tag manual acceptance check with a second SysML v2 implementation |
-| [`docs/third-party-rights-audit.md`](docs/third-party-rights-audit.md) | Publication boundary and remaining permission request |
+| [`docs/third-party-rights-audit.md`](docs/third-party-rights-audit.md) | Publication-boundary inventory and publisher decision record |
 | [`docs/public-release-checklist.md`](docs/public-release-checklist.md) | Exact automated and manual gates before public visibility |
 | [`docs/external-review-guide.md`](docs/external-review-guide.md) | Reviewer questions and remaining publication gates |
 | [`docs/fact-contract-v0.1.md`](docs/fact-contract-v0.1.md) | Canonical fact identity and comparison contract |
@@ -79,7 +81,7 @@ This command checks current and historical Git paths, ignore rules, and known
 CI publishing mechanisms. It does not provide legal clearance or inspect
 artifacts retained by GitHub outside the Git repository.
 
-## Reproduce the signed candidate
+## Reproduce the candidate
 
 Python 3.14.4 is the tested orchestration runtime. Only `sources fetch` uses
 the network.
@@ -90,7 +92,7 @@ the network.
 ./raaml tooling bootstrap
 ./raaml reproduce --clean \
   --container-digest sha256:<container-image-id> \
-  --release-tag v0.9.0-rc.2 \
+  --release-tag v0.9.0-rc.3 \
   --output-dir generated/release-candidate
 ```
 
@@ -99,17 +101,18 @@ canonical comparison, validators, adversarial suite, controlled diff, and
 STPA walkthrough. It creates `RELEASE.json` and `SHA256SUMS` in the output
 directory.
 
-Verify the candidate tag:
+After the signed `v0.9.0-rc.3` tag is created, verify it with:
 
 ```text
 git -c gpg.format=ssh \
     -c gpg.ssh.allowedSignersFile=.github/allowed_signers \
-    tag -v v0.9.0-rc.2
+    tag -v v0.9.0-rc.3
 ```
 
-See the [validation report](docs/validation-report-v0.9.0-rc.2.md) for the
-expected commit, container image, canonical fact hash, and signature
-fingerprint.
+See the [validation report](docs/validation-report-v0.9.0-rc.3.md) for the
+current evidence and the fields that will be fixed after the candidate tag
+passes its clean validation run. Until then, `v0.9.0-rc.2` remains the latest
+signed candidate.
 
 ## Independent clean-room reproduction
 

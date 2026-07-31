@@ -3,7 +3,8 @@
 **Publication route:** Conservative source-only community proposal
 
 **Status:** Repository safeguards and manual publication decisions complete;
-final validation and a new signed candidate remain
+`v0.9.0-rc.3` documentation is being prepared; exact-commit validation,
+source-archive review, and signing remain
 
 **Last reviewed:** July 31, 2026
 
@@ -150,8 +151,8 @@ After the manual decisions above are recorded:
 1. Run `./raaml publication audit` from a clean checkout.
 2. Run the complete validation workflow and confirm it passes.
 3. Review the public file list from a source-only archive.
-4. Create a new signed release candidate; do not move `v0.9.0-rc.1` or
-   `v0.9.0-rc.2`.
+4. Create the signed `v0.9.0-rc.3` release candidate; do not move
+   `v0.9.0-rc.1` or `v0.9.0-rc.2`.
 5. Confirm that the candidate does not create a downloadable generated-corpus
    artifact.
 6. Change repository visibility to public.

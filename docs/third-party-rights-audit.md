@@ -165,11 +165,11 @@ Florian Wolf
 6. Run `./raaml publication audit` and retain its pass result in the workflow
    log. This audits Git and known workflow publishing mechanisms, not hosted
    GitHub storage or legal rights.
-7. Completed for the current source state: full validation passed and
-   `v0.9.0-rc.2` was created as a new signed candidate. Do not move or replace
-   `v0.9.0-rc.1` or `v0.9.0-rc.2`. If the rights review changes the
-   publication files, run the full validation again and create a later signed
-   candidate.
+7. Completed for the earlier source state: full validation passed and
+   `v0.9.0-rc.2` was created as a signed candidate. Do not move or replace
+   `v0.9.0-rc.1` or `v0.9.0-rc.2`. The publication files have since changed;
+   run the full validation again and create the signed `v0.9.0-rc.3`
+   candidate only after the exact publication commit passes.
 
 The operational sequence and sign-off record are in
 [`public-release-checklist.md`](public-release-checklist.md).
@@ -182,5 +182,5 @@ instructions. The complete fact sets, generated v2 model, manifests, and
 reconstructed XMI remain local outputs produced only after each user obtains
 the official inputs. The remaining engineering gates are a passing complete
 workflow on the final publication text, review of the source-only archive, and
-a new signed candidate. This document does not provide legal advice or
+the signed `v0.9.0-rc.3` candidate. This document does not provide legal advice or
 clearance.

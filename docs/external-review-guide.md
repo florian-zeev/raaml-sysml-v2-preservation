@@ -24,12 +24,12 @@ For installation and command-by-command reproduction instructions, start with
    the paper and its claim boundary.
 3. [`normative-encoding-v0.1.md`](../proposal/normative-encoding-v0.1.md) —
    the detailed encoding and reverse-mapping rules.
-4. [`validation-report-v0.9.0-rc.2.md`](validation-report-v0.9.0-rc.2.md) —
-   the signed candidate identity, results, and limitations.
+4. [`validation-report-v0.9.0-rc.3.md`](validation-report-v0.9.0-rc.3.md) —
+   the current candidate preparation, results, and limitations.
 
 ## What the candidate demonstrates
 
-At signed candidate tag `v0.9.0-rc.2`:
+In the `v0.9.0-rc.3` candidate preparation:
 
 - all 17 normative RAAML 1.1 definition artifacts were mapped to the proposed
   v2 representation and reconstructed as v1 artifacts;
@@ -53,9 +53,9 @@ At signed candidate tag `v0.9.0-rc.2`:
   SysML v2;
 - permission to redistribute all third-party source material.
 
-The second-implementation limitation above applies to the immutable signed
-candidate. A post-tag manual check found no reported problems when the exact
-generated text was opened with Sensmetry Syside Editor 0.10.3. That
+The automated candidate evidence still relies on one pinned SysML v2
+validator. A post-`rc.2`-tag manual check found no reported problems when the
+exact generated text was opened with Sensmetry Syside Editor 0.10.3. That
 maintainer-operated observation is recorded separately in
 [`syside-editor-check-v0.9.0-rc.2.md`](syside-editor-check-v0.9.0-rc.2.md).
 
@@ -94,17 +94,18 @@ maintainer-operated observation is recorded separately in
 
 ## Verify the signed candidate
 
-From a checkout containing the tag:
+After `v0.9.0-rc.3` has been signed, verify it from a checkout containing the
+tag:
 
 ```text
 git -c gpg.format=ssh \
     -c gpg.ssh.allowedSignersFile=.github/allowed_signers \
-    tag -v v0.9.0-rc.2
+    tag -v v0.9.0-rc.3
 ```
 
-The complete reproduction identity, tag target, and expected signature are
-recorded in
-[`validation-report-v0.9.0-rc.2.md`](validation-report-v0.9.0-rc.2.md).
+The complete reproduction identity, tag target, and expected signature will
+be recorded after the tag passes in
+[`validation-report-v0.9.0-rc.3.md`](validation-report-v0.9.0-rc.3.md).
 
 ## Reproduce from a source-only review package
 
@@ -143,13 +144,12 @@ zero v2 validation errors, and zero failed adversarial cases.
 
 Before the repository and paper are presented as a public release:
 
-1. close the two manual blockers in the
-   [`public-release checklist`](public-release-checklist.md): limited
-   source-grounded material review and hosted-output cleanup;
-2. pass `./raaml publication audit` and the complete validation workflow;
-3. replace or supplement the manual Syside check with a pinned automated
-   second-implementation result, or retain the manual limitation explicitly;
-4. create a new signed candidate that includes the final publication text.
+1. pass `./raaml publication audit` and the complete validation workflow for
+   the exact `v0.9.0-rc.3` source state;
+2. inspect the source-only archive produced from that exact commit;
+3. retain the manual Syside limitation explicitly; and
+4. create and validate the signed `v0.9.0-rc.3` tag without publishing
+   generated-corpus artifacts.
 
 Independent reproduction and specialist review remain explicit open evidence
 items, but they do not block publication of a clearly labeled Draft Community

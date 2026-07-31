@@ -15,19 +15,19 @@ The difficulty is that RAAML 1.1 was built for SysML v1, while SysML v2 is built
 
 This paper proposes a conservative way to carry the 17 official RAAML 1.1 definition files—nine profiles and eight libraries—through SysML v2. Each RAAML definition receives a useful v2 form. A separate preservation record keeps the v1 facts that this form does not express clearly enough on its own. Information that belongs to the whole source file, such as imports and OCL constraints, is stored once in a JSON manifest beside the v2 model.
 
-Version 0.1 defines what must be preserved and how to test it. At signed
-candidate tag `v0.9.0-rc.2`, the Python reference implementation and native
-TypeScript implementation completed the round trip for all 17 files with
+Version 0.1 defines what must be preserved and how to test it. In the
+`v0.9.0-rc.3` candidate preparation, the Python reference implementation and
+native TypeScript implementation completed the round trip for all 17 files with
 zero differences in the defined fact set. The reference conformance suite
 also passed 36 tests designed to expose unsupported or ambiguous cases.
-The result has been reproduced on a clean GitHub-hosted Linux runner and in
-an offline pinned container, which produced byte-identical release
+The preparation result has been reproduced on a clean GitHub-hosted Linux
+runner and in an offline pinned container, which produced byte-identical release
 directories.
 
 These results support the preservation claim within the stated scope. They do
 not cover arbitrary user models, prove equivalent OCL behavior, establish
-cross-tool semantic equivalence, or define a new version of RAAML. After the
-candidate was signed, a manual maintainer-operated check found no problems
+cross-tool semantic equivalence, or define a new version of RAAML. After
+`v0.9.0-rc.2` was signed, a manual maintainer-operated check found no problems
 when Sensmetry Syside Editor 0.10.3 validated the exact generated SysML v2
 text. No outside team has yet reproduced the result.
 
@@ -230,8 +230,8 @@ For every file and every fact category, the report records:
 - which parser and standard versions were used.
 
 The test fails on any missing, additional, changed, or unresolved in-scope
-fact. At `v0.9.0-rc.2`, both language implementations reported zero such
-differences.
+fact. In the `v0.9.0-rc.3` candidate preparation, both language
+implementations reported zero such differences.
 
 ### 8.2 Results
 
@@ -269,17 +269,17 @@ Supported inputs must survive. Unsupported inputs must fail clearly. They must n
 
 Every generated SysML v2 file must parse with a named, documented implementation. Testing with a second implementation is preferable. One parser accepting a file proves only that the file is acceptable to that parser; it does not by itself prove that another tool will read it the same way.
 
-The candidate passed the repository's pinned SysML v2 validator with zero
-errors in all five reported validation categories. After the candidate was
-signed, Sensmetry Syside Editor 0.10.3 also reported no problems for the exact
-generated text. A deliberate negative smoke test confirmed that Syside
+The candidate preparation passed the repository's pinned SysML v2 validator
+with zero errors in all five reported validation categories. After
+`v0.9.0-rc.2` was signed, Sensmetry Syside Editor 0.10.3 also reported no
+problems for the exact generated text. A deliberate negative smoke test confirmed that Syside
 validation was active. This was a manual maintainer-operated check, not an
-automated conformance result or part of the signed candidate.
+automated conformance result or part of the immutable `rc.2` candidate.
 
 ### 8.5 Reproducibility
 
-The signed candidate was tested on a GitHub-hosted `ubuntu-24.04` runner and in an
-offline pinned `linux/amd64` container. Those environments produce
+The current candidate preparation was tested on a GitHub-hosted `ubuntu-24.04`
+runner and in an offline pinned `linux/amd64` container. Those environments produce
 byte-identical 49-file release directories. The native TypeScript
 implementation separately performs the bounded round trip and reaches the
 same canonical hash and generated SysML v2 hash. Both implementations and
@@ -339,12 +339,13 @@ RAAML 1.1 and SysML v2 use different foundations. Similar names do not guarantee
 This draft defines a limited, testable goal: carry the 17 official RAAML 1.1
 definition files through a SysML v2 representation and recover the same listed
 facts. The reference implementation has passed that test for the complete
-official corpus at the signed candidate tag.
+official corpus in the current candidate preparation.
 
 The immediate goal remains review, not standard status. The next work is to
-complete the rights review, open the repository, obtain an independent
-reproduction, automate or independently repeat the second-implementation
-check, and revise the proposal in response to community findings.
+validate and sign the exact publication state, inspect its source-only
+archive, open the repository, obtain an independent reproduction, automate or
+independently repeat the second-implementation check, and revise the proposal
+in response to community findings.
 
 ## References
 
@@ -357,5 +358,5 @@ check, and revise the proposal in response to community findings.
 7. National Institute of Standards and Technology, [FIPS PUB 180-4: Secure Hash Standard](https://doi.org/10.6028/NIST.FIPS.180-4), August 2015.
 8. GfSE and project partners, [CASCaRA](https://cascara.gfse.org/).
 9. EUROCAE, [WG-136: Digital Regulations and Certification Framework](https://www.eurocae.net/new-working-group-wg-136-digital-regulations-and-certification-framework/).
-10. Reference implementations, [Validation report for `v0.9.0-rc.2`](../docs/validation-report-v0.9.0-rc.2.md).
+10. Reference implementations, [Validation report for `v0.9.0-rc.3`](../docs/validation-report-v0.9.0-rc.3.md).
 11. Post-tag interoperability observation, [Manual Syside Editor check for `v0.9.0-rc.2`](../docs/syside-editor-check-v0.9.0-rc.2.md).

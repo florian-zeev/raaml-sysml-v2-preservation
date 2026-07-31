@@ -40,9 +40,9 @@ Those facts include:
 - Ports, connectors, connector ends, imports, profile applications, and namespace metadata;
 - stereotype applications that occur inside the official library files.
 
-The proposal does not cover RAAML models created by users. At signed candidate tag
-`v0.9.0-rc.2`, the Python reference implementation and native TypeScript
-implementation passed the defined round-trip test for all 17 official files
+The proposal does not cover RAAML models created by users. In the
+`v0.9.0-rc.3` candidate preparation, the Python reference implementation and
+native TypeScript implementation passed the defined round-trip test for all 17 official files
 with zero differences in the specified fact set. That is a result within a
 deliberately narrow boundary, not proof that arbitrary RAAML models can be
 converted safely.
@@ -142,7 +142,7 @@ standard reconstructed fact list
 no listed fact is missing, added, unresolved, or changed
 ```
 
-The signed candidate reports:
+The current candidate preparation reports:
 
 | Measure | Result |
 | --- | ---: |
@@ -156,8 +156,9 @@ The signed candidate reports:
 
 Stable generated IDs make links repeatable, but stable IDs do not make the
 surrounding XML byte-for-byte identical. The
-[validation report](validation-report-v0.9.0-rc.2.md) identifies the exact commit,
-container, canonical fact hash, CI run, and verification command.
+[validation report](validation-report-v0.9.0-rc.3.md) records the current
+evidence and will identify the exact signed commit, container, CI run, and
+verification command after the candidate tag passes.
 
 ## Where this fits in the wider digital-engineering transition
 
@@ -180,11 +181,12 @@ The implementation result makes review more useful: reviewers can now inspect
 specific files, rules, and failures rather than discuss a hypothetical
 conversion. The next steps are:
 
-1. complete the third-party rights review and open the standalone repository;
-2. ask an outside team to reproduce the signed candidate;
-3. automate or independently repeat the manual second-implementation check;
-4. have RAAML and SysML v2 specialists challenge the fact boundary and mapping choices;
-5. revise the proposal and publish a new signed candidate with the review findings.
+1. validate, archive-review, and sign the `v0.9.0-rc.3` publication state;
+2. open the source-only standalone repository and publish the draft;
+3. ask an outside team to reproduce the signed candidate;
+4. automate or independently repeat the manual second-implementation check;
+5. have RAAML and SysML v2 specialists challenge the fact boundary and mapping choices;
+6. revise the proposal and publish a later signed candidate with the review findings.
 
 The goal is not to declare the future shape of RAAML. It is to replace a vague promise of “conversion” with files, rules, and tests that anyone can inspect.
 
@@ -196,4 +198,4 @@ The goal is not to declare the future shape of RAAML. It is to replace a vague p
 - Object Management Group, [Object Constraint Language 2.4](https://www.omg.org/spec/OCL/2.4), February 2014.
 - GfSE and project partners, [CASCaRA](https://cascara.gfse.org/).
 - EUROCAE, [WG-136: Digital Regulations and Certification Framework](https://www.eurocae.net/new-working-group-wg-136-digital-regulations-and-certification-framework/).
-- Reference implementations, [Validation report for `v0.9.0-rc.2`](validation-report-v0.9.0-rc.2.md).
+- Reference implementations, [Validation report for `v0.9.0-rc.3`](validation-report-v0.9.0-rc.3.md).

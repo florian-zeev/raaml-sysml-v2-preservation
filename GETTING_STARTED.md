@@ -192,7 +192,7 @@ No software setup is required to review the written proposal. Read:
    for the proposal and its claim boundary;
 3. [`proposal/normative-encoding-v0.1.md`](proposal/normative-encoding-v0.1.md)
    for the detailed mapping and reconstruction rules; and
-4. [`docs/validation-report-v0.9.0-rc.2.md`](docs/validation-report-v0.9.0-rc.2.md)
+4. [`docs/validation-report-v0.9.0-rc.3.md`](docs/validation-report-v0.9.0-rc.3.md)
    for the evidence and limitations.
 
 This is an independent community draft. It is not an OMG specification or an
