@@ -1,6 +1,6 @@
 # Why RAAML 1.1 needs a preservation path into SysML v2
 
-**Status:** Companion article draft for the Draft Community Proposal v0.1
+**Status:** Blog article draft accompanying the Draft Community Proposal v0.1
 **Author:** Florian Wolf
 
 RAAML gives safety and reliability concepts a precise form that software can inspect. A hazard, unsafe control action, fault-tree gate, or assurance claim is not just text on a diagram. It has a type, properties, and defined links to other parts of the system model. RAAML covers methods including STPA, fault trees, FMEA, reliability block diagrams, GSN assurance cases, ISO 26262 analysis, and security analysis.
@@ -10,6 +10,11 @@ The OMG published [RAAML 1.1](https://www.omg.org/spec/RAAML/1.1) in December 20
 SysML v2 is built differently. It uses KerML as its foundation and metadata definitions as its extension mechanism. It cannot directly load a SysML v1 profile or attach a UML stereotype. A translation must decide what each v1 definition becomes in v2, and a careless decision can discard information that a v1 tool still needs.
 
 This community proposal explores a deliberately conservative answer: preserve first, redesign later.
+
+The source-only proposal, implementations, tests, and signed candidate are
+[public on GitHub](https://github.com/florian-zeev/raaml-sysml-v2-preservation).
+The current evidence baseline is the
+[`v0.9.0-rc.3` pre-release](https://github.com/florian-zeev/raaml-sysml-v2-preservation/releases/tag/v0.9.0-rc.3).
 
 ## Why move beyond SysML v1?
 
@@ -51,7 +56,11 @@ converted safely.
 
 Many RAAML definitions do not have one obvious v2 replacement.
 
-For example, the STPA `ControlAction` stereotype can be applied to three different kinds of UML element: `Signal`, `Class`, and `DataType`. A v2 tool may reasonably treat it mainly as an `ItemDefinition`. But choosing that form must not erase the other two possibilities.
+For example, the STPA `ControlAction` stereotype can be applied to three
+different kinds of UML element: `Signal`, `Class`, and `DataType`. In this
+proposal it remains one metadata definition. The preservation record must keep
+all three permitted UML bases and their extension relationships so that the
+reverse mapper can rebuild the source definition.
 
 FTA adds a different problem. Concrete gate and event stereotypes inherit their `base_*` properties rather than declaring them again. Adding those bases to every subtype during reconstruction would create declarations that are not present in the official profile.
 
@@ -93,21 +102,29 @@ fact differences. After the candidate was signed, Sensmetry Syside Editor
 0.10.3 also reported no problems for the exact generated text in a manual
 maintainer-operated check. No outside team has yet reproduced the result.
 
-## Choosing one v2 form without discarding the source
+## Choosing a useful v2 carrier without discarding the source
 
-When a v1 stereotype can extend several kinds of UML element, the proposal chooses one main v2 form. The rule is fixed so the same input always produces the same choice. The preservation record still keeps every UML base declared by the source stereotype itself.
+The proposal separates stereotype definitions from library elements.
 
-Examples include:
+Every RAAML stereotype becomes a SysML v2 `MetadataDefinition`. The kinds of
+UML element it may annotate remain part of the preserved source facts; they do
+not turn the stereotype itself into an item, part, or occurrence definition.
+A tool may derive domain-oriented views, but those views are not the
+authoritative preservation carrier.
 
-| RAAML v1 shape | Main v2 form | Preserved separately |
+Library elements use the native structural form selected by the source:
+
+| RAAML v1 source element | Primary v2 carrier | Preserved separately |
 | --- | --- | --- |
-| `Signal` + `Class` + `DataType` | `ItemDefinition` | all three bases and Extensions |
-| `Property` + `Class` | usage plus companion definition | both bases and their pairing |
-| `Class` generalizing `SysML::Block` | `PartDefinition` | original UML base and SysML stereotype generalization |
-| `Class` descending from `CoreRAAML::Situation` | `OccurrenceDefinition` | original inheritance chain |
-| UML `AssociationClass` | `connection def` with marker | class/link identity, ends, properties, and generalizations |
+| UML stereotype extending one or several metaclasses | `MetadataDefinition` | all locally declared bases, Extensions, properties, and inheritance |
+| Plain UML library Class | `OccurrenceDefinition` | original class identity, properties, connectors, and relationships |
+| UML Class with SysML v1 `Block` applied | `PartDefinition` | the original application and its values |
+| UML Class with `ConstraintBlock` applied | `ConstraintDefinition` | the original application and its values |
+| UML Association or AssociationClass | connection definition with a source-kind marker | class/link identity, ends, ownership, properties, and inheritance |
+| UML Enumeration | enumeration definition | literal order and any `ValueType` application |
 
-The chosen v2 form makes the definition usable in v2. The preservation record lets the tool rebuild and test the original v1 facts.
+The native carrier makes the element usable in v2. The preservation record
+lets the tool rebuild and test the original v1 facts.
 
 ## OCL is preserved, not translated by assertion
 
@@ -179,14 +196,17 @@ That can support:
 
 The implementation result makes review more useful: reviewers can now inspect
 specific files, rules, and failures rather than discuss a hypothetical
-conversion. The next steps are:
+conversion. The repository, signed candidate, validation report, and developer
+instructions are now public. The next steps are:
 
-1. validate, archive-review, and sign the `v0.9.0-rc.3` publication state;
-2. open the source-only standalone repository and publish the draft;
-3. ask an outside team to reproduce the signed candidate;
-4. automate or independently repeat the manual second-implementation check;
-5. have RAAML and SysML v2 specialists challenge the fact boundary and mapping choices;
-6. revise the proposal and publish a later signed candidate with the review findings.
+1. ask an outside team to reproduce the signed candidate;
+2. automate or independently repeat the manual second-implementation check;
+3. have RAAML and SysML v2 specialists challenge the fact boundary and mapping
+   choices;
+4. ask tool and certification practitioners whether the compatibility layer is
+   usable in real review and interchange workflows; and
+5. revise the proposal and publish a later signed candidate only when review
+   findings justify a technical change.
 
 The goal is not to declare the future shape of RAAML. It is to replace a vague promise of “conversion” with files, rules, and tests that anyone can inspect.
 
@@ -198,4 +218,5 @@ The goal is not to declare the future shape of RAAML. It is to replace a vague p
 - Object Management Group, [Object Constraint Language 2.4](https://www.omg.org/spec/OCL/2.4), February 2014.
 - GfSE and project partners, [CASCaRA](https://cascara.gfse.org/).
 - EUROCAE, [WG-136: Digital Regulations and Certification Framework](https://www.eurocae.net/new-working-group-wg-136-digital-regulations-and-certification-framework/).
+- Source repository and signed candidate, [RAAML SysML v2 preservation](https://github.com/florian-zeev/raaml-sysml-v2-preservation).
 - Reference implementations, [Validation report for `v0.9.0-rc.3`](validation-report-v0.9.0-rc.3.md).

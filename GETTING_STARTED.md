@@ -195,8 +195,8 @@ Then continue with step 4 above.
 
 No software setup is required to review the written proposal. Read:
 
-1. [`docs/executive-summary.md`](docs/executive-summary.md) for the motivation
-   and result;
+1. [`docs/executive-summary.md`](docs/executive-summary.md) for the companion
+   blog article, motivation, and result;
 2. [`proposal/community-proposal-v0.1.md`](proposal/community-proposal-v0.1.md)
    for the proposal and its claim boundary;
 3. [`proposal/normative-encoding-v0.1.md`](proposal/normative-encoding-v0.1.md)
