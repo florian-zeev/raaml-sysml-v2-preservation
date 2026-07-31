@@ -1,6 +1,6 @@
 # RAAML preservation transformation analysis v0.1
 
-**Status:** Implemented and validated for candidate `v0.9.0-rc.2`
+**Status:** Implemented and validated for signed candidate `v0.9.0-rc.2`
 
 **Date started:** 2026-07-28
 

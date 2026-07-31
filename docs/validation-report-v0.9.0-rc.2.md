@@ -1,17 +1,14 @@
 # Validation report for `v0.9.0-rc.2`
 
-**Status:** Candidate prepared; signed-tag identity pending
+**Status:** Passed
 
-**Date:** 2026-07-30
+**Date:** 2026-07-31
 
-**Candidate:** `v0.9.0-rc.2`
+**Signed candidate:** `v0.9.0-rc.2`
 
-**TypeScript evidence commit:** [`0cc1623cb8eb738ea5d65ee35446cf81d21f89d7`](https://github.com/florian-zeev/raaml-sysml-v2-preservation/commit/0cc1623cb8eb738ea5d65ee35446cf81d21f89d7)
+**Evidence commit:** [`381e1f5c68347f84ba0bbd2243f3e36fe915ccfa`](https://github.com/florian-zeev/raaml-sysml-v2-preservation/commit/381e1f5c68347f84ba0bbd2243f3e36fe915ccfa)
 
-**TypeScript evidence run:** [GitHub Actions run 30562180377](https://github.com/florian-zeev/raaml-sysml-v2-preservation/actions/runs/30562180377)
-
-The exact signed tag target, tag-triggered clean run, and container image ID
-will be added after the candidate tag has passed its clean validation run.
+**Clean tagged-candidate run:** [GitHub Actions run 30565118014](https://github.com/florian-zeev/raaml-sysml-v2-preservation/actions/runs/30565118014)
 
 ## Claim tested
 
@@ -94,6 +91,46 @@ SHA-256:
 ```text
 f9fc79f0fc8c8fb1a816edaec5913513a3a58d3c44f492eb952193ace54e2268
 ```
+
+## Reproducibility identity
+
+| Field | Value |
+| --- | --- |
+| Signed tag | `v0.9.0-rc.2` |
+| Target platform | `linux/amd64` |
+| Git commit | `381e1f5c68347f84ba0bbd2243f3e36fe915ccfa` |
+| Clean tagged-candidate run | `30565118014` |
+| Container image ID | `sha256:ed58355bc6895b4c9307648ed833e68809c61f1cbd94802951b86c55aaca8dd9` |
+| Canonical fact SHA-256 | `5203f5704cf086e43605a36c10f4a00182e6d2c75a2584031a3d701514a33967` |
+| TypeScript SysML v2 SHA-256 | `f9fc79f0fc8c8fb1a816edaec5913513a3a58d3c44f492eb952193ace54e2268` |
+| Release files | `49` |
+| Host/container comparison | Byte-identical |
+
+The container ran with networking disabled during reproduction. Locked
+third-party sources and tools were mounted read-only and were not included in
+the image.
+
+## Signed candidate
+
+The annotated tag `v0.9.0-rc.2` points exactly to the evidence commit. It was
+signed with the maintainer's Ed25519 SSH key:
+
+```text
+Signer:      florian@zeev.tech
+Fingerprint: SHA256:YO5/2TLch9cNypEqm5q7fPhzWUBz977jHjWp2AcdgFo
+```
+
+Verify it from a checkout containing the tag:
+
+```text
+git -c gpg.format=ssh \
+    -c gpg.ssh.allowedSignersFile=.github/allowed_signers \
+    tag -v v0.9.0-rc.2
+```
+
+The signed tag annotation records the successful pre-tag run `30563931404`
+for the same commit. The reproducibility table above records the later
+tag-triggered run `30565118014` and its tagged-candidate container identity.
 
 ## TypeScript dependency boundary
 

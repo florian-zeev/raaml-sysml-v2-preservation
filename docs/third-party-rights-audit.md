@@ -149,8 +149,11 @@ Florian Wolf
    are gone.
 5. Confirm through GitHub that no release asset, package, cache, or artifact
    exposes the generated corpus.
-6. Run the full validation again and create a new signed candidate. Do not
-   move or replace `v0.9.0-rc.1`.
+6. Completed for the current source state: full validation passed and
+   `v0.9.0-rc.2` was created as a new signed candidate. Do not move or replace
+   `v0.9.0-rc.1` or `v0.9.0-rc.2`. If the rights review changes the
+   publication files, run the full validation again and create a later signed
+   candidate.
 
 ## Conservative fallback
 

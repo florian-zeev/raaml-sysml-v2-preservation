@@ -24,7 +24,7 @@ The document lists the facts that must survive a trip from v1 to v2 and back. Th
 The proposal does **not** cover RAAML models created by users. Version 0.1
 defines a narrower test: read the listed facts from each official v1 file,
 translate the file to v2, rebuild v1 XMI, and confirm that the same facts are
-still present. At candidate tag `v0.9.0-rc.2`, the Python reference
+still present. At signed candidate tag `v0.9.0-rc.2`, the Python reference
 implementation and native TypeScript implementation passed that test for all
 17 official files with zero
 differences in the defined fact set. Spacing, XML element order, and
@@ -56,7 +56,7 @@ This is an **independent community proposal** for technical review. It does not 
 
 ## Implementation evidence
 
-The implementations at candidate tag `v0.9.0-rc.2` report:
+The implementations at signed candidate tag `v0.9.0-rc.2` report:
 
 - 17 source artifacts and 17 preservation manifests;
 - 343 generated native v2 targets;

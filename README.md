@@ -11,7 +11,7 @@ RAAML models.
 
 ## Result
 
-The `v0.9.0-rc.2` candidate completes the full 17-file round trip with:
+The signed candidate `v0.9.0-rc.2` completes the full 17-file round trip with:
 
 - zero differences in the defined canonical fact set;
 - zero errors from the pinned SysML v1 and SysML v2 validators;

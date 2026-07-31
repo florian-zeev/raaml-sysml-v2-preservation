@@ -29,7 +29,7 @@ For installation and command-by-command reproduction instructions, start with
 
 ## What the candidate demonstrates
 
-At candidate tag `v0.9.0-rc.2`:
+At signed candidate tag `v0.9.0-rc.2`:
 
 - all 17 normative RAAML 1.1 definition artifacts were mapped to the proposed
   v2 representation and reconstructed as v1 artifacts;

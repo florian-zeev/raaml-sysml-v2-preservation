@@ -40,7 +40,7 @@ Those facts include:
 - Ports, connectors, connector ends, imports, profile applications, and namespace metadata;
 - stereotype applications that occur inside the official library files.
 
-The proposal does not cover RAAML models created by users. At candidate tag
+The proposal does not cover RAAML models created by users. At signed candidate tag
 `v0.9.0-rc.2`, the Python reference implementation and native TypeScript
 implementation passed the defined round-trip test for all 17 official files
 with zero differences in the specified fact set. That is a result within a

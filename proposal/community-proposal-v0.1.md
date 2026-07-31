@@ -15,11 +15,11 @@ The difficulty is that RAAML 1.1 was built for SysML v1, while SysML v2 is built
 
 This paper proposes a conservative way to carry the 17 official RAAML 1.1 definition files—nine profiles and eight libraries—through SysML v2. Each RAAML definition receives a useful v2 form. A separate preservation record keeps the v1 facts that this form does not express clearly enough on its own. Information that belongs to the whole source file, such as imports and OCL constraints, is stored once in a JSON manifest beside the v2 model.
 
-Version 0.1 defines what must be preserved and how to test it. At candidate
-tag `v0.9.0-rc.2`, the Python reference implementation and native TypeScript
-implementation completed the round trip for all 17 files with zero
-differences in the defined fact set. The reference conformance suite also
-passed 36 tests designed to expose unsupported or ambiguous cases.
+Version 0.1 defines what must be preserved and how to test it. At signed
+candidate tag `v0.9.0-rc.2`, the Python reference implementation and native
+TypeScript implementation completed the round trip for all 17 files with
+zero differences in the defined fact set. The reference conformance suite
+also passed 36 tests designed to expose unsupported or ambiguous cases.
 The result has been reproduced on a clean GitHub-hosted Linux runner and in
 an offline pinned container, which produced byte-identical release
 directories.
@@ -273,7 +273,7 @@ implementation has not yet tested the generated corpus.
 
 ### 8.5 Reproducibility
 
-The candidate is tested on a GitHub-hosted `ubuntu-24.04` runner and in an
+The signed candidate was tested on a GitHub-hosted `ubuntu-24.04` runner and in an
 offline pinned `linux/amd64` container. Those environments produce
 byte-identical 49-file release directories. The native TypeScript
 implementation separately performs the bounded round trip and reaches the
