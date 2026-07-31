@@ -2,15 +2,16 @@
 
 **Publication route:** Conservative source-only community proposal
 
-**Status:** Pre-publication engineering and cleanup gates complete; public
-visibility and publication remain
+**Status:** Public source-only candidate published; independent reproduction
+and specialist review remain open
 
 **Last reviewed:** July 31, 2026
 
-This checklist controls the first public visibility of the repository. It is
-an engineering release checklist, not legal advice. Independent reproduction
-and specialist review are valuable follow-up evidence, but they do not block
-publication of a clearly labeled draft.
+This checklist records the gates applied before the repository became public
+and controls later publication changes. It is an engineering release
+checklist, not legal advice. Independent reproduction and specialist review
+are valuable follow-up evidence, but they do not block publication of a
+clearly labeled draft.
 
 ## Chosen publication boundary
 
@@ -159,10 +160,11 @@ After the manual decisions above are recorded:
 8. Invite independent reproduction and domain-specialist review as the next
    evidence phase.
 
-Steps 1 through 5 are complete for `v0.9.0-rc.3`. Its exact commit passed the
+Steps 1 through 6 are complete for `v0.9.0-rc.3`. Its exact commit passed the
 pre-tag and tag-triggered workflows, its 120-file source-only archive was
-inspected, its tag signature was verified, and its workflow published no
-artifact.
+inspected, its tag signature was verified, its workflow published no artifact,
+and the repository is public. A source-only GitHub pre-release was published
+on July 31, 2026 without attached generated artifacts.
 
 ## Claims allowed at first publication
 

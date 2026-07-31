@@ -1,0 +1,44 @@
+# Versioning
+
+This repository uses several version numbers for different things. They must
+not be treated as interchangeable.
+
+## Candidate tags
+
+Tags such as `v0.9.0-rc.3` identify an immutable, signed source state and its
+validation evidence. The tag is the version to cite when reproducing or
+reviewing a published candidate.
+
+The current signed candidate is `v0.9.0-rc.3`. It is a release candidate for
+this community proposal and reference implementation. It is not a version of
+RAAML and does not mean “RAAML 0.9” or “RAAML 2.0.”
+
+## Proposal and contract versions
+
+The written proposal and machine-readable contracts are independently
+versioned. The current proposal, fact contract, schemas, and preservation
+manifest format use version `0.1` or schema version `0.1.0`.
+
+A schema version describes the shape and meaning of a JSON document. It does
+not identify a Git commit or validation run.
+
+## Implementation versions
+
+The Python CLI currently reports `0.1.0.dev0`. The local TypeScript package
+currently reports `0.1.0`. These identify the implementation line, not the
+signed evidence state.
+
+Neither implementation version currently represents a separately published
+PyPI or npm package. To reproduce a result, cite and check out the signed Git
+candidate tag rather than relying only on an implementation version string.
+
+## Future changes
+
+- A documentation-only change on `main` does not alter an existing signed
+  candidate.
+- A change to facts, identity, schemas, mapping, reconstruction, validation,
+  or the stated preservation claim requires a new candidate and new evidence.
+- Existing signed tags are never moved or replaced.
+- If Python or TypeScript packages are published later, their package versions
+  will be mapped explicitly to the candidate tags and contract versions they
+  implement.
