@@ -55,14 +55,16 @@ See the
 | Document | Purpose |
 | --- | --- |
 | [`GETTING_STARTED.md`](GETTING_STARTED.md) | Exact first-time setup, reproduction, and integration instructions |
+| [`docs/python-cli-guide.md`](docs/python-cli-guide.md) | Use the Python reference CLI for extraction, mapping, reconstruction, and equality checking |
 | [`typescript/README.md`](typescript/README.md) | Use the preservation mapping directly from TypeScript or a Node.js application |
+| [`docs/versioning.md`](docs/versioning.md) | Distinguish candidate tags, contract versions, and implementation versions |
 | [`docs/executive-summary.md`](docs/executive-summary.md) | Plain-language motivation and result |
 | [`proposal/community-proposal-v0.1.md`](proposal/community-proposal-v0.1.md) | Draft paper and claim boundary |
 | [`proposal/normative-encoding-v0.1.md`](proposal/normative-encoding-v0.1.md) | Detailed preservation and reconstruction rules |
 | [`docs/validation-report-v0.9.0-rc.3.md`](docs/validation-report-v0.9.0-rc.3.md) | Signed-candidate validation, reproducibility, and TypeScript evidence |
 | [`docs/syside-editor-check-v0.9.0-rc.2.md`](docs/syside-editor-check-v0.9.0-rc.2.md) | Post-tag manual acceptance check with a second SysML v2 implementation |
 | [`docs/third-party-rights-audit.md`](docs/third-party-rights-audit.md) | Publication-boundary inventory and publisher decision record |
-| [`docs/public-release-checklist.md`](docs/public-release-checklist.md) | Exact automated and manual gates before public visibility |
+| [`docs/public-release-checklist.md`](docs/public-release-checklist.md) | Publication-boundary gates and the completed release record |
 | [`docs/external-review-guide.md`](docs/external-review-guide.md) | Reviewer questions and remaining publication gates |
 | [`docs/fact-contract-v0.1.md`](docs/fact-contract-v0.1.md) | Canonical fact identity and comparison contract |
 | [`docs/transformation-analysis-v0.1.md`](docs/transformation-analysis-v0.1.md) | Comparison with the official SysML v1-to-v2 transformation |
@@ -144,6 +146,11 @@ The implementation provides a deterministic command-line tool and a native
 TypeScript library. The TypeScript library runs directly in Node.js; it does
 not start Python, Java, Docker, or a separate service. Both implementations
 operate on the same locked inputs and preservation contract.
+
+Use the [Python CLI guide](docs/python-cli-guide.md) for the complete
+repository-local command sequence. Use the
+[TypeScript guide](typescript/README.md) to embed the mapping in a Node.js
+application.
 
 ## Source material
 

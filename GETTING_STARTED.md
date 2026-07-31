@@ -63,9 +63,9 @@ git clone https://github.com/florian-zeev/raaml-sysml-v2-preservation.git
 cd raaml-sysml-v2-preservation
 ```
 
-While the repository is private, GitHub will require access to the repository
-and may ask you to authenticate. A reviewer who receives a source-only archive
-should instead follow [Run from a source-only archive](#run-from-a-source-only-archive).
+The repository is public and does not require GitHub authentication to clone.
+A reviewer who receives a source-only archive should instead follow
+[Run from a source-only archive](#run-from-a-source-only-archive).
 
 ### 4. Check that you are in the correct directory
 
@@ -153,6 +153,15 @@ evidence. An application that uses the TypeScript library does not need
 Docker, Python, or Java. See [`typescript/README.md`](typescript/README.md) for
 the exact installation, build, test, and API steps.
 
+## Use the Python command-line implementation
+
+The Python reference implementation is a repository-local CLI rather than a
+published Python package. It can run the complete extraction, forward mapping,
+reverse reconstruction, and canonical comparison without Docker or Java.
+
+Follow [`docs/python-cli-guide.md`](docs/python-cli-guide.md) for the exact
+commands, output layout, diagnostics, and success criteria.
+
 ## Run from a source-only archive
 
 If someone gives you a `.tar.gz` review package, they should also give you its
@@ -194,6 +203,9 @@ No software setup is required to review the written proposal. Read:
    for the detailed mapping and reconstruction rules; and
 4. [`docs/validation-report-v0.9.0-rc.3.md`](docs/validation-report-v0.9.0-rc.3.md)
    for the evidence and limitations.
+
+See [`docs/versioning.md`](docs/versioning.md) to distinguish the signed
+candidate tag from proposal, schema, Python, and TypeScript versions.
 
 This is an independent community draft. It is not an OMG specification or an
 OMG-endorsed proposal.
