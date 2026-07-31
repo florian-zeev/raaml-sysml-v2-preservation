@@ -89,8 +89,9 @@ Information that belongs to the whole source file—its profile name, URI, comme
 The generated full-corpus SysML v2 text is accepted by the mandatory pinned
 SysML v2 implementation with zero errors in all five validation categories.
 The reverse mapper also reconstructed all 17 v1 files with zero canonical
-fact differences. The generated v2 text has not been tested with a second
-implementation, and no outside team has yet reproduced the result.
+fact differences. After the candidate was signed, Sensmetry Syside Editor
+0.10.3 also reported no problems for the exact generated text in a manual
+maintainer-operated check. No outside team has yet reproduced the result.
 
 ## Choosing one v2 form without discarding the source
 
@@ -181,7 +182,7 @@ conversion. The next steps are:
 
 1. complete the third-party rights review and open the standalone repository;
 2. ask an outside team to reproduce the signed candidate;
-3. test the generated corpus with a second SysML v2 implementation;
+3. automate or independently repeat the manual second-implementation check;
 4. have RAAML and SysML v2 specialists challenge the fact boundary and mapping choices;
 5. revise the proposal and publish a new signed candidate with the review findings.
 

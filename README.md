@@ -36,6 +36,13 @@ independent reproduction. The candidate also does not establish behavioral
 equivalence of OCL, certification suitability, or permission to redistribute
 all third-party source material.
 
+After the candidate was signed, the exact generated SysML v2 text was also
+opened with Sensmetry Syside Editor 0.10.3. Active validation was confirmed
+with a deliberate negative smoke test, and the candidate file produced no
+reported problems. This was a manual maintainer-operated check, not part of
+the signed candidate or an external reproduction. See the
+[manual Syside record](docs/syside-editor-check-v0.9.0-rc.2.md).
+
 The repository remains private while the third-party rights review is
 completed.
 
@@ -49,6 +56,7 @@ completed.
 | [`proposal/community-proposal-v0.1.md`](proposal/community-proposal-v0.1.md) | Draft paper and claim boundary |
 | [`proposal/normative-encoding-v0.1.md`](proposal/normative-encoding-v0.1.md) | Detailed preservation and reconstruction rules |
 | [`docs/validation-report-v0.9.0-rc.2.md`](docs/validation-report-v0.9.0-rc.2.md) | Consolidated validation, reproducibility, and TypeScript evidence |
+| [`docs/syside-editor-check-v0.9.0-rc.2.md`](docs/syside-editor-check-v0.9.0-rc.2.md) | Post-tag manual acceptance check with a second SysML v2 implementation |
 | [`docs/third-party-rights-audit.md`](docs/third-party-rights-audit.md) | Publication boundary and remaining permission request |
 | [`docs/external-review-guide.md`](docs/external-review-guide.md) | Reviewer questions and remaining publication gates |
 | [`docs/fact-contract-v0.1.md`](docs/fact-contract-v0.1.md) | Canonical fact identity and comparison contract |

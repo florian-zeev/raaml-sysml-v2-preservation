@@ -46,8 +46,17 @@ It is not silently substituted for the formal SysML 2.0 baseline.
 ## Second parser
 
 A second v2 implementation is additional evidence, not a v0.1 mandatory
-gate. Reports must state **not tested with a second implementation** until one
-is pinned and exercised.
+gate. Candidate reports must state **not tested by the release gate with a
+second implementation** until one is pinned and exercised. Supplemental
+manual observations must be labeled separately and must not be presented as
+automated candidate evidence.
+
+After `v0.9.0-rc.2` was signed, the exact generated full-corpus text was
+manually checked with Sensmetry Syside Editor 0.10.3. Active validation was
+confirmed with a negative smoke test, and the candidate file produced no
+reported problems. This closes the basic manual second-parser check but does
+not satisfy a future pinned, automated second-parser gate. See
+[`docs/syside-editor-check-v0.9.0-rc.2.md`](../docs/syside-editor-check-v0.9.0-rc.2.md).
 
 ## Known limitation
 

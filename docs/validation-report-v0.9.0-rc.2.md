@@ -169,3 +169,15 @@ The candidate does not establish:
 
 The complete `v0.9.0-rc.1` evidence remains available in
 [`validation-report-v0.9.0-rc.1.md`](validation-report-v0.9.0-rc.1.md).
+
+## Post-tag second-implementation observation
+
+After the candidate was signed, the exact generated SysML v2 text was opened
+with Sensmetry Syside Editor 0.10.3. The candidate produced no reported
+problems after active validation was confirmed with a deliberate negative
+smoke test.
+
+This manual maintainer-operated observation is not part of the immutable
+candidate evidence summarized above. It does not alter the candidate's
+original claim boundary. See
+[`syside-editor-check-v0.9.0-rc.2.md`](syside-editor-check-v0.9.0-rc.2.md).

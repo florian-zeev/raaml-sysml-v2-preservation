@@ -53,6 +53,12 @@ At signed candidate tag `v0.9.0-rc.2`:
   SysML v2;
 - permission to redistribute all third-party source material.
 
+The second-implementation limitation above applies to the immutable signed
+candidate. A post-tag manual check found no reported problems when the exact
+generated text was opened with Sensmetry Syside Editor 0.10.3. That
+maintainer-operated observation is recorded separately in
+[`syside-editor-check-v0.9.0-rc.2.md`](syside-editor-check-v0.9.0-rc.2.md).
+
 ## Questions for reviewers
 
 ### RAAML specialists
@@ -139,7 +145,7 @@ Before the repository and paper are presented as a public release:
 
 1. complete the third-party rights review;
 2. obtain and record one independent reproduction;
-3. test the generated corpus with a second SysML v2 implementation, or state
-   clearly that this remains open;
+3. replace or supplement the manual Syside check with a pinned automated
+   second-implementation result, or retain the manual limitation explicitly;
 4. resolve review findings against the proposal and encoding;
 5. create a new signed candidate that includes the final publication text.

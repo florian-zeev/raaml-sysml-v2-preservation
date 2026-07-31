@@ -26,8 +26,10 @@ directories.
 
 These results support the preservation claim within the stated scope. They do
 not cover arbitrary user models, prove equivalent OCL behavior, establish
-interoperability with a second SysML v2 implementation, or define a new
-version of RAAML. No outside team has yet reproduced the result.
+cross-tool semantic equivalence, or define a new version of RAAML. After the
+candidate was signed, a manual maintainer-operated check found no problems
+when Sensmetry Syside Editor 0.10.3 validated the exact generated SysML v2
+text. No outside team has yet reproduced the result.
 
 ## 1. The problem
 
@@ -268,8 +270,11 @@ Supported inputs must survive. Unsupported inputs must fail clearly. They must n
 Every generated SysML v2 file must parse with a named, documented implementation. Testing with a second implementation is preferable. One parser accepting a file proves only that the file is acceptable to that parser; it does not by itself prove that another tool will read it the same way.
 
 The candidate passed the repository's pinned SysML v2 validator with zero
-errors in all five reported validation categories. A second SysML v2
-implementation has not yet tested the generated corpus.
+errors in all five reported validation categories. After the candidate was
+signed, Sensmetry Syside Editor 0.10.3 also reported no problems for the exact
+generated text. A deliberate negative smoke test confirmed that Syside
+validation was active. This was a manual maintainer-operated check, not an
+automated conformance result or part of the signed candidate.
 
 ### 8.5 Reproducibility
 
@@ -338,8 +343,8 @@ official corpus at the signed candidate tag.
 
 The immediate goal remains review, not standard status. The next work is to
 complete the rights review, open the repository, obtain an independent
-reproduction, test the generated corpus with a second SysML v2
-implementation, and revise the proposal in response to community findings.
+reproduction, automate or independently repeat the second-implementation
+check, and revise the proposal in response to community findings.
 
 ## References
 
@@ -353,3 +358,4 @@ implementation, and revise the proposal in response to community findings.
 8. GfSE and project partners, [CASCaRA](https://cascara.gfse.org/).
 9. EUROCAE, [WG-136: Digital Regulations and Certification Framework](https://www.eurocae.net/new-working-group-wg-136-digital-regulations-and-certification-framework/).
 10. Reference implementations, [Validation report for `v0.9.0-rc.2`](../docs/validation-report-v0.9.0-rc.2.md).
+11. Post-tag interoperability observation, [Manual Syside Editor check for `v0.9.0-rc.2`](../docs/syside-editor-check-v0.9.0-rc.2.md).

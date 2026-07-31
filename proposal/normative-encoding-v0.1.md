@@ -74,9 +74,11 @@ The complete evidence identity and verification command are in
 
 This evidence supports only the preservation contract defined here. It does
 not cover arbitrary user-authored RAAML models, prove equivalent OCL
-evaluation, show acceptance by a second SysML v2 implementation, or constitute
-independent external reproduction. The encoding remains a community proposal,
-not an OMG standard.
+evaluation, prove cross-tool semantic equivalence, or constitute independent
+external reproduction. After the candidate was signed, a manual
+maintainer-operated check found no problems when Sensmetry Syside Editor
+0.10.3 validated the exact generated SysML v2 text. The encoding remains a
+community proposal, not an OMG standard.
 
 ## Reference inputs
 
@@ -139,7 +141,9 @@ block is explicitly labeled as validated syntax. The reference
 implementation's generated `.sysml` files are the parser-tested concrete
 encoding. At the signed candidate tag, every generated official definition was
 written in the repository's accepted v2 syntax and passed the pinned
-validator. A second implementation has not yet performed this check.
+validator. After signing, the exact full-corpus text also produced no reported
+problems in a manual Sensmetry Syside Editor 0.10.3 check. That observation is
+not part of the immutable candidate or an automated conformance gate.
 
 The base payload, applied to every generated `Raaml_*` metadata def:
 
