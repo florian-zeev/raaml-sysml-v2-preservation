@@ -43,8 +43,11 @@ reported problems. This was a manual maintainer-operated check, not part of
 the signed candidate or an external reproduction. See the
 [manual Syside record](docs/syside-editor-check-v0.9.0-rc.2.md).
 
-The repository remains private while the third-party rights review is
-completed.
+The repository remains private while the limited source-grounded material is
+reviewed and historical hosted outputs are removed. The project has selected
+a conservative source-only publication boundary; complete generated corpus
+outputs will remain local. See the
+[public-release checklist](docs/public-release-checklist.md).
 
 ## Start here
 
@@ -58,12 +61,23 @@ completed.
 | [`docs/validation-report-v0.9.0-rc.2.md`](docs/validation-report-v0.9.0-rc.2.md) | Consolidated validation, reproducibility, and TypeScript evidence |
 | [`docs/syside-editor-check-v0.9.0-rc.2.md`](docs/syside-editor-check-v0.9.0-rc.2.md) | Post-tag manual acceptance check with a second SysML v2 implementation |
 | [`docs/third-party-rights-audit.md`](docs/third-party-rights-audit.md) | Publication boundary and remaining permission request |
+| [`docs/public-release-checklist.md`](docs/public-release-checklist.md) | Exact automated and manual gates before public visibility |
 | [`docs/external-review-guide.md`](docs/external-review-guide.md) | Reviewer questions and remaining publication gates |
 | [`docs/fact-contract-v0.1.md`](docs/fact-contract-v0.1.md) | Canonical fact identity and comparison contract |
 | [`docs/transformation-analysis-v0.1.md`](docs/transformation-analysis-v0.1.md) | Comparison with the official SysML v1-to-v2 transformation |
 
 Machine-readable transformation analysis is under [`analysis/`](analysis/).
 Architecture decisions are under [`adr/`](adr/).
+
+Audit the public-repository boundary from a full Git checkout with:
+
+```text
+./raaml publication audit
+```
+
+This command checks current and historical Git paths, ignore rules, and known
+CI publishing mechanisms. It does not provide legal clearance or inspect
+artifacts retained by GitHub outside the Git repository.
 
 ## Reproduce the signed candidate
 

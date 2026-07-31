@@ -10,6 +10,7 @@
 /release-host/
 /release-container/
 /review-evidence/
+/container-evidence/
 
 # Build and editor output
 .DS_Store

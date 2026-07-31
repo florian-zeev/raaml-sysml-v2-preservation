@@ -34,8 +34,15 @@ Current policy decisions:
 - the repository distributes original adapter source, not the third-party
   binaries or standards files.
 
+The project has selected a conservative source-only publication boundary.
+Complete generated outputs derived from the official corpus remain local even
+if the repository becomes public. Project licenses apply only to original
+expression; they do not relicense third-party names, facts, text, models, or
+other material that may appear in limited source-grounded analysis.
+
 A public release must enumerate every distributed third-party item and the
 basis on which it is distributed.
 
-The current audit and the permission question that remains open are recorded
-in `docs/third-party-rights-audit.md`.
+The current audit, remaining limited-material review, and hosted-output cleanup
+are recorded in `docs/third-party-rights-audit.md` and
+`docs/public-release-checklist.md`.

@@ -1,9 +1,16 @@
 This repository uses multiple licenses.
 
-- Original software source code is licensed under the Apache License 2.0.
-- Original proposal text, documentation, and schemas are licensed under the
-  Creative Commons Attribution 4.0 International license.
+- Original software source code, command-line scripts, workflows, tests, and
+  project-authored fixtures and examples are licensed under the Apache License
+  2.0.
+- Original proposal text, documentation, schemas, architecture decisions,
+  and original portions of the analysis and oracle data are licensed under
+  the Creative Commons Attribution 4.0 International license.
 - Third-party material is not relicensed by this repository.
+
+These licenses cover only the project's original expression. They do not
+grant rights in third-party standards, names, facts, text, models, or other
+material identified in `THIRD_PARTY_MATERIALS.md`.
 
 The complete license texts are in:
 

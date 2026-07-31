@@ -11,6 +11,7 @@ reports/*
 release-host
 release-container
 review-evidence
+container-evidence
 !reports/.gitkeep
 generated/*
 !generated/.gitkeep

@@ -6,6 +6,8 @@ being published as an independent community proposal.
 
 Original software in this repository is licensed under Apache-2.0. Original
 proposal text, documentation, and schemas are licensed under CC-BY-4.0.
+Those licenses cover only original project expression and do not relicense
+third-party source material or source-grounded facts.
 
 RAAML, SysML, UML, KerML, OCL, XMI, and related specifications and
 machine-readable files may contain material owned or published by the Object

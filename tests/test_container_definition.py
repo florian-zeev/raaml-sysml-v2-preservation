@@ -40,6 +40,7 @@ class ContainerDefinitionTests(unittest.TestCase):
                 "reports/*",
                 "generated/*",
                 "review-evidence",
+                "container-evidence",
             }.issubset(ignored)
         )
 
@@ -79,6 +80,16 @@ class ContainerDefinitionTests(unittest.TestCase):
         self.assertNotIn("actions/upload-artifact@", workflow)
         self.assertNotIn("Retain development-build evidence", workflow)
         self.assertNotIn("Retain tagged-candidate evidence", workflow)
+        self.assertNotIn("gh release ", workflow)
+        self.assertNotIn("docker push ", workflow)
+        self.assertNotIn("packages: write", workflow)
+
+    def test_workflow_runs_publication_boundary_audit(self) -> None:
+        workflow = (
+            self.repository_root / ".github" / "workflows" / "validate.yml"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn("./raaml publication audit", workflow)
 
     def test_workflow_runs_native_typescript_conformance_tests(self) -> None:
         workflow = (

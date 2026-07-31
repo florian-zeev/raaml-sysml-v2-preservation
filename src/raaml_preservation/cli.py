@@ -40,6 +40,7 @@ from .roundtrip import (
 )
 from .oracle import EXPECTED_TOTALS, audit_corpus
 from .ocl_validation import validate_ocl_corpus
+from .publication import audit_repository
 from .release import ReleaseError, reproduce_release
 from .sources import LockError, fetch_sources, load_lock, verify_sources
 from .transformation import (
@@ -1561,6 +1562,26 @@ def _validate_ocl_command(args: argparse.Namespace) -> int:
     return _adapter_command(args)
 
 
+def _publication_audit(args: argparse.Namespace) -> int:
+    report = audit_repository(REPOSITORY_ROOT)
+    _write_json_atomic(args.diagnostics, report)
+    summary = report["summary"]
+    if report["ok"]:
+        print(
+            "Publication audit passed: "
+            f"{summary['currentTrackedPaths']} current path(s), "
+            f"{summary['historicalPaths']} historical path(s); "
+            f"diagnostics: {args.diagnostics}"
+        )
+        return 0
+    for diagnostic in report["diagnostics"]:
+        print(
+            f"{diagnostic['code']}: {diagnostic['message']}",
+            file=sys.stderr,
+        )
+    return 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="raaml")
     parser.add_argument("--version", action="version", version=__version__)
@@ -1887,6 +1908,28 @@ def build_parser() -> argparse.ArgumentParser:
     transformation_constraints.set_defaults(
         handler=_transformation_constraints
     )
+
+    publication = commands.add_parser(
+        "publication",
+        help="audit the conservative public-repository boundary",
+    )
+    publication_commands = publication.add_subparsers(
+        dest="publication_command",
+        required=True,
+    )
+    publication_audit = publication_commands.add_parser(
+        "audit",
+        help="reject tracked or historical generated and third-party material",
+    )
+    publication_audit.add_argument(
+        "--diagnostics",
+        type=_path,
+        default=REPOSITORY_ROOT
+        / "reports"
+        / "diagnostics"
+        / "publication-audit.json",
+    )
+    publication_audit.set_defaults(handler=_publication_audit)
 
     tests = commands.add_parser("tests", help="run project tests")
     test_commands = tests.add_subparsers(dest="tests_command", required=True)

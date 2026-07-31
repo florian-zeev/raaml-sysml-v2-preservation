@@ -1,8 +1,8 @@
 # Third-party rights audit
 
-**Audit date:** July 30, 2026  
-**Status:** Public-release blocker; written permission or a narrower
-publication package is required  
+**Audit date:** July 31, 2026
+**Status:** Conservative source-only boundary selected; limited excerpt review
+and hosted-output cleanup remain public-release blockers
 **Purpose:** Engineering publication review, not legal advice
 
 ## Result
@@ -26,9 +26,16 @@ and other content from the official definitions. They may therefore reproduce
 copyrightable parts of the source material even though the original XMI bytes
 are not included.
 
-The project must not publish that generated package until its redistribution
-status is resolved. CI may generate and compare it inside an ephemeral job,
-but the workflow does not retain it as a downloadable artifact.
+The project has selected the conservative route: it must not publish that
+generated package unless its redistribution status is later resolved. CI may
+generate and compare it inside an ephemeral job, but the workflow does not
+retain it as a downloadable artifact.
+
+The narrower route does not by itself answer whether the limited RAAML names,
+relationships, aggregate counts, source locations, and hashes used in the
+proposal, transformation analysis, and oracle require additional permission
+or notices. That question still needs written clarification, qualified legal
+review, or a deliberate further reduction before public visibility.
 
 ## Evidence reviewed
 
@@ -43,6 +50,8 @@ but the workflow does not retain it as a downloadable artifact.
   `sources/catalog.xml`.
 - All commits currently have one author identity: `florian-zeev
   <florian@zeev.tech>`.
+- `./raaml publication audit` now rejects forbidden current and historical
+  paths, missing ignore rules, and known CI publishing mechanisms.
 
 ### Generated package
 
@@ -61,7 +70,8 @@ posting, modification, and commercial transfer of the specification itself.
 
 OMG's current legal page says that use of OMG copyrighted material outside
 its stated guidelines requires permission, and directs requests for use to
-OMG in writing.
+OMG in writing. This page was rechecked on July 31, 2026; the engineering
+audit does not interpret whether a particular use is permitted by law.
 
 Primary sources:
 
@@ -79,7 +89,7 @@ archive is used as a validator and is not redistributed by this project:
 | Material | In Git history? | Current treatment | Public-release decision |
 |---|---:|---|---|
 | Original implementation source | Yes | Apache-2.0 | Publishable, subject to normal contributor review |
-| Original proposal and documentation | Yes | CC-BY-4.0, with third-party material excluded | Publish after notice and excerpt review |
+| Original proposal and documentation | Yes | CC-BY-4.0 applies only to original expression; third-party material is excluded | Publish after notice and limited source-grounded material review |
 | Project-authored synthetic fixtures | Yes | Project license | Publishable |
 | Official OMG XMI and PDFs | No | Downloaded to ignored local cache | Do not publish |
 | SysML v2 Pilot Implementation and JDK archives | No | Downloaded to ignored tool cache | Do not publish from this repository |
@@ -91,10 +101,11 @@ archive is used as a validator and is not redistributed by this project:
 | Reconstructed 17-file XMI corpus | No; generated in CI | Used ephemerally | Do not retain or publish without permission |
 | Historical GitHub Actions artifacts | Stored outside Git | Private repository artifacts with finite retention | Delete or allow to expire before making the repository public |
 
-## Permission request to OMG
+## Optional permission request to OMG
 
-Before a public release, send a written request that distinguishes the paper
-from the generated corpus. Suggested text:
+Written clarification is one way to close the remaining source-grounded
+material question and could also permit a broader future package. Suggested
+text:
 
 ```text
 Subject: Permission request — RAAML 1.1 / SysML v2 preservation proposal
@@ -138,27 +149,34 @@ Florian Wolf
 
 ## Required actions before public visibility
 
-1. Obtain a written response from OMG, or choose the narrower publication
-   package that excludes all generated corpus content and questionable
-   excerpts.
-2. Review the committed golden samples and proposal text against the response.
-3. Update `NOTICE`, `THIRD_PARTY_MATERIALS.md`, and each affected file with the
-   exact required notices.
+1. Completed: choose the narrower publication package that excludes all
+   generated corpus content.
+2. Obtain written clarification or qualified legal review for the limited
+   source-grounded material that remains committed, or reduce it further.
+3. Update `NOTICE`, `THIRD_PARTY_MATERIALS.md`, and affected files with the
+   resulting exact notices.
 4. Delete all retained GitHub Actions artifacts containing the generated
    corpus, or wait for their retention periods to expire and verify that they
    are gone.
 5. Confirm through GitHub that no release asset, package, cache, or artifact
    exposes the generated corpus.
-6. Completed for the current source state: full validation passed and
+6. Run `./raaml publication audit` and retain its pass result in the workflow
+   log. This audits Git and known workflow publishing mechanisms, not hosted
+   GitHub storage or legal rights.
+7. Completed for the current source state: full validation passed and
    `v0.9.0-rc.2` was created as a new signed candidate. Do not move or replace
    `v0.9.0-rc.1` or `v0.9.0-rc.2`. If the rights review changes the
    publication files, run the full validation again and create a later signed
    candidate.
 
-## Conservative fallback
+The operational sequence and sign-off record are in
+[`public-release-checklist.md`](public-release-checklist.md).
 
-If permission is not granted, the repository can still publish the original
-paper, mapping design, schemas, source code, provenance lock, aggregate
-validation counts, and instructions. The complete fact sets, generated v2
-model, manifests, and reconstructed XMI would remain local outputs produced
-only after each user obtains the official inputs.
+## Conservative publication boundary
+
+The intended public repository contains the original paper, mapping design,
+schemas, source code, provenance lock, aggregate validation counts, and
+instructions. The complete fact sets, generated v2 model, manifests, and
+reconstructed XMI remain local outputs produced only after each user obtains
+the official inputs. Public visibility still waits for the two manual blockers
+identified above; this document does not provide legal advice or clearance.

@@ -143,9 +143,14 @@ zero v2 validation errors, and zero failed adversarial cases.
 
 Before the repository and paper are presented as a public release:
 
-1. complete the third-party rights review;
-2. obtain and record one independent reproduction;
+1. close the two manual blockers in the
+   [`public-release checklist`](public-release-checklist.md): limited
+   source-grounded material review and hosted-output cleanup;
+2. pass `./raaml publication audit` and the complete validation workflow;
 3. replace or supplement the manual Syside check with a pinned automated
    second-implementation result, or retain the manual limitation explicitly;
-4. resolve review findings against the proposal and encoding;
-5. create a new signed candidate that includes the final publication text.
+4. create a new signed candidate that includes the final publication text.
+
+Independent reproduction and specialist review remain explicit open evidence
+items, but they do not block publication of a clearly labeled Draft Community
+Proposal v0.1.
