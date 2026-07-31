@@ -1,0 +1,50 @@
+name: Reproduction report
+description: Report an independent or maintainer-operated reproduction result.
+title: "[Reproduction]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reproducing the candidate. Report aggregate results and diagnostics only. Do not attach official OMG files, generated full-corpus SysML v2, preservation manifests, reconstructed XMI, or other excluded material.
+  - type: input
+    id: candidate
+    attributes:
+      label: Candidate tag or commit
+      description: Identify the exact tag or commit you tested.
+      placeholder: v0.9.0-rc.3 or a full commit SHA
+    validations:
+      required: true
+  - type: input
+    id: platform
+    attributes:
+      label: Platform
+      description: Include the operating system, architecture, and Docker version when applicable.
+      placeholder: macOS 15, Apple Silicon, Docker Desktop 4.x using linux/amd64
+    validations:
+      required: true
+  - type: textarea
+    id: procedure
+    attributes:
+      label: Procedure
+      description: List the commands or documented procedure you followed, including any manual intervention.
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: Aggregate result
+      description: Report canonical differences, validation errors, adversarial failures, hashes, and the final exit status.
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics
+      description: Paste concise diagnostics or link to a source-only report. Remove local secrets and excluded generated material.
+  - type: checkboxes
+    id: boundary
+    attributes:
+      label: Publication boundary
+      options:
+        - label: I have not attached official or generated full-corpus material excluded by the repository policy.
+          required: true
