@@ -2,7 +2,8 @@
 
 **Publication route:** Conservative source-only community proposal
 
-**Status:** Repository safeguards pass; two manual publication blockers remain
+**Status:** Repository safeguards and manual publication decisions complete;
+final validation and a new signed candidate remain
 
 **Last reviewed:** July 31, 2026
 
@@ -74,7 +75,7 @@ documents.
 - [x] The proposal states that it is independent, non-normative, and not an
       OMG specification, submission, or endorsement.
 
-## Manual blockers before changing repository visibility
+## Manual publication decisions
 
 ### 1. Decide the treatment of limited source-grounded material
 
@@ -109,6 +110,12 @@ Record the decision and exact notices in
 [`third-party-rights-audit.md`](third-party-rights-audit.md), `NOTICE`, and
 `THIRD_PARTY_MATERIALS.md`.
 
+**Decision record:** Completed July 31, 2026, by Florian Wolf as project
+maintainer and publisher. The conservative source-only package may retain the
+limited source-grounded technical material inventoried above. This is the
+publisher's release decision, not an external legal opinion or a claim of
+permission from OMG. Complete generated corpus outputs remain local-only.
+
 ### 2. Remove hosted historical outputs
 
 Earlier private workflow runs retained downloadable release bundles before
@@ -128,11 +135,17 @@ artifact upload was removed from CI. Before making the repository public:
 that artifacts can be deleted before expiry and that deleting a workflow run
 also deletes its associated artifacts. Deletion is permanent.
 
-**Hosted-output inspection record:** Not yet completed.
+**Hosted-output inspection record:** Completed July 31, 2026, by Florian Wolf.
+Every workflow run older than `Prevent publication of derived RAAML corpus #3`
+was inspected. All runs exposing downloadable artifacts had those artifacts
+deleted; the exact count was not recorded and was described as a handful. No
+GitHub Releases page or published package existed. Workflow-history inspection
+confirmed that the only configured cache was the npm dependency cache; no
+generated RAAML output was cached.
 
 ## Final publication sequence
 
-After both manual blockers above are closed:
+After the manual decisions above are recorded:
 
 1. Run `./raaml publication audit` from a clean checkout.
 2. Run the complete validation workflow and confirm it passes.

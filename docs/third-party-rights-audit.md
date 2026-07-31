@@ -1,8 +1,8 @@
 # Third-party rights audit
 
 **Audit date:** July 31, 2026
-**Status:** Conservative source-only boundary selected; limited excerpt review
-and hosted-output cleanup remain public-release blockers
+**Status:** Conservative source-only boundary and maintainer publication
+decision recorded; hosted-output cleanup complete; final candidate pending
 **Purpose:** Engineering publication review, not legal advice
 
 ## Result
@@ -31,11 +31,11 @@ generated package unless its redistribution status is later resolved. CI may
 generate and compare it inside an ephemeral job, but the workflow does not
 retain it as a downloadable artifact.
 
-The narrower route does not by itself answer whether the limited RAAML names,
+The maintainer and publisher reviewed the inventory of limited RAAML names,
 relationships, aggregate counts, source locations, and hashes used in the
-proposal, transformation analysis, and oracle require additional permission
-or notices. That question still needs written clarification, qualified legal
-review, or a deliberate further reduction before public visibility.
+proposal, transformation analysis, and oracle and chose to retain them in the
+conservative source-only package. This is a publisher decision, not an
+external legal opinion or a claim of permission from OMG.
 
 ## Evidence reviewed
 
@@ -89,7 +89,7 @@ archive is used as a validator and is not redistributed by this project:
 | Material | In Git history? | Current treatment | Public-release decision |
 |---|---:|---|---|
 | Original implementation source | Yes | Apache-2.0 | Publishable, subject to normal contributor review |
-| Original proposal and documentation | Yes | CC-BY-4.0 applies only to original expression; third-party material is excluded | Publish after notice and limited source-grounded material review |
+| Original proposal and documentation | Yes | CC-BY-4.0 applies only to original expression; third-party material is excluded | Maintainer review complete; publish with notices and claim boundary |
 | Project-authored synthetic fixtures | Yes | Project license | Publishable |
 | Official OMG XMI and PDFs | No | Downloaded to ignored local cache | Do not publish |
 | SysML v2 Pilot Implementation and JDK archives | No | Downloaded to ignored tool cache | Do not publish from this repository |
@@ -151,15 +151,17 @@ Florian Wolf
 
 1. Completed: choose the narrower publication package that excludes all
    generated corpus content.
-2. Obtain written clarification or qualified legal review for the limited
-   source-grounded material that remains committed, or reduce it further.
-3. Update `NOTICE`, `THIRD_PARTY_MATERIALS.md`, and affected files with the
-   resulting exact notices.
-4. Delete all retained GitHub Actions artifacts containing the generated
-   corpus, or wait for their retention periods to expire and verify that they
-   are gone.
-5. Confirm through GitHub that no release asset, package, cache, or artifact
-   exposes the generated corpus.
+2. Completed July 31, 2026: the maintainer and publisher reviewed the limited
+   source-grounded material inventory and accepted it for the conservative
+   package without claiming external legal review or OMG permission.
+3. Completed: `NOTICE`, `THIRD_PARTY_MATERIALS.md`, and affected files state
+   the source-only boundary and third-party exclusions.
+4. Completed July 31, 2026: every older workflow run was inspected and all
+   visible downloadable artifacts were deleted. The exact number was not
+   recorded and was described as a handful.
+5. Completed July 31, 2026: no GitHub Releases page or published package
+   existed. Workflow history contained only an npm dependency cache and no
+   generated-output cache.
 6. Run `./raaml publication audit` and retain its pass result in the workflow
    log. This audits Git and known workflow publishing mechanisms, not hosted
    GitHub storage or legal rights.
@@ -178,5 +180,7 @@ The intended public repository contains the original paper, mapping design,
 schemas, source code, provenance lock, aggregate validation counts, and
 instructions. The complete fact sets, generated v2 model, manifests, and
 reconstructed XMI remain local outputs produced only after each user obtains
-the official inputs. Public visibility still waits for the two manual blockers
-identified above; this document does not provide legal advice or clearance.
+the official inputs. The remaining engineering gates are a passing complete
+workflow on the final publication text, review of the source-only archive, and
+a new signed candidate. This document does not provide legal advice or
+clearance.
