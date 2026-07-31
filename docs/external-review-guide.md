@@ -18,7 +18,8 @@ For installation and command-by-command reproduction instructions, start with
 
 ## Suggested reading order
 
-1. [`executive-summary.md`](executive-summary.md) — the motivation and result
+1. [`executive-summary.md`](executive-summary.md) — the companion blog article,
+   motivation, and result
    in plain language.
 2. [`community-proposal-v0.1.md`](../proposal/community-proposal-v0.1.md) —
    the paper and its claim boundary.

@@ -311,11 +311,10 @@ Each release must name the exact RAAML, SysML, KerML, and OCL versions it suppor
 ## 10. Open project and community review
 
 The proposal and implementation live in a standalone repository whose scope
-is this compatibility problem, rather than an M45 product repository. The
-repository is private while the third-party rights review is completed. The
-intended next step is to open it with public issues, versioned documents and
-schemas, repeatable test reports, contribution guidance, and a clear record
-of design decisions.
+is this compatibility problem, rather than an M45 product repository. It is
+public with versioned documents and schemas, repeatable test reports,
+contribution guidance, a security-reporting path, protected branches and
+release tags, and a clear record of design decisions.
 
 Original documentation is intended to use CC BY 4.0. Implementation code is intended to use Apache-2.0. OMG specifications, official XMI files, icons, and other third-party material are not relicensed by this project; their use and redistribution need a separate review.
 
@@ -341,9 +340,9 @@ definition files through a SysML v2 representation and recover the same listed
 facts. The reference implementation has passed that test for the complete
 official corpus at the signed candidate tag.
 
-The immediate goal remains review, not standard status. The next work is to
-validate and sign the exact publication state, inspect its source-only
-archive, open the repository, obtain an independent reproduction, automate or
+The immediate goal remains review, not standard status. The publication state
+has been validated, inspected, signed, and released as a source-only public
+candidate. The next work is to obtain an independent reproduction, automate or
 independently repeat the second-implementation check, and revise the proposal
 in response to community findings.
 

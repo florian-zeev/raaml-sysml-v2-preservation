@@ -58,7 +58,7 @@ See the
 | [`docs/python-cli-guide.md`](docs/python-cli-guide.md) | Use the Python reference CLI for extraction, mapping, reconstruction, and equality checking |
 | [`typescript/README.md`](typescript/README.md) | Use the preservation mapping directly from TypeScript or a Node.js application |
 | [`docs/versioning.md`](docs/versioning.md) | Distinguish candidate tags, contract versions, and implementation versions |
-| [`docs/executive-summary.md`](docs/executive-summary.md) | Plain-language motivation and result |
+| [`docs/executive-summary.md`](docs/executive-summary.md) | Companion blog article and plain-language result |
 | [`proposal/community-proposal-v0.1.md`](proposal/community-proposal-v0.1.md) | Draft paper and claim boundary |
 | [`proposal/normative-encoding-v0.1.md`](proposal/normative-encoding-v0.1.md) | Detailed preservation and reconstruction rules |
 | [`docs/validation-report-v0.9.0-rc.3.md`](docs/validation-report-v0.9.0-rc.3.md) | Signed-candidate validation, reproducibility, and TypeScript evidence |
