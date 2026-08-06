@@ -192,24 +192,6 @@ That can support:
 - engineering organizations that cannot switch every tool and partner simultaneously;
 - future regulator or assurance views that must show where a fact came from and which element it refers to.
 
-## What comes next
-
-The implementation result makes review more useful: reviewers can now inspect
-specific files, rules, and failures rather than discuss a hypothetical
-conversion. The repository, signed candidate, validation report, and developer
-instructions are now public. The next steps are:
-
-1. ask an outside team to reproduce the signed candidate;
-2. automate or independently repeat the manual second-implementation check;
-3. have RAAML and SysML v2 specialists challenge the fact boundary and mapping
-   choices;
-4. ask tool and certification practitioners whether the compatibility layer is
-   usable in real review and interchange workflows; and
-5. revise the proposal and publish a later signed candidate only when review
-   findings justify a technical change.
-
-The goal is not to declare the future shape of RAAML. It is to replace a vague promise of “conversion” with files, rules, and tests that anyone can inspect.
-
 ## References
 
 - Object Management Group, [Risk Analysis and Assessment Modeling Language 1.1](https://www.omg.org/spec/RAAML/1.1), December 2025.
