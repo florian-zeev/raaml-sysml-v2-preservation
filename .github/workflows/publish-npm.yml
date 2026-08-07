@@ -1,0 +1,73 @@
+name: Stage TypeScript package on npm
+
+on:
+  push:
+    tags:
+      - "typescript-v*"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  stage:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment: npm
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          fetch-depth: 0
+
+      - name: Install pinned Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Verify signed package tag
+        shell: bash
+        run: |
+          package_version="$(node -p "require('./typescript/package.json').version")"
+          expected_tag="typescript-v$package_version"
+
+          if [[ "$GITHUB_REF_TYPE" != "tag" || "$GITHUB_REF_NAME" != "$expected_tag" ]]; then
+            echo "Expected signed tag $expected_tag; received $GITHUB_REF" >&2
+            exit 1
+          fi
+
+          git -c gpg.format=ssh \
+            -c gpg.ssh.allowedSignersFile=.github/allowed_signers \
+            tag -v "$GITHUB_REF_NAME"
+
+      - name: Install pinned npm CLI
+        run: npm install --global npm@11.18.0
+
+      - name: Test package
+        run: |
+          npm ci --prefix typescript
+          npm run check --prefix typescript
+          npm test --prefix typescript
+          npm pack ./typescript --dry-run
+
+      - name: Stage package for maintainer approval
+        working-directory: typescript
+        shell: bash
+        run: |
+          package_name="$(node -p "require('./package.json').name")"
+
+          set +e
+          view_output="$(npm view "$package_name" version --json 2>&1)"
+          view_status=$?
+          set -e
+
+          if [[ $view_status -eq 0 ]]; then
+            npm stage publish --access public --tag next
+          elif grep -q "E404" <<<"$view_output"; then
+            echo "Initial package publication requires the maintainer's npm session and 2FA."
+          else
+            echo "$view_output" >&2
+            exit "$view_status"
+          fi

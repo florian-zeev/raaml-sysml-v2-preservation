@@ -52,7 +52,18 @@ _BLOCKED_WORKFLOW_MARKERS = (
     "actions/upload-artifact@",
     "docker push ",
     "gh release ",
+    "npm publish",
     "packages: write",
+)
+
+_NPM_STAGE_WORKFLOW = ".github/workflows/publish-npm.yml"
+
+_NPM_STAGE_REQUIRED_MARKERS = (
+    'tags:\n      - "typescript-v*"',
+    "contents: read",
+    "id-token: write",
+    "environment: npm",
+    "npm stage publish --access public --tag next",
 )
 
 _REQUIRED_GITIGNORE_RULES = {
@@ -98,7 +109,11 @@ def audit_paths(paths: Iterable[str], *, scope: str) -> list[dict[str, str]]:
     return diagnostics
 
 
-def audit_workflow(workflow: str) -> list[dict[str, str]]:
+def audit_workflow(
+    workflow: str,
+    *,
+    path: str = ".github/workflows/validate.yml",
+) -> list[dict[str, str]]:
     diagnostics: list[dict[str, str]] = []
     for marker in _BLOCKED_WORKFLOW_MARKERS:
         if marker in workflow:
@@ -106,7 +121,10 @@ def audit_workflow(workflow: str) -> list[dict[str, str]]:
                 {
                     "severity": "error",
                     "code": "PUBLICATION_WORKFLOW_PUBLISHES_OUTPUT",
-                    "message": f"workflow contains blocked publishing marker {marker!r}",
+                    "message": (
+                        f"{path}: workflow contains blocked publishing marker "
+                        f"{marker!r}"
+                    ),
                 }
             )
     if "permissions:\n  contents: read\n" not in workflow:
@@ -114,9 +132,29 @@ def audit_workflow(workflow: str) -> list[dict[str, str]]:
             {
                 "severity": "error",
                 "code": "PUBLICATION_WORKFLOW_PERMISSIONS",
-                "message": "workflow must retain top-level contents: read permission",
+                "message": (
+                    f"{path}: workflow must retain top-level contents: read permission"
+                ),
             }
         )
+    if "npm stage publish" in workflow and path != _NPM_STAGE_WORKFLOW:
+        diagnostics.append(
+            {
+                "severity": "error",
+                "code": "PUBLICATION_WORKFLOW_UNAUTHORIZED_NPM_STAGE",
+                "message": f"{path}: npm staging is allowed only in {_NPM_STAGE_WORKFLOW}",
+            }
+        )
+    if path == _NPM_STAGE_WORKFLOW:
+        for marker in _NPM_STAGE_REQUIRED_MARKERS:
+            if marker not in workflow:
+                diagnostics.append(
+                    {
+                        "severity": "error",
+                        "code": "PUBLICATION_NPM_STAGE_CONTROL_MISSING",
+                        "message": f"{path}: missing required control {marker!r}",
+                    }
+                )
     return diagnostics
 
 
@@ -180,12 +218,25 @@ def audit_repository(repository_root: Path) -> dict[str, Any]:
         diagnostics.extend(audit_paths(current_paths, scope="current index"))
         diagnostics.extend(audit_paths(historical_paths, scope="Git history"))
 
-    workflow_path = repository_root / ".github" / "workflows" / "validate.yml"
+    workflow_directory = repository_root / ".github" / "workflows"
     gitignore_path = repository_root / ".gitignore"
+    workflow_paths: list[Path] = []
     try:
-        diagnostics.extend(
-            audit_workflow(workflow_path.read_text(encoding="utf-8"))
+        workflow_paths = sorted(
+            path
+            for path in workflow_directory.iterdir()
+            if path.suffix in {".yml", ".yaml"}
         )
+        if not workflow_paths:
+            raise FileNotFoundError(f"no workflows found in {workflow_directory}")
+        for workflow_path in workflow_paths:
+            relative_path = workflow_path.relative_to(repository_root).as_posix()
+            diagnostics.extend(
+                audit_workflow(
+                    workflow_path.read_text(encoding="utf-8"),
+                    path=relative_path,
+                )
+            )
         diagnostics.extend(
             audit_ignore_rules(gitignore_path.read_text(encoding="utf-8"))
         )
@@ -203,7 +254,12 @@ def audit_repository(repository_root: Path) -> dict[str, Any]:
         "command": "publication audit",
         "ok": not diagnostics,
         "summary": {
-            "checked": len(current_paths) + len(set(historical_paths)) + 2,
+            "checked": (
+                len(current_paths)
+                + len(set(historical_paths))
+                + len(workflow_paths)
+                + 1
+            ),
             "currentTrackedPaths": len(current_paths),
             "historicalPaths": len(set(historical_paths)),
             "failed": len(diagnostics),

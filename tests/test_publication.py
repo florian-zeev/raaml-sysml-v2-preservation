@@ -50,6 +50,31 @@ class PublicationPolicyTests(unittest.TestCase):
             "PUBLICATION_WORKFLOW_PUBLISHES_OUTPUT",
         )
 
+    def test_workflow_rejects_direct_npm_publication(self) -> None:
+        workflow = "permissions:\n  contents: read\nsteps:\n  npm publish\n"
+
+        diagnostics = audit_workflow(workflow)
+
+        self.assertEqual(len(diagnostics), 1)
+        self.assertEqual(
+            diagnostics[0]["code"],
+            "PUBLICATION_WORKFLOW_PUBLISHES_OUTPUT",
+        )
+
+    def test_npm_staging_is_restricted_to_controlled_workflow(self) -> None:
+        workflow = "permissions:\n  contents: read\nsteps:\n  npm stage publish\n"
+
+        diagnostics = audit_workflow(
+            workflow,
+            path=".github/workflows/untrusted.yml",
+        )
+
+        self.assertEqual(len(diagnostics), 1)
+        self.assertEqual(
+            diagnostics[0]["code"],
+            "PUBLICATION_WORKFLOW_UNAUTHORIZED_NPM_STAGE",
+        )
+
     def test_missing_required_ignore_rule_is_rejected(self) -> None:
         diagnostics = audit_ignore_rules("/sources/cache/*\n")
 
