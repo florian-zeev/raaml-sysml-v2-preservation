@@ -33,6 +33,10 @@ release candidate is intended for publication to npm under the `next` tag.
 Until that publication is complete, cite and check out the signed Git candidate
 rather than relying on the package version alone.
 
+TypeScript package releases use their own signed tags. Package `0.1.0-rc.1`
+maps to `typescript-v0.1.0-rc.1`. See the
+[npm publishing procedure](npm-publishing.md).
+
 ## Future changes
 
 - A documentation-only change on `main` does not alter an existing signed
