@@ -25,16 +25,16 @@ not identify a Git commit or validation run.
 ## Implementation versions
 
 The Python CLI currently reports `0.1.0.dev0`. The TypeScript package candidate
-reports `0.1.0-rc.2`. These identify implementation lines, not versions of
+reports `0.1.0-rc.3`. These identify implementation lines, not versions of
 RAAML or the signed preservation-evidence state.
 
 The Python implementation is not published as a PyPI package. The TypeScript
-release candidate is intended for publication to npm under the `next` tag.
-Until that publication is complete, cite and check out the signed Git candidate
-rather than relying on the package version alone.
+release candidate is published to npm under the `next` tag in the
+`@m45-engineering` organization scope. Cite both the package version and the
+corresponding signed Git candidate when referring to a tested implementation.
 
-TypeScript package releases use their own signed tags. Package `0.1.0-rc.2`
-maps to `typescript-v0.1.0-rc.2`. See the
+TypeScript package releases use their own signed tags. Package `0.1.0-rc.3`
+maps to `typescript-v0.1.0-rc.3`. See the
 [npm publishing procedure](npm-publishing.md).
 
 ## Future changes
