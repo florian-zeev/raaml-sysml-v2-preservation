@@ -24,13 +24,14 @@ not identify a Git commit or validation run.
 
 ## Implementation versions
 
-The Python CLI currently reports `0.1.0.dev0`. The local TypeScript package
-currently reports `0.1.0`. These identify the implementation line, not the
-signed evidence state.
+The Python CLI currently reports `0.1.0.dev0`. The TypeScript package candidate
+reports `0.1.0-rc.1`. These identify implementation lines, not versions of
+RAAML or the signed preservation-evidence state.
 
-Neither implementation version currently represents a separately published
-PyPI or npm package. To reproduce a result, cite and check out the signed Git
-candidate tag rather than relying only on an implementation version string.
+The Python implementation is not published as a PyPI package. The TypeScript
+release candidate is intended for publication to npm under the `next` tag.
+Until that publication is complete, cite and check out the signed Git candidate
+rather than relying on the package version alone.
 
 ## Future changes
 

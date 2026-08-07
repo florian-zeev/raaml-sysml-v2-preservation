@@ -1,0 +1,25 @@
+RAAML 1.1 on SysML v2 preservation project
+Copyright 2026 Florian Wolf
+
+The original proposal was prepared by Florian Wolf / M45 Engineering and is
+being published as an independent community proposal.
+
+Original software in this repository is licensed under Apache-2.0. Original
+proposal text, documentation, and schemas are licensed under CC-BY-4.0.
+Those licenses cover only original project expression and do not relicense
+third-party source material or source-grounded facts.
+
+RAAML, SysML, UML, KerML, OCL, XMI, and related specifications and
+machine-readable files may contain material owned or published by the Object
+Management Group or other third parties. Those materials are not relicensed
+by this project. Their inclusion, retrieval, or redistribution requires a
+separate rights determination.
+
+The RAAML 1.1 specification identifies copyright interests held by its
+contributors and by the Object Management Group. See the official specification
+and the repository's third-party rights audit for the source notice, applicable
+terms, and the project's current publication boundary:
+https://github.com/florian-zeev/raaml-sysml-v2-preservation/blob/main/docs/third-party-rights-audit.md
+
+This project is independent. It is not an OMG specification, submission, or
+endorsement.
