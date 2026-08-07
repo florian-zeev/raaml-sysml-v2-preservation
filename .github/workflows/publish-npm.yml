@@ -38,6 +38,15 @@ jobs:
             exit 1
           fi
 
+          git fetch --force origin \
+            "refs/tags/$GITHUB_REF_NAME:refs/tags/$GITHUB_REF_NAME"
+
+          tagged_commit="$(git rev-parse "$GITHUB_REF_NAME^{}")"
+          if [[ "$tagged_commit" != "$GITHUB_SHA" ]]; then
+            echo "Tag $GITHUB_REF_NAME points to $tagged_commit, not triggering commit $GITHUB_SHA" >&2
+            exit 1
+          fi
+
           git -c gpg.format=ssh \
             -c gpg.ssh.allowedSignersFile=.github/allowed_signers \
             tag -v "$GITHUB_REF_NAME"

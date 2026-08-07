@@ -10,8 +10,8 @@ Package releases use signed tags of the form:
 typescript-v<package-version>
 ```
 
-For example, package `0.1.0-rc.1` maps to tag
-`typescript-v0.1.0-rc.1`.
+For example, package `0.1.0-rc.2` maps to tag
+`typescript-v0.1.0-rc.2`.
 
 ## First publication
 
