@@ -147,7 +147,7 @@ jobs:
           npm init -y
           npm install "$tarball" --ignore-scripts
           node --input-type=module -e \
-            "const m = await import('@florian-zeev/raaml-sysml-v2-preservation'); if (typeof m.forward !== 'function' || typeof m.reverse !== 'function') process.exit(1)"
+            "const m = await import('@m45-engineering/raaml-sysml-v2-preservation'); if (typeof m.forward !== 'function' || typeof m.reverse !== 'function') process.exit(1)"
 
       - name: Build digest-identified validation container
         run: |

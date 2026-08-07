@@ -4,6 +4,10 @@ This directory contains the native TypeScript implementation of the RAAML 1.1
 preservation mapping. It is intended for Node.js applications, including
 TypeScript applications such as M45.
 
+M45 Engineering maintains this package as part of an open community proposal
+and reference implementation. It is independent of OMG and is not an OMG
+specification, submission, or endorsement.
+
 It performs the mapping in process. It does not call Python, Java, Docker, or a
 network service at runtime.
 
@@ -47,13 +51,13 @@ not a RAAML version or the signed preservation-candidate identity. See the
 Release candidates are published under the `next` tag:
 
 ```text
-npm install @florian-zeev/raaml-sysml-v2-preservation@next
+npm install @m45-engineering/raaml-sysml-v2-preservation@next
 ```
 
 With pnpm:
 
 ```text
-pnpm add @florian-zeev/raaml-sysml-v2-preservation@next
+pnpm add @m45-engineering/raaml-sysml-v2-preservation@next
 ```
 
 The installed package contains the native TypeScript library and its runtime
@@ -134,7 +138,7 @@ import {
   forward,
   reverse,
   type StandardsLock,
-} from "@florian-zeev/raaml-sysml-v2-preservation";
+} from "@m45-engineering/raaml-sysml-v2-preservation";
 
 const repository = process.env.RAAML_REPOSITORY;
 if (!repository) {

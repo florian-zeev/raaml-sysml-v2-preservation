@@ -1,6 +1,6 @@
 # Publishing the TypeScript package
 
-The package `@florian-zeev/raaml-sysml-v2-preservation` is independently
+The package `@m45-engineering/raaml-sysml-v2-preservation` is independently
 versioned from RAAML, the preservation contract, and the signed community
 proposal candidates.
 
@@ -10,8 +10,8 @@ Package releases use signed tags of the form:
 typescript-v<package-version>
 ```
 
-For example, package `0.1.0-rc.2` maps to tag
-`typescript-v0.1.0-rc.2`.
+For example, package `0.1.0-rc.3` maps to tag
+`typescript-v0.1.0-rc.3`.
 
 ## First publication
 
