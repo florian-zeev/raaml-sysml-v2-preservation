@@ -38,9 +38,27 @@ manifests, and reconstructed bytes in memory. Applications should run it in a
 worker or background job if blocking the main Node.js event loop is
 unacceptable.
 
-The package is not yet published to npm. Its package version is `0.1.0`; this
-is an implementation version, not a RAAML version or the signed candidate
-identity. See [`../docs/versioning.md`](../docs/versioning.md).
+The npm package has its own semantic version. That implementation version is
+not a RAAML version or the signed preservation-candidate identity. See the
+[versioning documentation](https://github.com/florian-zeev/raaml-sysml-v2-preservation/blob/main/docs/versioning.md).
+
+## Install from npm
+
+Release candidates are published under the `next` tag:
+
+```text
+npm install @florian-zeev/raaml-sysml-v2-preservation@next
+```
+
+With pnpm:
+
+```text
+pnpm add @florian-zeev/raaml-sysml-v2-preservation@next
+```
+
+The installed package contains the native TypeScript library and its runtime
+dependency. It does not include the official RAAML source files. Callers must
+supply the authorized, locked source bytes and `standards.lock.json`.
 
 ## Build and test
 
@@ -75,7 +93,7 @@ The compiled JavaScript and declarations are written to `typescript/dist/`.
 
 ## Install from a checkout
 
-Until the package is published, build it and install it from its local
+To test an unpublished checkout, build it and install it from its local
 directory. Replace the paths below with real absolute paths:
 
 ```text

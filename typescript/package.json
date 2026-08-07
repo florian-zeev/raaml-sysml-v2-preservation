@@ -1,11 +1,14 @@
 {
   "name": "@florian-zeev/raaml-sysml-v2-preservation",
-  "version": "0.1.0",
-  "private": true,
+  "version": "0.1.0-rc.1",
+  "description": "A two-way mapping that preserves the defined canonical facts of the normative RAAML 1.1 definitions between SysML v1 and SysML v2.",
+  "license": "Apache-2.0",
   "type": "module",
   "engines": {
     "node": ">=24"
   },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -14,13 +17,36 @@
   },
   "files": [
     "dist",
+    "README.md",
+    "LICENSE",
+    "NOTICE",
     "!dist/*.test.d.ts",
     "!dist/*.test.js"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/florian-zeev/raaml-sysml-v2-preservation.git",
+    "directory": "typescript"
+  },
+  "homepage": "https://github.com/florian-zeev/raaml-sysml-v2-preservation#readme",
+  "bugs": {
+    "url": "https://github.com/florian-zeev/raaml-sysml-v2-preservation/issues"
+  },
+  "keywords": [
+    "raaml",
+    "sysml",
+    "sysml-v2",
+    "safety-engineering",
+    "model-transformation"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "check": "tsc -p tsconfig.json --noEmit",
-    "test": "tsc -p tsconfig.json && node --test dist/*.test.js"
+    "test": "tsc -p tsconfig.json && node --test dist/*.test.js",
+    "prepack": "tsc -p tsconfig.json"
   },
   "dependencies": {
     "saxes": "6.0.0"

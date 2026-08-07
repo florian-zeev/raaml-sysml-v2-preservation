@@ -119,6 +119,36 @@ jobs:
           npm ci --prefix typescript
           npm test --prefix typescript
 
+      - name: Verify installable TypeScript package
+        run: |
+          package_dir="$(mktemp -d)"
+          tarball_name="$(
+            npm pack ./typescript \
+              --pack-destination "$package_dir" \
+              --silent
+          )"
+          tarball="$package_dir/$tarball_name"
+
+          tar -tzf "$tarball" | grep -qx "package/LICENSE"
+          tar -tzf "$tarball" | grep -qx "package/NOTICE"
+          tar -tzf "$tarball" | grep -qx "package/README.md"
+          tar -tzf "$tarball" | grep -qx "package/dist/index.js"
+          tar -tzf "$tarball" | grep -qx "package/dist/index.d.ts"
+
+          if tar -tzf "$tarball" |
+            grep -E 'package/(src/|dist/.*\.test\.(js|d\.ts)$)'
+          then
+            echo "Package contains source or test files that must not be published."
+            exit 1
+          fi
+
+          mkdir "$package_dir/consumer"
+          cd "$package_dir/consumer"
+          npm init -y
+          npm install "$tarball" --ignore-scripts
+          node --input-type=module -e \
+            "const m = await import('@florian-zeev/raaml-sysml-v2-preservation'); if (typeof m.forward !== 'function' || typeof m.reverse !== 'function') process.exit(1)"
+
       - name: Build digest-identified validation container
         run: |
           docker build \
